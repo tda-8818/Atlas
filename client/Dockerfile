@@ -1,20 +1,15 @@
-# Use a Node.js base image
 FROM node:18-alpine
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json
 COPY client/package*.json ./
 
-# Install dependencies
 RUN npm install
 
-# Copy the rest of the application code
 COPY client/ .
 
-# Expose the port your React app runs on
-EXPOSE 3000
+RUN npm run build
 
-# Start the application
-CMD ["npm", "start"]
+EXPOSE 5173
+
+CMD ["npm", "run", "preview"]
