@@ -18,7 +18,7 @@ const Navbar = () => {
                 <FontAwesomeIcon icon={click ? faTimes : faBars} />
             </div>
         <div className="profile">
-            <a href="/profile" className='profile'>
+            <a href="/Settings" className='profile'>
                 <FontAwesomeIcon icon = {faCircleUser} />
             </a>
         </div>
