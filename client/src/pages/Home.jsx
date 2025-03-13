@@ -1,5 +1,6 @@
 import React from 'react'
 import Navbar from '../components/Navbar'
+import './Home.css'
 
 const Home = () => {
     return (
@@ -17,10 +18,16 @@ const Home = () => {
                     <h2>Gantt Chart</h2>
                 </div>
                 <div className="grid-item">
+                    <h2>Tasks</h2>
+                </div>
+                <div className="grid-item">
                     <h2>Messages</h2>
                 </div>
                 <div className="grid-item">
-                    <h2>Settings</h2>
+                    <h2>Progress</h2>
+                </div>
+                <div className="grid-item">
+                    <h2>Reminders</h2>
                 </div>
             </div>
         </div>   
