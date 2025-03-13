@@ -33,21 +33,21 @@ const Navbar = () => {
                     </a>
                 </li>
                 <li className='nav-iten'>
-                    <a href="/" className='nav-links' onClick={closeMobileMenu}>
+                    <a href="/Calendar" className='nav-links' onClick={closeMobileMenu}>
                         Calendar
                     </a>
                 </li>
                 <li className='nav-iten'>
-                    <a href="/" className='nav-links' onClick={closeMobileMenu}>
+                    <a href="/Gantt" className='nav-links' onClick={closeMobileMenu}>
                         Gantt Chart
                     </a></li>
                 <li className='nav-iten'>
-                    <a href="/-up" className='nav-links-mobile' onClick={closeMobileMenu}>
+                    <a href="/Messages" className='nav-links-mobile' onClick={closeMobileMenu}>
                         Messages
                     </a>
                 </li>
                 <li className='nav-iten'>
-                    <a href="/-up" className='nav-links-mobile' onClick={closeMobileMenu}>
+                    <a href="/Settings" className='nav-links-mobile' onClick={closeMobileMenu}>
                         Settings    
                     </a></li>
             </ul>
