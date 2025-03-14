@@ -22,15 +22,15 @@ services:
       - ./server:/app
       - /app/node_modules
     environment:
-      - MONGO_URI=mongodb://mongo:27017/taskmanager #Change taskmanager to your database name.
-    depends_on:
-      - mongo
-  mongo:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
+      - MONGO_URI=mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/?retryWrites=true&w=majority&appName=CS02TaskManagementSystem #Change taskmanager to your database name.
+#     depends_on:
+#       - mongo
+#   mongo:
+#     image: mongo:latest
+#     ports:
+#       - "27017:27017"
+#     volumes:
+#       - mongo-data:/data/db
 
-volumes:
-  mongo-data:
+# volumes:
+#   mongo-data:
