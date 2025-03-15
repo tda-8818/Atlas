@@ -1,0 +1,26 @@
+
+
+Embedding is not suitable because tasks are shared across a group, so therefore we will focus on referencing 
+
+================
+Project collection
+================
+
+{
+    
+}
+
+
+
+
+
+================
+User collection
+================
+
+{
+    "_id": ObjectId("userID123"),
+    "username": "sample_username",
+    "email": "sample_email@example.com"
+}
+
