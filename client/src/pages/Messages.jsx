@@ -1,6 +1,6 @@
 import React from 'react'
 import Navbar from '../components/Navbar'
-import './Messages.css'
+import './css/Messages.css'
 
 const Messages = () => {
     return (
