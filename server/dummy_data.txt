@@ -1,0 +1,59 @@
+Dummy data ::: NOT MEANT TO BE REAL JSON SCRIPT. DO NOT COPY PASTE AS ACTUAL CODE
+
+
+Project 0:
+
+	team_members: "Alice", "Bob", "Carol", "Dave"
+	project_admin_privileges: "Alice", "Bob" // referenced objectIDs to Alice and Bob
+	
+	
+
+User (Alice):
+  "_id": ObjectId("Alice"),     // Created by machine or us
+  "username": "Alice_username", // Created by User
+  "email": "Alice@example.com", // Created by User
+  "Alice's tasks": [
+    {
+      "task_id": ObjectId(),  // Created by machine or us
+      "title": "Finish MongoDB Schema",  // Created by User
+      "description": "Design a MongoDB schema for task management", // Created by User
+      "status": "in-progress", // Created by User
+      "priority": "high", // Created by User
+      "due_date": ISODate("2025-03-20T00:00:00Z"),  // Created by User, (format ISODate format for consistency)
+      "created_at": ISODate("2025-03-14T00:00:00Z")  // Created by machine or us (format ISODate format for consistency)
+    },
+    {
+      "task_id": ObjectId(), 
+      "title": "Write project documentation", // Created by User
+      "status": "pending", // Created by User
+      "priority": "medium", // Created by User
+	  "due_date": ISODate("2025-03-20T00:00:00Z"),  // Created by User, (format ISODate format for consistency)
+	  "created_at": ISODate("2025-03-14T00:00:00Z") // Created by machine or us (format ISODate format for consistency)
+    }
+  ]
+
+
+User (Bob):
+  "_id": ObjectId("Bob"),
+  "username": "Bob_username",
+  "email": "Bob@example.com",
+  "Bob's tasks": [
+    {
+      "task_id": ObjectId(),
+      "title": "Finish Frontend",
+      "description": "Write HTML and CSS for website",
+      "status": "in-progress",
+      "priority": "high",
+      "due_date": ISODate("2025-03-20T00:00:00Z"),
+      "created_at": ISODate("2025-03-14T00:00:00Z")
+    },
+    {
+      "task_id": ObjectId(),
+      "title": "Do research on nodeJS",
+      "status": "pending",
+      "priority": "medium",
+	  "due_date": ISODate("2025-03-20T00:00:00Z"),
+	  "created_at": ISODate("2025-03-14T00:00:00Z")
+    }
+  ]
+	

@@ -1,26 +1,63 @@
 
+//************************************************************************************************
+//THE COLLECTIONS IN THIS FILE IS MEANT TO BE PROPER JSON. PLEASE FORMAT COLLECTIONS APPROPRIATELY
+//************************************************************************************************
 
-Embedding is not suitable because tasks are shared across a group, so therefore we will focus on referencing 
+//Embedding is not suitable because tasks are shared across a group, so therefore we will focus on referencing 
 
-================
-Project collection
-================
+//================
+//Project collection
+//================
 
 {
-    
+    "_id": ObjectId("projectID123"),
+    "project_title": "Project Title",
+    "description": "A sample project description"
+    "project_admin_privileges": [userID123],
+    "users": [
+        ObjectId("userID123"),
+        ObjectId("userID456")
+    ],
+    "tasks": [
+        ObjectId("task_id123"),
+        ObjectId("task_id456"),
+        ObjectId("task_id789")
+    ],
+    "created_at": ISODate("2025-03-14T00:00:00Z")
+
 }
 
 
-
-
-
-================
-User collection
-================
+//================
+//User collections
+//================
 
 {
     "_id": ObjectId("userID123"),
     "username": "sample_username",
+    "email": "sample_email@example.com",
+}
+
+{
+    "_id": ObjectId("userID456"),
+    "username": "sample_username",
     "email": "sample_email@example.com"
 }
 
+
+//================
+//Task collection
+//================
+
+/*
+there will need to be references from one user to the many tasks and references from the one task to the many users
+*/
+
+{
+  "_id": ObjectId("taskId123"),
+  "user_id": [ObjectId("userId123")], //Tasks can have a many-to-many relationship
+  "project_id": ObjectId("projectId123"),
+  "title": "Design Database Schema",
+  "status": "in-progress",
+  "priority": "high"
+}
