@@ -36,7 +36,9 @@
 
 {
     "_id": ObjectId("userID123"),
-    "username": "sample_username",
+    "first_name": "sample_first_name1",
+    "last_name": "sample_last_name1",
+    "username": "sample_username1",
     "email": "sample_email@example.com",
 }
 
