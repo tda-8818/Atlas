@@ -72,11 +72,11 @@ const Login = () => {
                 error={errors.password ? errors.password.message : ""}
               />
 
-              <Button
+              {/* <Button
                 type='submit'
                 label='Submit'
                 className='w-full h-10 bg-blue-700 text-white rounded-full'
-              />
+              /> */}
             </div>
           </form>
         </div>
