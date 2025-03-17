@@ -1,6 +1,8 @@
 
 //************************************************************************************************
 //THE COLLECTIONS IN THIS FILE IS MEANT TO BE PROPER JSON. PLEASE FORMAT COLLECTIONS APPROPRIATELY
+// https://drawsql.app/teams/cs2-2/diagrams/example see diagram for basic visual repr. 
+//SUPER SCUFFED SO PLEASE REVIEW AND SEE IF SOMETHING WENT HORRIBLY WRONG  ^^
 //************************************************************************************************
 
 //Embedding is not suitable because tasks are shared across a group, so therefore we will focus on referencing 
