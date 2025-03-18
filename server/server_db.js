@@ -35,9 +35,10 @@ async function main() {
     const client = new MongoClient(MONGO_URI);
 
     try {
-
+        
         await client.connect(); 
         await listDatabases(client);
+        
  
     } catch (e)
     {

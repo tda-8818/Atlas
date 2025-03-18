@@ -5,7 +5,8 @@ Project 0:
 
 	team_members: "Alice", "Bob", "Carol", "Dave"
 	project_admin_privileges: "Alice", "Bob" // referenced objectIDs to Alice and Bob
-	
+  description: "A project for a Task Management System"
+	created_at: new Date() // create date on initialised
 	
 
 User (Alice):
@@ -14,7 +15,7 @@ User (Alice):
   "email": "Alice@example.com", // Created by User
   "Alice's tasks": [
     {
-      "task_id": ObjectId(),  // Created by machine or us
+      "task_id": ObjectId(123),  // Created by machine or us
       "title": "Finish MongoDB Schema",  // Created by User
       "description": "Design a MongoDB schema for task management", // Created by User
       "status": "in-progress", // Created by User
@@ -39,7 +40,7 @@ User (Bob):
   "email": "Bob@example.com",
   "Bob's tasks": [
     {
-      "task_id": ObjectId(),
+      "task_id": ObjectId(124),
       "title": "Finish Frontend",
       "description": "Write HTML and CSS for website",
       "status": "in-progress",
@@ -50,6 +51,7 @@ User (Bob):
     {
       "task_id": ObjectId(),
       "title": "Do research on nodeJS",
+      "description": "" // Empty description (Make sure all data is safe to be initialised to null or nothing)
       "status": "pending",
       "priority": "medium",
 	  "due_date": ISODate("2025-03-20T00:00:00Z"),
