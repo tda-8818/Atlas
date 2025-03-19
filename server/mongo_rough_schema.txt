@@ -1,0 +1,95 @@
+{
+  // Users Collection
+  "users": {
+    "_id": "ObjectId", // Primary Key
+    "username": "string",
+    "email": "string",
+    "password": "string (hashed & salted)",
+    "role": "string (e.g., admin, manager, user)",
+    "permissions": "array of strings (e.g., ["create_task", "edit_task", "delete_task"])",
+    "profile": {
+      "fullName": "string",
+      "avatar": "string (URL)",
+      "settings": {
+        "notification": "boolean",
+        "accessibility": "object",
+        "theme": "string"
+      }
+    },
+    "createdAt": "Date",
+    "updatedAt": "Date"
+  },
+  
+  // Tasks Collection (Many-to-Many Relationship with Users, One-to-Many with Projects)
+  "tasks": {
+    "_id": "ObjectId", // Primary Key
+    "title": "string",
+    "description": "string",
+    "checkpoints": [
+      {
+        "title": "string",
+        "completed": "boolean"
+      }
+    ],
+    "assignedTo": ["ObjectId (user reference)"], // Many users can be assigned to a task
+    "createdBy": "ObjectId (user reference)", // User who created the task
+    "projectId": "ObjectId (project reference)", // One-to-Many relationship (one project -> many tasks)
+    "priority": "string (e.g., high, medium, low)",
+    "status": "string (e.g., pending, in progress, completed)",
+    "progress": "number (0-100)",
+    "dueDate": "Date",
+    "reminders": [
+      {
+        "date": "Date",
+        "notified": "boolean"
+      }
+    ],
+    "createdAt": "Date",
+    "updatedAt": "Date"
+  },
+  
+  // Projects Collection (One-to-Many Relationship with Tasks, Many-to-Many with Users)
+  "projects": {
+    "_id": "ObjectId", // Primary Key
+    "project_title": "string",
+    "description": "string",
+    "project_admin_privileges": ["ObjectId (user reference)"], // Admin users of the project
+    "users": ["ObjectId (user reference)"], // Many users can be part of the project
+    "tasks": ["ObjectId (task reference)"], // A project can have multiple tasks
+    "createdAt": "Date"
+  },
+  
+  // Messages Collection (One-to-One Relationship Between Users for Private Messages)
+  "messages": {
+    "_id": "ObjectId", // Primary Key
+    "sender": "ObjectId (user reference)", // One user sends the message
+    "receiver": "ObjectId (user reference)", // One user receives the message
+    "content": "string",
+    "timestamp": "Date",
+    "read": "boolean"
+  },
+  
+  // Notifications Collection (One-to-Many Relationship Between Users and Notifications)
+  "notifications": {
+    "_id": "ObjectId", // Primary Key
+    "userId": "ObjectId (user reference)", // Each notification belongs to a specific user
+    "message": "string",
+    "taskId": "ObjectId (task reference, optional)", // Can be linked to a specific task
+    "read": "boolean",
+    "timestamp": "Date"
+  },
+  
+  // Settings Collection (One-to-One Relationship Between Users and Their Settings)
+  "settings": {
+    "_id": "ObjectId", // Primary Key
+    "userId": "ObjectId (user reference)", // Each user has one settings document
+    "notificationSettings": {
+      "email": "boolean",
+      "push": "boolean"
+    },
+    "interfaceCustomization": {
+      "theme": "string",
+      "calendarView": "string (e.g., gantt, weekly, monthly)"
+    }
+  }
+}
