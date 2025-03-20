@@ -62,7 +62,7 @@ const Login = () => {
                 error={errors.email ? errors.email.message : ""}
               />
               <Textbox
-                placeholder='your password'
+                placeholder='Password'
                 type='password'
                 name='password'
                 label='Password'
