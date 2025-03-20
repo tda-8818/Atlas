@@ -1,20 +1,15 @@
-import React from 'react'
-import './Button.css'
-import { Link } from 'react-router-dom'
+import React from 'react';
 
-const STYLES = ['btn--primary', 'btn--outline'];
-
-const SIZES = ['btn--medium', 'btn--large'];
-
-export const Button = ({children, type, onClick, buttonStyle, buttonSize}) => {
-    const checkButtonStyle = STYLES.includes(buttonStyle) ? buttonStyle : STYLES[0];
-    const checkButtonSize = SIZES.includes(buttonSize) ? buttonSize : SIZES[0];
+const Button = ({ label, onClick, type = 'button', className = '' }) => {
     return (
-        <Link to='/sign-up' className='btn-mobile'>
-            <button className={`btn ${checkButtonStyle} ${checkButtonSize}`} onClick={onClick} type={type}>
-                {children}
-            </button>
-        </Link>
-    )
-}
-export default Button; 
+        <button
+            type={type}
+            onClick={onClick}
+            className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 ${className}`}
+        >
+            {label}
+        </button>
+    );
+};
+
+export default Button;

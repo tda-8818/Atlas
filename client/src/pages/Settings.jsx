@@ -1,6 +1,6 @@
 import React from 'react'
 import Navbar from '../components/Navbar'
-import './Settings.css'
+import './css/Settings.css'
 
 const Settings = () => {
     return (

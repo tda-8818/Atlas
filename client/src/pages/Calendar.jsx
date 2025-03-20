@@ -1,6 +1,6 @@
 import React from 'react'
 import Navbar from '../components/Navbar'
-import './Calendar.css'
+import './css/Calendar.css'
 
 const Calendar = () => {
     return (
