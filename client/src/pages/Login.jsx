@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Textbox from "../components/Textbox";
-//import Button from "../components/Button";
+import Button from "../components/Button";
 //import { useSelector } from "react-redux";
 
 const Login = () => {
@@ -18,6 +18,7 @@ const Login = () => {
 
   const submitHandler = async (data) => {
     console.log("submit");
+    navigate("/home");
   };
 
   useEffect(() => {
@@ -73,11 +74,11 @@ const Login = () => {
                 error={errors.password ? errors.password.message : ""}
               />
 
-              {/* <Button
+              <Button
                 type='submit'
                 label='Submit'
                 className='w-full h-10 bg-blue-700 text-white rounded-full'
-              /> */}
+              />
             </div>
           </form>
         </div>
