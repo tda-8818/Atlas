@@ -7,8 +7,7 @@ import logo from "../assets/logo.png";
 //import { useSelector } from "react-redux";
 
 const Login = () => {
-  //const { user } = useSelector((state) => state.auth);
-  const {user } = "";
+  const { user } = useSelector((state) => state.auth);
   const {
     register,
     handleSubmit,
