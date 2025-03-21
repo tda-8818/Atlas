@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Textbox from "../components/Textbox";
 import Button from "../components/Button";
+import logo from "../assets/logo.png";
 //import { useSelector } from "react-redux";
 
 const Login = () => {
@@ -31,8 +32,9 @@ const Login = () => {
         {/* left side */}
         <div className='h-full w-full lg:w-2/3 flex flex-col items-center justify-center'>
           <div className='w-full md:max-w-lg 2xl:max-w-3xl flex flex-col items-center justify-center gap-5 md:gap-y-10 2xl:-mt-20'>
+            <img src={logo} alt="Logo" className="rounded-full w-32 h32"/>
             <p className='flex flex-col gap-0 md:gap-4 text-4xl md:text-6xl 2xl:text-7xl font-black text-center text-[#1B4965]'>
-              <span>Task Manager</span>
+              <span>UniFlow</span>
             </p>
           </div>
         </div>
@@ -50,7 +52,7 @@ const Login = () => {
              
             </div>
 
-            <div className='flex flex-col gap-y-5'>
+            <div className='flex flex-col gap-y-4'>
               <Textbox
                 placeholder='email@example.com'
                 type='email'
@@ -77,7 +79,7 @@ const Login = () => {
               <Button
                 type='submit'
                 label='Submit'
-                className='w-full h-10 bg-blue-700 text-white rounded-full'
+                className='w-full h-10 bg-[#2596be] text-white rounded-full'
               />
             </div>
           </form>
