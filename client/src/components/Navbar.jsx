@@ -1,97 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import './Navbar.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faTimes, faCircleUser } from '@fortawesome/free-solid-svg-icons';
+import React from 'react';
+import logoName from '../assets/logoName.png';
+import Button from './Button';
 
 const Navbar = () => {
-    const [click, setClick] = useState(false);
-    const [title, setTitle] = useState(document.title);
-    const location = useLocation();
-
-    const handleClick = () => setClick(!click);
-    const closeMobileMenu = () => setClick(false);
-
-    useEffect(() => {
-        const updateTitle = () => {
-            const path = location.pathname;
-            let newTitle = 'Task Management System'; // Default title
-
-            switch (path) {
-                case '/':
-                    newTitle = 'Home';
-                    break;
-                case '/Calendar':
-                    newTitle = 'Calendar';
-                    break;
-                case '/Gantt':
-                    newTitle = 'Gantt Chart';
-                    break;
-                case '/Messages':
-                    newTitle = 'Messages';
-                    break;
-                case '/Settings':
-                    newTitle = 'Settings';
-                    break;
-                default:
-                    newTitle = 'Task Management System';
-            }
-
-            document.title = newTitle;
-            setTitle(newTitle);
-        };
-
-        updateTitle();
-    }, [location]);
-
     return (
-        <>
-            <nav className='navbar'>
-                <div className="menu-icon" onClick={handleClick}>
-                    <FontAwesomeIcon icon={click ? faTimes : faBars} />
-                </div>
-                <div className="Title">
-                    <h1>{title}</h1>
-                </div>
-                <div className="profile">
-                    <a href="/Settings" className='profile'>
-                        <FontAwesomeIcon icon={faCircleUser} />
+        <nav className="fixed bg-white h-full w-[15%] border-r border-[#141522]">
+            <div className="w-full">
+                <a href="/" className="block">
+                    <img src={logoName} alt="Logo" className="w-full" />
+                </a>
+            </div>
+            <ul className="p-0 m-0 mb-[60px] w-full">
+                <li >
+                    <a href="/">
+                        <Button label="Dashboard" className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px] my-[15px] hover:bg-[#f5f5f7] hover:text-black bg-white" />
                     </a>
-                </div>
-                <div className={click ? "navbar-container active" : "navbar-container"}>
-                    <div className="menu-icon" onClick={handleClick}>
-                        <FontAwesomeIcon icon={click ? faTimes : faBars} />
-                    </div>
-                    <ul className={click ? "nav-menu active" : "nav-menu"}>
-                        <li className='nav-item'>
-                            <a href="/" className='nav-links' onClick={closeMobileMenu}>
-                                Home
-                            </a>
-                        </li>
-                        <li className='nav-item'>
-                            <a href="/Calendar" className='nav-links' onClick={closeMobileMenu}>
-                                Calendar
-                            </a>
-                        </li>
-                        <li className='nav-item'>
-                            <a href="/Gantt" className='nav-links' onClick={closeMobileMenu}>
-                                Gantt Chart
-                            </a>
-                        </li>
-                        <li className='nav-item'>
-                            <a href="/Messages" className='nav-links-mobile' onClick={closeMobileMenu}>
-                                Messages
-                            </a>
-                        </li>
-                        <li className='nav-item'>
-                            <a href="/Settings" className='nav-links-mobile' onClick={closeMobileMenu}>
-                                Settings
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-        </>
+                </li>
+                <li>
+                    <a href="/Calendar">
+                    <Button label="Calendar" className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px] my-[15px] :bg-[#f5f5f7] hover:text-black bg-white" />
+                    </a>
+                </li>
+                <li>
+                    <a href="/Gantt">
+                        <Button label="Gantt Chart" className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px] hover:bg-[#f5f5f7] hover:text-black bg-white" />
+                    </a>
+                </li>
+                <li>
+                    <a href="/Messages">
+                        <Button label="Messages" className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer" />
+                    </a>
+                </li>
+                <li className="list-none py-[15px] px-0 rounded-[6%] mx-[20px] my-[15px] hover:bg-[#f5f5f7]">
+                    <a href="/Settings" className="no-underline text-[#8E92BC] pl-[20px] hover:text-black">
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </nav>
     );
 };
 
