@@ -46,6 +46,11 @@ userSchema.pre(save, function(next) {
     });
 });
 
+/*
+The default name for an index is the concatenation of the indexed keys and each key's direction in the index (1 or -1) using underscores as a separator. 
+For example, an index created on { item : 1, quantity: -1 } has the name item_1_quantity_-1.
+*/
+userSchema.index({id: 1, username: 1, email}, {unique: true});
 
 const User = mongoose.model('User', userSchema);
 
