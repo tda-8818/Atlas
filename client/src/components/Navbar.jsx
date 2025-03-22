@@ -13,12 +13,12 @@ const Navbar = () => {
             <ul className="p-0 m-0 mb-[60px] w-full">
                 <li >
                     <a href="/">
-                        <Button label="Dashboard" className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px] my-[15px] hover:bg-[#f5f5f7] hover:text-black bg-white" />
+                        <Button label="Dashboard" className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer" />
                     </a>
                 </li>
                 <li>
                     <a href="/Calendar">
-                    <Button label="Calendar" className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px] my-[15px] :bg-[#f5f5f7] hover:text-black bg-white" />
+                        <Button label="Calendar" className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  :bg-[#f5f5f7] hover:text-black bg-white cursor-pointer" />
                     </a>
                 </li>
                 <li>
@@ -31,9 +31,9 @@ const Navbar = () => {
                         <Button label="Messages" className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer" />
                     </a>
                 </li>
-                <li className="list-none py-[15px] px-0 rounded-[6%] mx-[20px] my-[15px] hover:bg-[#f5f5f7]">
-                    <a href="/Settings" className="no-underline text-[#8E92BC] pl-[20px] hover:text-black">
-                        Settings
+                <li>
+                    <a href="/Settings">
+                        <Button label="Settings" className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer" />
                     </a>
                 </li>
             </ul>
