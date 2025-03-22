@@ -52,6 +52,6 @@ For example, an index created on { item : 1, quantity: -1 } has the name item_1_
 */
 userSchema.index({id: 1, username: 1, email}, {unique: true});
 
-const User = mongoose.model('User', userSchema);
+const UserModel = mongoose.model('User', userSchema);
 
-export default User;
+export default UserModel;
