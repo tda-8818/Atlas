@@ -46,6 +46,13 @@ userSchema.pre('save', function(next) {
     });
 });
 
+userSchema.methods.comparePassword = function(candidatePassword, cb) {
+    bcrypt.compare(candidatePassword, this.password, function(err, isMatch){
+        if (err) return cb(err);
+        cb(null, isMatch);
+    })
+}
+
 /*
 The default name for an index is the concatenation of the indexed keys and each key's direction in the index (1 or -1) using underscores as a separator. 
 For example, an index created on { item : 1, quantity: -1 } has the name item_1_quantity_-1.
