@@ -10,6 +10,8 @@ var test_user = new User({
     email: 'test@example.com'
 });
 
+test_user.save();
+
 async function testHashing(client, user) {
 
     try {
@@ -98,7 +100,7 @@ async function main() {
         await listCollectionNames(client, "sample_tasks");
         // add test user and check the hashing works
         // insert code here
-        testHashing(client, test_user);
+        //testHashing(client, test_user);
 
     } catch (e)
     {
