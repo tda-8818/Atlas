@@ -3,6 +3,7 @@
  */
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import Button from '../components/Button';
 
 const Signup = () => {
@@ -11,17 +12,20 @@ const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    // Handles form submission
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Handle signup logic here
-        console.log('Signup submitted', { firstName, lastName, email, password });
+        // Send a POST request to the backend API endpoint to create a new user
+        axios.post('http://localhost:5173/signup', { firstName, lastName, email, password })
+            .then(result => console.log(result))
+            .catch(err => console.error(err));
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="flex items-center justify-center min-h-screen bg-gray-100"> {/* centres signup form */}
             <div className="bg-white p-8 rounded shadow-md w-96">
                 <h2>Sign Up</h2>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit}> {/* calls handle submit here */}
                     <input
                         type="text"
                         placeholder="First Name"

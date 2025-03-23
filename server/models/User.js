@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 // https://mongoosejs.com/ READ THE DOCS
 
 
-SALT_HASH_FACTOR = 10;
+const SALT_HASH_FACTOR = 10;
 
 
 const userSchema = new mongoose.Schema({
@@ -23,7 +23,7 @@ The pre-save hook is executed just before a document is saved to the database.
 It’s commonly used for tasks such as data validation, generating timestamps, or modifying the document before saving.
 */
 
-userSchema.pre(save, function(next) {
+userSchema.pre('save', function(next) {
 
     // this ==> refer's to the user schema being saved into the mongodb
     var user = this;

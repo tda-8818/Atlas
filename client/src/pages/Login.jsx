@@ -3,22 +3,29 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Textbox from "../components/Textbox";
 import Button from "../components/Button";
-import logo from "../assets/logo.png";
-//import { useSelector } from "react-redux";
+import { useSelector } from "react-redux";
+import axious from "axios";
 
 const Login = () => {
-  const { user } = useSelector((state) => state.auth);
+  // 
+  const { user } = useSelector((state) => state.auth); // Get user from redux store
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm(); 
 
-  const navigate = useNavigate();
+  // use navigate hook to navigate from login to home page
+  const navigate = useNavigate(); 
 
-  const submitHandler = async (data) => {
-    console.log("submit");
-    navigate("/home");
+  // Handles form submission
+  const submitHandler = (e) => {
+    e.preventDefault();
+    // Send a POST request to the backend API endpoint to 
+    axios.post("http://localhost:5173/login", { email, password })
+    .then(result => console.log(result))
+    navigate("/home")
+    .catch(err => console.error(err));
   };
 
   useEffect(() => {
