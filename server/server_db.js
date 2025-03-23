@@ -1,5 +1,7 @@
 const { MongoClient, ExplainableCursor } = require('mongodb');
 //const mongoose = require('mongoose');
+const User = require("../server/models/User.js");
+
 
 async function listDatabases(client) {
     
@@ -46,6 +48,8 @@ async function listCollectionNames(client, dbName) {
         const collections = await db.listCollections().toArray();
         const collectionNames = collections.map(col => col.name);
         console.log(collectionNames);
+        console.log(User);
+
     }catch (error) 
     {
         console.error("Error listing collections:", error.message);
