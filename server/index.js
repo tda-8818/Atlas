@@ -8,7 +8,7 @@
 import express, { json } from 'express'; // Express.js used for creating the server
 import { connect } from 'mongoose'; // Mongoose used for connecting to MongoDB
 import cors from 'cors'; // CORS is a Connect/Express middleware for handling cross-origin requests.
-import User from "./models/User.js";
+import UserModel from "./models/User.js";
 
 // Create an Express server
 const app = express();
@@ -19,8 +19,7 @@ const port = 5001;
 app.use(cors());
 app.use(json()); // parse incoming JSON requests
 
-connect('mongodb://cs_02_taskmanagementsystem-mongo-1:27017/User');
-
+connect('mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/?retryWrites=true&w=majority&appName=CS02TaskManagementSystem');
 
 // login API endpoint - checks if email+password combination exists in the database
 app.post("/login", async (req, res) => {
