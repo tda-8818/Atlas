@@ -2,7 +2,7 @@ import User from "./models/User.js";
 import mongoose from 'mongoose';
 
 
-const MONGO_URI = "mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/sample_tasks?retryWrites=true&w=majority&appName=CS02TaskManagementSystem";
+const MONGO_URI = "mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/?retryWrites=true&w=majority&appName=CS02TaskManagementSystem";
 
 const test_user = new User({
     id: 12111111,

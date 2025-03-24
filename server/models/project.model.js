@@ -27,8 +27,6 @@ projectSchema.pre('deleteOne', {document: true, query: false}, async function (n
 
 })
 
-
-
 const Project = mongoose.model('project', projectSchema);
 
 export default Project;
