@@ -23,21 +23,33 @@ connect('mongodb://cs_02_taskmanagementsystem-mongo-1:27017/User');
 
 
 // login API endpoint - checks if email+password combination exists in the database
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
     const { email, password } = req.body;
-    User.findOne({ email: email, password: password })
-    .then(res.json(user))
-    .catch(err => res.status(400).json('Error: ' + err));
-    console.log(req.body);
-    res.send('Login route');
+    try {
+        const user = await UserModel.findOne({ email });
+        // check if user exists and password is correct
+        if (user && await bcrypt.compare(password, user.password)) {
+            res.json(user); // send user details if login is successful
+        }
+        else {
+            res.status(400).json('Invalid email or password');
+        }
+    } catch (error) {
+        res.status(400).json('Server error: ' + error);
+    }
 });
 
 // sign up API endpoint - creates a new user in the database using data from the request body
-app.post('/signup', (req, res) => {
-    User.create(req.body)
-    .then(user => res.json(user))
-    .catch(err => res.status(400).json('Error: ' + err));
-    console.log(req.body);
+app.post('/signup', async (req, res) => {
+    // hash the password before saving it to the database
+    try {
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const newUser = await UserModel.create({ ...req.body, password: hashedPassword });
+        res.json(newUser);
+    }
+    catch (error) {
+        res.status(400).json('Error: ' + error);
+    }
 });
 
 // Start the Express server

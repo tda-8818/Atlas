@@ -3,34 +3,48 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Textbox from "../components/Textbox";
 import Button from "../components/Button";
-import { useSelector } from "react-redux";
-import axious from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import axios from "axios";
 
+/**
+ * 
+ * @returns Login page
+ */
 const Login = () => {
-  // 
-  const { user } = useSelector((state) => state.auth); // Get user from redux store
+  //  
+  const { user } = useSelector((state) => state.auth); // Get user from redux store to check if user is already logged in
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm(); 
+  } = useForm(); // Use react-hook-form for form validation
 
   // use navigate hook to navigate from login to home page
   const navigate = useNavigate(); 
+  const dispatch = useDispatch(); // useDispatch hook to dispatch actions
 
-  // Handles form submission
-  const submitHandler = (e) => {
-    e.preventDefault();
-    // Send a POST request to the backend API endpoint to 
-    axios.post("http://localhost:5173/login", { email, password })
-    .then(result => console.log(result))
-    navigate("/home")
-    .catch(err => console.error(err));
+  // Handles form submission using async function
+  const submitHandler = async (data) => {
+    try {
+      // API endpoint for login
+      const response = await axios.post("http://localhost:5001/login", data);
+      // If login is successful, navigate to home page
+      if (response.data) {
+        // dispatch login action
+        dispatch({ type: "LOGIN", payload: response.data });
+        navigate("/home");
+      }
+    }
+    catch (error) {
+      console.error(error);
+      alert("Invalid email or password"); // Show error message to user
+    }
   };
 
+  // Redirect to home page if user is already logged in
   useEffect(() => {
     user && navigate("/home");
-  }, [user]);
+  }, [user, navigate]);
 
   return (
     <div className='w-full min-h-screen flex items-center justify-center flex-col lg:flex-row bg-[#F4F9F9]'>
@@ -83,10 +97,10 @@ const Login = () => {
               />
 
               <Button
-                type='submit'
-                label='Submit'
-                className='w-full h-10 bg-[#2596be] text-white rounded-full'
-              />
+                type='login'
+                label='Login'
+                className='w-full h-10 bg-blue-700 text-white rounded-full'
+               />
             </div>
           </form>
         </div>

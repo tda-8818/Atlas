@@ -8,12 +8,13 @@ import { Link, useNavigate } from 'react-router-dom';
  * @returns 
  */
 const UserAvatar = () => {
-    const { user } = useSelector((state) => state.auth);
+    const { user } = useSelector((state) => state.auth); // extract user from auth slice
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [isOpen, setIsOpen] = useState(false);
-    const [openPassword, setOpenPassword] = useState(false);
+    const [isOpen, setIsOpen] = useState(false); // control menu open state
+    const [openPassword, setOpenPassword] = useState(false); // handling password changes
     
+    // dispatch logout action and navigate to login page
     const handleLogout = () => {
         dispatch({ type: 'LOGOUT' });
         navigate('/login');
@@ -23,6 +24,7 @@ const UserAvatar = () => {
         <div>
             <Menu as='div' className='relative inline-block text-left'>
                 <div>
+                    {/* Avatar button */}
                     <MenuButton className='w-10 h-10 2x1:w-12 2x1:h-12 items-center justify-center rounded-full bg-gray-200'>
                         <span className='text-lg 2x1:text-xl font-semibold text-gray-700'>
                             {getInitials(user?.fullName)}
