@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Textbox from "../components/Textbox";
-import Button from "../components/Button";
+import {Button} from "@headlessui/react";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 

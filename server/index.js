@@ -9,6 +9,7 @@ import express, { json } from 'express'; // Express.js used for creating the ser
 import { connect } from 'mongoose'; // Mongoose used for connecting to MongoDB
 import cors from 'cors'; // CORS is a Connect/Express middleware for handling cross-origin requests.
 import UserModel from "./models/User.js";
+import bcrypt from 'bcrypt';
 
 // Create an Express server
 const app = express();
