@@ -1,36 +1,25 @@
 import React from 'react'
 import Navbar from '../components/Navbar'
-import './css/Home.css'
+
 
 const Home = () => {
     return (
     <>
-        <div>
-            <Navbar />
-        </div>
-        <h1>Welcome to FIT3162 Task Management Tool</h1>
-        <div className="container">
-            <div className="container-grid">
-                <div className="grid-item">
-                    <h2>Calendar</h2>
-                </div>
-                <div className="grid-item">
-                    <h2>Gantt Chart</h2>
-                </div>
-                <div className="grid-item">
-                    <h2>Tasks</h2>
-                </div>
-                <div className="grid-item">
-                    <h2>Messages</h2>
-                </div>
-                <div className="grid-item">
-                    <h2>Progress</h2>
-                </div>
-                <div className="grid-item">
-                    <h2>Reminders</h2>
+        <Navbar /> 
+        <div className="inline-block ml-[15%] w-[55%] h-[100vh]">
+            <div className="m-[35px]">
+                <div className="ml-[10px]">
+                <h1 className='font-bold text-[20px]'>Hi, Alice</h1>
+                <h2>Let's finish your task today</h2>
                 </div>
             </div>
-        </div>   
+        </div>
+        <div className="inline-block h-[100vh] w-[30%] bg-[#f5f5f7] float-right">
+            <div className="m-[40px] bg-white h-[20vh]">calendar</div>
+            <div className="m-[40px] bg-white h-[65vh]">
+                task today
+            </div>
+            </div>
     </>
     )
 }
