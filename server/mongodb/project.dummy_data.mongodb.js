@@ -2,6 +2,12 @@
 WARNING!!!
 RUNNING THIS FILE WILL RECREATE ALL OF THE SAMPLE DATA TO ITS ORIGINAL VERSION
 */
+use ("users");
+
+let userIds = db.users.find({}, { _id: 1 }).toArray().map(u => u._id);
+
+use ("tasks");
+let taskIds = db.tasks.find({project_id: 22222220}, { _id: 1 }).toArray().map(u => u._id);
 
 
 use ("projects");
@@ -15,8 +21,6 @@ then mongod will add the _id field and assign a unique ObjectId()
 for the document before inserting.
 */
 
-let userIds = db.users.find({}, { _id: 1 }).toArray().map(u => u._id);
-let taskIds = db.tasks.find({project_id: 22222220}, { _id: 1 }).toArray().map(u => u._id);
 
 // print(userIds);
 // print(taskIds);
