@@ -1,6 +1,5 @@
 import React from 'react';
 import logoName from '../assets/logoName.png';
-import Button from './Button';
 import { RxDashboard, RxCalendar } from "react-icons/rx";
 import { LuChartGantt, LuMessageSquareMore, LuSettings } from "react-icons/lu";
 
