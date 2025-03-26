@@ -3,10 +3,11 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 //import listPlugin from "@fullcalendar/list";
-//import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin from "@fullcalendar/interaction";
 import Navbar from '../components/Navbar'
 
 const Calendar = () => {
+    
     const [currentEvents, setCurrentEvents] = useState([]);
     const handleDateSelect = (selectInfo) => {
         const title = prompt("Please enter a new title for your event");            //CHANGE THIS FOR A CUSTOM POPUP
@@ -16,7 +17,7 @@ const Calendar = () => {
 
         if (title) {
             calendarApi.addEvent({
-                id: '${selected.dateStr}-${title}',
+                id: '${selectedInfo.dateStr}-${title}',
                 title,
                 start: selectInfo.startStr,
                 end: selectInfo.endStr,
@@ -36,20 +37,20 @@ const Calendar = () => {
             <div>
                 <Navbar />
             </div>
-            <div className="inline-block ml-[15%] w-[85%] h-full">
-                <div className="inline-block  w-[15%] h-[80vh]">
+            <div className="flex ml-[15%] w-[85%] h-full">
+                <div className="w-[15%] h-[84vh] bg-[#f5f5f7] p-[10px] m-[20px]">
                     <h1>Events</h1>
                     <ul>
                         {currentEvents.map((event) => (
-                            <li key={event.id}>
-                                {event.title} ({event.start.toISOString()} - {event.end.toISOString()})
+                            <li key={event.id} className="text-[15px] w-[80%] bg-[#437eb4] p-[10px] m-[10px]">
+                               <button>{event.title} </button> 
                             </li>
                         ))}
                     </ul>
                 </div>
-                <div className="inline-block  h-[80vh] w-[70%]">
+                <div className="mt-[20px] h-full w-[100vh]">
                     <FullCalendar
-                        plugins={[dayGridPlugin, timeGridPlugin]}
+                        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                         headerToolbar={{
                             left: "prev,next today",
                             center: "title",
@@ -66,6 +67,13 @@ const Calendar = () => {
                         // eventContent={renderEventContent} // custom render function
                         eventClick={handleEventClick}
                         eventsSet={(events) => setCurrentEvents(events)} // called after events are initialized/added/changed/removed
+                        initialEvents={
+                            [
+                                { id: 1, title: "event 1", date: "2025-03-01" },
+                                { id: 2, title: "event 2", date: "2025-03-02" },
+                                { id: 3, title: "event 3", date: "2025-03-03" }
+                            ]
+                        }
                     />
                 </div>
             </div>
