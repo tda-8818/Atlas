@@ -1,30 +1,32 @@
+import { Routes, Route, useLocation, Navigate, Outlet } from "react-router-dom";
+import { useSelector } from "react-redux";
+import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Calendar from "./pages/Calendar";
 import Gantt from "./pages/Gantt";
 import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
-import { Routes, Route, useLocation } from "react-router-dom";
-import Signup from "./pages/Signup";
 
-// function Layout (){
-//   const user = ""
-//   const location = useLocation()
-//   return user ? (
-//     <div className="w-full h-screen flex flex-col md:flex-row">
-//       <div className='w-1/5 h-screen bg-white sticky top-0 hidden md:block'>
-//       {/* <Sidebar/> */}
-//       </div>
+function Layout (){
+  const {user} = useSelector((state) => state.auth);
+  const location = useLocation();
+  
+  return user ? (
+    <div className="w-full h-screen flex flex-col md:flex-row">
+      <div className='w-1/5 h-screen bg-white sticky top-0 hidden md:block'>
+      {/* <Sidebar/> */}
+      </div>
 
-//       <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto">
 
-//       </div>
+      </div>
 
-//     </div>
-//   ) : (
-//     <Navigate to='/log-in' state={{ from: location }} replace/>
-//   )
-// }
+    </div>
+  ) : (
+    <Navigate to='/log-in' state={{ from: location }} replace/>
+  )
+}
 
 // function App() {
 //   return (

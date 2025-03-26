@@ -1,9 +1,45 @@
-const { MongoClient, ExplainableCursor } = require('mongodb');
-//const mongoose = require('mongoose');
+import { MongoClient } from "mongodb";
+import User from "./models/User.js";
+
+var test_user = new User({
+    id: 12111111,
+    firstname: 'TestUser',
+    lastname: 'plzwork',
+    username: 'testuser',
+    password: 'password123',
+    email: 'test@example.com'
+});
+
+test_user.save();
+
+async function testHashing(client, user) {
+
+    try {
+        await user.save();
+        console.log("user saved.");
+
+        const user_fetched = await User.findOne({username:'testuser'});
+        if (!user) throw new Error("User not found.");
+        
+        user.comparePassword('password123', function(err, isMatch) {
+            if (err) throw err;
+            console.log("password123: ", isMatch);
+        })
+
+        user.comparePassword('WrongPassword', function(err, isMatch) {
+            if (err) throw err;
+            console.log('WrongPassword:', isMatch); // Expected output: false
+        });
+
+    } catch (error) {
+        console.error("Error", error);
+    }
+};
+
 
 async function listDatabases(client) {
     
-    databasesList = await client.db().admin().listDatabases();
+    const databasesList = await client.db().admin().listDatabases();
 
     console.log("Databases:");
     databasesList.databases.forEach(db => console.log(` - ${db.name}`));
@@ -46,6 +82,7 @@ async function listCollectionNames(client, dbName) {
         const collections = await db.listCollections().toArray();
         const collectionNames = collections.map(col => col.name);
         console.log(collectionNames);
+
     }catch (error) 
     {
         console.error("Error listing collections:", error.message);
@@ -61,6 +98,9 @@ async function main() {
         await client.connect(); 
         await listDatabases(client);
         await listCollectionNames(client, "sample_tasks");
+        // add test user and check the hashing works
+        // insert code here
+        //testHashing(client, test_user);
 
     } catch (e)
     {

@@ -26,6 +26,7 @@
     "@headlessui/react": "^2.2.0",
     "@reduxjs/toolkit": "^2.6.1",
     "@tailwindcss/vite": "^4.0.14",
+    "axios": "^1.8.4",
     "clsx": "^2.1.1",
     "clx": "^1.0.0",
     "moment": "^2.30.1",

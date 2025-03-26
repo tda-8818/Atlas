@@ -22,7 +22,7 @@ services:
       - ./server:/app
       - /app/node_modules
     environment:
-      - MONGO_URI=mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/?retryWrites=true&w=majority&appName=CS02TaskManagementSystem #Change taskmanager to your database name.
+      - MONGO_URI=mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/?retryWrites=true&w=majority&appName=CS02TaskManagementSystem
     depends_on:
       - mongo
   mongo:
