@@ -18,17 +18,25 @@ const Signup = () => {
     } = useForm(); // Use react-hook-form
 
     const password = watch("password", ""); // Watch password input
-    const confirmPassword = watch("confirmPassword", ""); // Watch confirm password input
-
+    
     // Handles form submission
     const onSubmit = async (data) => {
+        console.log(data);
         try {
             // API endpoint for sign up
             const response = await axios.post("http://localhost:5001/signup", data);
             console.log(response.data);
-        } catch (error) {
-            console.error(error);
-            setError("Error signing up. Please try again.");
+        } catch (axiosError) {
+            if (axiosError.response && axiosError.response.status === 400) {
+                // Check if the error is a duplicate username error
+                if (axiosError.response.data.message === 'Username already exists') {
+                    setError('Username already exists. Please choose a different username.');
+                } else {
+                    setError(axiosError.response.data.message || 'Signup failed. Please try again.');
+                }
+            } else {
+                setError('Network error. Please try again.');
+            }
         }
     };
     
@@ -85,18 +93,7 @@ const Signup = () => {
                         <ErrorMessage message={errors.password?.message} />
                     
                     
-                        <Input
-                            type="password"
-                            id="confirmPassword"
-                            placeholder="Confirm Password"
-                            {...register("confirmPassword", {
-                                required: "Confirm password is required!",
-                                validate: (value) => value === password || "Passwords do not match",
-                            })}
-                            className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
-                        />
-                        <ErrorMessage message={errors.confirmPassword?.message} />
-                    
+                        
                     {error && (
                         <Transition
                             show={!!error}

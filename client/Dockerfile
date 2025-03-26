@@ -9,6 +9,7 @@ RUN npm install
 COPY client/ .
 
 RUN npm run build
+RUN npm install @tailwindcss/vite
 
 EXPOSE 4173
 

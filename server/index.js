@@ -1,13 +1,11 @@
 /**
  * index.js is the entry point of the server. It is the file that is run when you start the server.
- * It is responsible for creating the server, connecting to the database, and defining the routes.
- * Handles API endpoints for user login and signup.
+ * - It is responsible for creating the server, connecting to the database, and defining the routes.
+ * - Handles API endpoints for user login and signup.
  */
-
-// Importing required modules
-import express, { json } from 'express'; // Express.js used for creating the server
-import { connect } from 'mongoose'; // Mongoose used for connecting to MongoDB
+import express, {json} from 'express'; // Express.js used for creating the server
 import cors from 'cors'; // CORS is a Connect/Express middleware for handling cross-origin requests.
+import { connect } from 'mongoose'; // Mongoose used for connecting to MongoDB
 import UserModel from "./models/User.js";
 import bcrypt from 'bcrypt';
 
@@ -17,10 +15,12 @@ const port = 5001;
 
 // Middleware set up:
 
-app.use(cors());
+app.use(cors()); 
 app.use(json()); // parse incoming JSON requests
 
-connect('mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/?retryWrites=true&w=majority&appName=CS02TaskManagementSystem');
+// Connect to the MongoDB database
+const MONGO_URI = "mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/?retryWrites=true&w=majority&appName=CS02TaskManagementSystem";
+connect(MONGO_URI);
 
 // login API endpoint - checks if email+password combination exists in the database
 app.post("/login", async (req, res) => {
@@ -41,10 +41,20 @@ app.post("/login", async (req, res) => {
 
 // sign up API endpoint - creates a new user in the database using data from the request body
 app.post('/signup', async (req, res) => {
-    // hash the password before saving it to the database
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const newUser = await UserModel.create({ ...req.body, password: hashedPassword });
+        console.log(req.body);
+        // check if user already exists using unqiue email
+        // const existingUser = await UserModel.findOne({ email: req.body.email });
+        // if (existingUser) {
+        //     return res.status(400).json('User already exists');
+        // }
+
+        // hash the password before saving it to the database
+        //const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        
+        // create a new user in the database
+        const newUser = await UserModel(req.body);
+        newUser.save();
         res.json(newUser);
     }
     catch (error) {
