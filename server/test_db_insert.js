@@ -2,16 +2,7 @@ import User from "./models/User.js";
 import mongoose from 'mongoose';
 
 
-const MONGO_URI = "mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/?retryWrites=true&w=majority&appName=CS02TaskManagementSystem";
-
-const test_user = new User({
-    id: 12111111,
-    firstname: 'TestUser',
-    lastname: 'plzwork',
-    username: 'testuser',
-    password: 'password123',
-    email: 'test@example.com'
-});
+const MONGO_URI = "mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/users?retryWrites=true&w=majority&appName=CS02TaskManagementSystem";
 
 mongoose.connect(MONGO_URI)
 .then(() => {
@@ -19,10 +10,8 @@ mongoose.connect(MONGO_URI)
     
     // Create a test user
     const test_user = new User({
-      id: 12111111,
-      firstname: 'TestUser',
-      lastname: 'plzwork',
-      username: 'testuser',
+      firstName: 'TestUser',
+      lastName: 'plzwork',
       password: 'password123',
       email: 'test@example.com',
     });

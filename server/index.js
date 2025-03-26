@@ -19,7 +19,7 @@ app.use(cors());
 app.use(json()); // parse incoming JSON requests
 
 // Connect to the MongoDB database
-const MONGO_URI = "mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/?retryWrites=true&w=majority&appName=CS02TaskManagementSystem";
+const MONGO_URI = "mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/users?retryWrites=true&w=majority&appName=CS02TaskManagementSystem";
 connect(MONGO_URI);
 
 // login API endpoint - checks if email+password combination exists in the database
@@ -39,9 +39,13 @@ app.post("/login", async (req, res) => {
     }
 });
 
+// const dbName = "users";
+// const db = connection.useDb(dbName);
+
 // sign up API endpoint - creates a new user in the database using data from the request body
 app.post('/signup', async (req, res) => {
     try {
+        
         console.log(req.body);
         // check if user already exists using unqiue email
         // const existingUser = await UserModel.findOne({ email: req.body.email });
@@ -54,7 +58,12 @@ app.post('/signup', async (req, res) => {
         
         // create a new user in the database
         const newUser = await UserModel(req.body);
-        newUser.save();
+        await newUser.save().then(() => {
+            console.log('User saved to user database');
+          })
+          .catch((err) => {
+            console.error('Error saving user:', err);
+          });
         res.json(newUser);
     }
     catch (error) {
