@@ -35,7 +35,7 @@ const Signup = () => {
                     setError(axiosError.response.data.message || 'Signup failed. Please try again.');
                 }
             } else {
-                setError('Network error. Please try again.');
+                setError('Network error. Please try again.', axiosError.response.data.message);
             }
         }
     };

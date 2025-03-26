@@ -48,10 +48,10 @@ app.post('/signup', async (req, res) => {
         
         console.log(req.body);
         // check if user already exists using unqiue email
-        // const existingUser = await UserModel.findOne({ email: req.body.email });
-        // if (existingUser) {
-        //     return res.status(400).json('User already exists');
-        // }
+        const existingUser = await UserModel.findOne({ email: req.body.email });
+        if (existingUser) {
+            return res.status(400).json('User already exists');
+        }
 
         // hash the password before saving it to the database
         //const hashedPassword = await bcrypt.hash(req.body.password, 10);
