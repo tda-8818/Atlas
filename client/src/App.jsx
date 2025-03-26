@@ -53,6 +53,7 @@ function App() {
       <Route path='/login' element={<Login/>}/>
       <Route path='/home' element={<Home/>}/>
       <Route path='/calendar' element={<Calendar/>}/>
+      <Route path='/gantt' element={<Gantt/>}/>
     </Routes>
   
   );
