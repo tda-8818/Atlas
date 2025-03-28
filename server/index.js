@@ -3,7 +3,7 @@
  * - It is responsible for creating the server, connecting to the database, and defining the routes.
  * - Handles API endpoints for user login and signup.
  */
-import express, {json} from 'express'; // Express.js used for creating the server
+import express, {json, response} from 'express'; // Express.js used for creating the server
 import cors from 'cors'; // CORS is a Connect/Express middleware for handling cross-origin requests.
 import { connect } from 'mongoose'; // Mongoose used for connecting to MongoDB
 import UserModel from "./models/User.js";
@@ -17,7 +17,7 @@ const port = 5001;
 
 app.use(cors()); 
 app.use(json()); // parse incoming JSON requests
-
+app.use(express.json());
 // Connect to the MongoDB database
 const MONGO_URI = "mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/users?retryWrites=true&w=majority&appName=CS02TaskManagementSystem";
 connect(MONGO_URI);
@@ -70,6 +70,28 @@ app.post('/signup', async (req, res) => {
         res.status(400).json('Error: ' + error);
     }
 });
+
+// sign up API endpoint - creates a new user in the database using data from the request body
+app.post('/calendar', async (req, res) => {
+    try { 
+        console.log(req.body);
+    }
+    catch (error) {
+        res.status(400).json('Error: ' + error);
+    }
+});
+
+app.get('/users', async (req, res) => {
+    try {
+        const user = await UserModel.find(); // Fetch all tasks
+        console.log("Fetched users:", user); // Log tasks to the console
+        res.json(user); // Send response
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).json({ message: 'Error fetching user', error });
+    }
+});
+
 
 // Start the Express server
 app.listen(port, () => {

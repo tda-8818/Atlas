@@ -5,25 +5,38 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 //import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import Navbar from '../components/Navbar'
+import axios from "axios";
 
 const Calendar = () => {
     
     const [currentEvents, setCurrentEvents] = useState([]);
-    const handleDateSelect = (selectInfo) => {
+    const handleDateSelect = async (selectInfo) => {
         const title = prompt("Please enter a new title for your event");            //CHANGE THIS FOR A CUSTOM POPUP
         const calendarApi = selectInfo.view.calendar;
 
         calendarApi.unselect(); // clear date selection
 
         if (title) {
-            calendarApi.addEvent({
-                id: '${selectedInfo.dateStr}-${title}',
+            const newEvent = {
                 title,
                 start: selectInfo.startStr,
                 end: selectInfo.endStr,
                 allDay: selectInfo.allDay,
+            }
+            calendarApi.addEvent({
+                id: '${selectedInfo.dateStr}-${title}',
+                ...newEvent,
             });
+                    // Try to send event data to the backend.
+            try {
+                const response = await axios.post("http://localhost:5001/Calendar", newEvent);
+                console.log(response.newEvent)
+            } catch (error) {
+                console.log(error);
+            }
         }
+
+
     };
     const handleEventClick = (selected) => {
         if (window.confirm(`Are you sure you want to delete the event '${selected.event.title}'`)) {        //CHANGE THIS FOR A CUSTOM POPUP
