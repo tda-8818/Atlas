@@ -28,13 +28,23 @@ import Project from '../models/project.model.js';
 export const getTask = async (req, res) => {
     try {
 
-        const { due_date } = req.query;
+        const { due_date } = req.body;
 
         console.log("req.params is:", due_date);  // Debugging log
         res.status(200).json(due_date);
     } catch (error) {
         console.error("Error fetching tasks:", error);
         res.status(500).json({ message: "Error fetching tasks", error });
+    }
+};
+
+export const createEvent = async (req, res) => {
+    try {
+        console.log("Received event data:", req.body); // Debugging log
+        res.status(200).json({ message: "Event received successfully", event: req.body });
+    } catch (error) {
+        console.error("Error processing event:", error);
+        res.status(500).json({ message: "Error processing event", error });
     }
 };
 
