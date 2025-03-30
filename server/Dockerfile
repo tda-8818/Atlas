@@ -8,8 +8,7 @@ WORKDIR /app
 COPY server/package*.json ./
 
 # Install dependencies
-RUN npm install
-RUN npm install cors
+RUN npm install nodemon cors bcryptjs jsonwebtoken express mongoose dotenv
 
 # Copy the rest of the application code
 COPY server/ .
@@ -18,4 +17,4 @@ COPY server/ .
 EXPOSE 5001
 
 # Start the application
-CMD ["npm", "run", "dev"] 
+CMD ["nodemon", "index.js"]

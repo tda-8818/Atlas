@@ -90,6 +90,18 @@ const Signup = () => {
                             className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
                         />
                         <ErrorMessage message={errors.password?.message} />
+
+                        <Input
+                        type="password"
+                        id="confirmPassword"
+                        placeholder="Confirm Password"
+                        {...register('confirmPassword', {
+                            validate: (value) => value === password || 'Passwords do not match.',
+                        })}
+                        className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
+                        />
+                        <ErrorMessage message={errors.confirmPassword?.message} />
+                        
                     
                     
                         
