@@ -3,13 +3,13 @@ import { Fragment, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaUser, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
 
 /**
  * Gets the initials given full name.
  * @param {} fullName 
  */
-const getInitials = (fullName) => {
+export const getInitials = (fullName) => {
     // check if its a string
     if (typeof fullName !== 'string' || !fullName) {
         return '';
@@ -35,14 +35,14 @@ const UserAvatar = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await axios.get(`http://localhost:5001/user/${user.id}`);
+                const response = await axios.get('api/user/${user._id}'); // fetch user data from API
                 setUserData(response.data);
             } catch (error) {
                 console.error('Error fetching user data:', error); 
             }
         };
 
-        if (user) { // check if user is logged in
+        if (user && user._id) { // check if user is logged in
             // fetch user data from API
             fetchUserData();
         }
@@ -61,10 +61,13 @@ const UserAvatar = () => {
             <Menu as='div' className='absolute bottom-4 left-4 w-10 h-10 2x1:w-12 2x1:h-12'>
                 <div>
                     {/* Avatar button */}
-                    <MenuButton className='w-10 h-10 2x1:w-12 2x1:h-12 items-center justify-center rounded-full bg-gray-200'>
-                        <span className='text-lg 2x1:text-xl font-semibold text-gray-700'>
-                            {getInitials(user?.fullName)}
-                        </span>
+                    <MenuButton className='w-fit h-fit 2x1:w-12 2x1:h-12 items-center justify-center rounded-full bg-gray-200'>
+                        {/* TODO: display initials*/}
+                        {/* <span className='text-lg 2x1:text-xl font-semibold text-gray-700'>
+                            {getInitials(userData?.fullName)}
+                        </span> */}
+                        <FaUserCircle className="w-10 h-10 text-2xl text-gray-700" /> {/* Use the icon */}
+                        
                     </MenuButton>
                 </div>
                 

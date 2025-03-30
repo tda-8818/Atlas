@@ -10,6 +10,7 @@ import UserModel from "./models/User.js";
 import bcrypt from 'bcrypt';
 import path from 'path'; // Path module provides utilities for working with file and directory paths
 import { fileURLToPath } from 'url'; // fileURLToPath is used to convert a URL to a file path
+//import userController from './userController.js';
 
 // Create an Express server
 const app = express();
@@ -24,14 +25,6 @@ const __dirname = path.dirname(__filename);
 
 app.use(cors()); 
 app.use(json()); // parse incoming JSON requests
-
-// Serve static files from the React build directory
-app.use(express.static(path.join(__dirname, 'dist')));
-
-// All other GET requests should return the index.html file
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
 
 // Connect to the MongoDB database
 const MONGO_URI = "mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/users?retryWrites=true&w=majority&appName=CS02TaskManagementSystem";
@@ -90,3 +83,29 @@ app.post('/signup', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server is running on port: ${port}`);
 });
+
+
+const router = express.Router();
+
+outer.get('/user/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const user = await UserModel.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const userData = {
+            fullName: `${user.firstName} ${user.lastName}`,
+        };
+
+        console.log('API Response:', userData); // Log the data
+        res.json(userData);
+    } catch (error) {
+        console.error('API Error:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+export default router;
