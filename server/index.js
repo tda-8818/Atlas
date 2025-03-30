@@ -8,15 +8,30 @@ import cors from 'cors'; // CORS is a Connect/Express middleware for handling cr
 import { connect } from 'mongoose'; // Mongoose used for connecting to MongoDB
 import UserModel from "./models/User.js";
 import bcrypt from 'bcrypt';
+import path from 'path'; // Path module provides utilities for working with file and directory paths
+import { fileURLToPath } from 'url'; // fileURLToPath is used to convert a URL to a file path
 
 // Create an Express server
 const app = express();
 const port = 5001;
 
+// Get the current directory using import.meta.url
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
 // Middleware set up:
 
 app.use(cors()); 
 app.use(json()); // parse incoming JSON requests
+
+// Serve static files from the React build directory
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// All other GET requests should return the index.html file
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
 // Connect to the MongoDB database
 const MONGO_URI = "mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/users?retryWrites=true&w=majority&appName=CS02TaskManagementSystem";
