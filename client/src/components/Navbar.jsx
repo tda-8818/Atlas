@@ -2,6 +2,7 @@ import React from 'react';
 import logoName from '../assets/logoName.png';
 import { RxDashboard, RxCalendar } from "react-icons/rx";
 import { LuChartGantt, LuMessageSquareMore, LuSettings } from "react-icons/lu";
+import UserAvatar from './UserAvatar';
 
 
 const Navbar = () => {
@@ -54,6 +55,9 @@ const Navbar = () => {
                     </a>
                 </li>
             </ul>
+            <div className="p-4">
+                <UserAvatar />
+            </div>
         </nav>
     );
 };

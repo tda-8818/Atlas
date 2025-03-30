@@ -10,6 +10,7 @@ import ErrorMessage from '../components/ErrorMessage';
 
 const Signup = () => {
    const [error, setError] = useState(""); // Error message state
+   const [success, setSuccess] = useState(""); // Success message state
     const {
         register,
         handleSubmit,
@@ -21,22 +22,20 @@ const Signup = () => {
     
     // Handles form submission
     const onSubmit = async (data) => {
-        console.log(data);
+        setError(""); // Reset error message
+        setSuccess(""); // Reset success message
+        // Check if passwords match
+
         try {
             // API endpoint for sign up
             const response = await axios.post("http://localhost:5001/signup", data);
+            setSuccess("Signup successful. Please login.");
             console.log(response.data);
         } catch (axiosError) {
-            if (axiosError.response && axiosError.response.status === 400) {
-                // Check if the error is a duplicate username error
-                if (axiosError.response.data.message === 'Username already exists') {
-                    setError('Username already exists. Please choose a different username.');
-                } else {
-                    setError(axiosError.response.data.message || 'Signup failed. Please try again.');
-                }
-            } else {
-                setError('Network error. Please try again.', axiosError.response.data.message);
-            }
+                setError(axiosError.response.data.message);
+            // } else {
+            //     setError('Network error. Please try again.', axiosError.response.data.message);
+            // }
         }
     };
     
@@ -105,6 +104,20 @@ const Signup = () => {
                             leaveTo="opacity-0"
                         >
                             <p className="text-red-500">{error}</p>
+                        </Transition>
+                    )}
+
+                    {success && ( // Display success message
+                        <Transition
+                            show={!!success}
+                            enter="transition-opacity duration-75"
+                            enterFrom="opacity-0"
+                            enterTo="opacity-100"
+                            leave="transition-opacity duration-150"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                        >
+                            <p className="text-green-500">{success}</p>
                         </Transition>
                     )}
 
