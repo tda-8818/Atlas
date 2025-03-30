@@ -17,9 +17,15 @@ const app = express();
 const port = 5001;
 
 // Get the current directory using import.meta.url
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const fileName = fileURLToPath(import.meta.url);
+const dirName = path.dirname(fileName);
 
+// Serve static files from the React app
+app.use(express.static(path.join(dirName, '../client/dist')));
+// Serve the index.html file for all other routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(dirName, '../client/dist/index.html'));
+});
 
 // Middleware set up:
 
