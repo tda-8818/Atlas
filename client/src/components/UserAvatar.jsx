@@ -3,7 +3,8 @@ import { Fragment, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaUser, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
+import { FaSignOutAlt } from 'react-icons/fa';
+import { LuSettings, LuUser, LuCircleArrowOutUpLeft } from 'react-icons/lu';
 
 /**
  * Gets the initials given full name.
@@ -66,13 +67,13 @@ const UserAvatar = () => {
                         {/* <span className='text-lg 2x1:text-xl font-semibold text-gray-700'>
                             {getInitials(userData?.fullName)}
                         </span> */}
-                        <FaUserCircle className="w-10 h-10 text-2xl text-gray-700" /> {/* Use the icon */}
+                        <LuUser className="w-10 h-10 text-2xl text-gray-700" /> {/* Use the icon */}
                         
                     </MenuButton>
                 </div>
                 
                     <MenuItems
-                        className="absolute bottom-12 left-0 w-fit h-fit mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        className="absolute bottom-20 left-0 w-fit h-fit mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                         anchor="bottom"
                         transition
                     >
@@ -82,9 +83,9 @@ const UserAvatar = () => {
                                     <button
                                         onClick={() => navigate('/settings')}
                                         // navigate to settings page
-                                        className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'} block w-full px-4 py-2 text-left text-sm`}
+                                        className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'} flex items-center w-full px-6 py-4 text-left text-sm`}
                                     >
-                                        <FaUser className='mr-2' aria-hidden='true'/> Settings
+                                        <LuSettings className='mr-2' aria-hidden='true'/> Settings
                                     </button>
                                 )}
                             </MenuItem>
@@ -92,9 +93,9 @@ const UserAvatar = () => {
                                 {({ active }) => (
                                     <button
                                         onClick={handleLogout}
-                                        className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'} block w-full px-4 py-2 text-left text-sm`}
+                                        className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'} flex items-center w-full px-6 py-4 text-left text-sm`}
                                     >
-                                        <FaSignOutAlt className="mr-2" aria-hidden="true" />Logout
+                                        <LuCircleArrowOutUpLeft className="mr-2" aria-hidden="true" />Logout
                                     </button>
                                 )}
                             </MenuItem>

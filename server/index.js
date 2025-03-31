@@ -60,25 +60,16 @@ app.post("/login", async (req, res) => {
 app.post('/signup', async (req, res) => {
     try {
         
-        console.log(req.body);
         // check if user already exists using unqiue email
         const existingUser = await UserModel.findOne({ email: req.body.email });
         if (existingUser) {
             return res.status(400).json('User already exists');
         }
 
-        // hash the password before saving it to the database
-        //const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        
         // create a new user in the database
         const newUser = await UserModel(req.body);
-        await newUser.save().then(() => {
-            console.log('User saved to user database');
-          })
-          .catch((err) => {
-            console.error('Error saving user:', err);
-          });
-        res.json(newUser);
+        await newUser.save();
+        res.status(201).json('User created successfully');
     }
     catch (error) {
         res.status(400).json('Error: ' + error);
