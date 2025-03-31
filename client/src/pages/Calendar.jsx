@@ -17,30 +17,46 @@ const Calendar = () => {
         calendarApi.unselect(); // clear date selection
 
         if (title) {
-            const newEvent = {
-                title,
-                start: selectInfo.startStr,
-                end: selectInfo.endStr,
-                allDay: selectInfo.allDay,
-            }
-            calendarApi.addEvent({
-                id: '${selectedInfo.dateStr}-${title}',
-                ...newEvent,
-            });
-                    // Try to send event data to the backend.
             try {
+
+                const newEvent = {
+                    title,
+                    start: selectInfo.startStr,
+                    end: selectInfo.endStr,
+                    allDay: selectInfo.allDay,
+                };
+
+
                 const response = await axios.post("http://localhost:5001/Calendar", newEvent);
-                console.log(response.newEvent)
+                
+                if (response.data) {
+                    const savedTask = response.data;
+                    console.log("Task created:", savedTask);
+                    
+                    calendarApi.addEvent({
+                        id: savedTask._id,
+                        ...newEvent    
+                    });
+
+                }
+
             } catch (error) {
-                console.log(error);
+                console.error("Error adding event:", error);
             }
         }
 
 
     };
-    const handleEventClick = (selected) => {
+    const handleEventClick = async (selected) => {
         if (window.confirm(`Are you sure you want to delete the event '${selected.event.title}'`)) {        //CHANGE THIS FOR A CUSTOM POPUP
-            selected.event.remove();
+            try {
+                console.log("xdd is ", selected.event.id);
+                //const response = await axios.delete(`http://localhost:5001/calendar/${selected.event.id}`);
+                selected.event.remove();
+
+            } catch (error) {
+                console.error("Error deleting task:", error);
+            }
         }
     };
 

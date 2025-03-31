@@ -51,18 +51,19 @@ export const createEvent = async (req, res) => {
 export const createTask = async (req, res) => {
     try {
         const { title } = req.body;
-        
+        console.log( title );
         // other data points required.
         // Not sure if the current HTML request sends any other information other than the title and the date.
         const newTask = new Task({
             title
         })
 
-        newTask.save();
+        const savedTask = await newTask.save();
         console.log('createTasks has been executed');
-
+        res.status(201).json(savedTask);
     } catch (error) {
-        next(error)
+        console.error("Error creating task:", error);
+        res.status(500).json({ message: "Error creating task", error });
     }
 };
 
@@ -77,8 +78,18 @@ export const editTask = async (req, res) => {
 
 export const deleteTask = async (req, res) => {
     try {
+        const { id } = req.params
+        console.log('deleteTasks has been executed');
+
+        //const task_to_delete = await Task.findById(id);
         
+        // if (!task_to_delete) {
+        //     return res.status(404).json({ message: "Task not found"});
+
+        // }
+        res.status(200).json({ message: "Task deleted successfully", task_to_delete})
     } catch (error) {
-        
+        console.error("Error deleting task: ", error);
+        res.status(500).json({ message: "Server error while deleting task"});
     }
 };
