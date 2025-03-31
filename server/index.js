@@ -6,7 +6,7 @@
 import express, {json} from 'express'; // Express.js used for creating the server
 import cors from 'cors'; // CORS is a Connect/Express middleware for handling cross-origin requests.
 import { connect } from 'mongoose'; // Mongoose used for connecting to MongoDB
-import UserModel from "./models/User.js";
+import UserModel from "./models/UserModel.js";
 import bcrypt from 'bcryptjs';
 import path from 'path'; // Path module provides utilities for working with file and directory paths
 import { fileURLToPath } from 'url'; // fileURLToPath is used to convert a URL to a file path

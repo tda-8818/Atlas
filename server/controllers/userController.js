@@ -1,6 +1,6 @@
 // server/index.js (or your API route file)
 import express from 'express';
-import User from './models/User.js'; // Assuming you have a User model
+import User from '../models/UserModel.js'; // Assuming you have a User model
 
 const router = express.Router();
 
