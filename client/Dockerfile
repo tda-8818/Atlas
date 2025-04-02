@@ -4,12 +4,13 @@ WORKDIR /app
 
 COPY client/package*.json ./
 
-RUN npm install
+RUN npm install @tailwindcss/vite fullcalendar && npm install
 
-COPY client/ .
+COPY client/vite.config.js ./
+COPY client/src ./src/
+COPY client/index.html ./
 
 RUN npm run build
-RUN npm install @tailwindcss/vite
 
 EXPOSE 4173
 

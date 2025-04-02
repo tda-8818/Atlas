@@ -1,3 +1,4 @@
+version: "3.8"
 services:
   client:
     build:
@@ -6,8 +7,9 @@ services:
     ports:
       - "4173:4173"
     volumes:
-      - ./client:/app
-      - /app/node_modules
+      - ./client/src:/app/src
+      - ./client/vite.config.js:/app/vite.config.js
+      - ./client/index.html:/app/index.html
     depends_on:
       - server
     environment:

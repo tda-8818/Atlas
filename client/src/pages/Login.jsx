@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Textbox from "../components/Textbox";
 import {Button} from "@headlessui/react";
 import { useSelector, useDispatch } from "react-redux";
+import logo from "../assets/logo.png";
 import axios from "axios";
 
 /**
@@ -100,7 +101,7 @@ const Login = () => {
                 type='login'
                 label='Login'
                 className='w-full h-10 bg-blue-700 text-white rounded-full'
-               />
+              >Login</Button>
             </div>
           </form>
         </div>

@@ -1,0 +1,76 @@
+.kanban-board {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+  }
+  
+  .kanban-board::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  .kanban-board::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 3px;
+  }
+  
+  .kanban-list {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    min-width: 240px;
+    max-width: 240px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .kanban-card {
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 0.5rem;
+    font-size: 14px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .kanban-card:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .kanban-card button {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-size: 12px;
+    background: transparent;
+    border: none;
+    color: #bbb;
+    cursor: pointer;
+  }
+  
+  .kanban-card button:hover {
+    color: #ef4444;
+  }
+  
+  .add-column {
+    background-color: #f3f4f6;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 1rem;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .add-column:hover {
+    background-color: #e5e7eb;
+  }
+  

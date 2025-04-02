@@ -1,14 +1,16 @@
 import React from 'react';
 import logoName from '../assets/logoName.png';
+
 import { RxDashboard, RxCalendar } from "react-icons/rx";
-import { LuChartGantt, LuMessageSquareMore, LuSettings } from "react-icons/lu";
+import { LuChartGantt, LuMessageSquareMore, LuSquareKanban } from "react-icons/lu";
+import UserAvatar from './UserAvatar';
 
 
 const Navbar = () => {
     return (
         <nav className="fixed bg-white h-full w-[15%] border-r-[3px] border-[#f5f5f7]">
             <div className="w-full">
-                <a href="/" className="block">
+                <a href="/Home" className="block">
                     <img src={logoName} alt="Logo" className="w-full" />
                 </a>
             </div>
@@ -38,6 +40,14 @@ const Navbar = () => {
                     </a>
                 </li>
                 <li>
+                    <a href="/Kanban">
+                        <button className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer">
+                            <LuSquareKanban className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
+                            Task
+                        </button>                    
+                    </a>
+                </li>
+                <li>
                     <a href="/Messages">
                         <button className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer">
                             <LuMessageSquareMore className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
@@ -45,15 +55,10 @@ const Navbar = () => {
                         </button>                    
                     </a>
                 </li>
-                <li>
-                    <a href="/Settings">
-                        <button className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer">
-                            <LuSettings className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
-                            Settings
-                        </button>                   
-                    </a>
-                </li>
             </ul>
+            <div className="p-4">
+                <UserAvatar />
+            </div>
         </nav>
     );
 };

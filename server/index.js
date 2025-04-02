@@ -6,12 +6,26 @@
 import express, {json, response} from 'express'; // Express.js used for creating the server
 import cors from 'cors'; // CORS is a Connect/Express middleware for handling cross-origin requests.
 import { connect } from 'mongoose'; // Mongoose used for connecting to MongoDB
-import UserModel from "./models/User.js";
-import bcrypt from 'bcrypt';
+import UserModel from "./models/UserModel.js";
+import bcrypt from 'bcryptjs';
+import path from 'path'; // Path module provides utilities for working with file and directory paths
+import { fileURLToPath } from 'url'; // fileURLToPath is used to convert a URL to a file path
+//import userController from './userController.js';
 
 // Create an Express server
 const app = express();
 const port = 5001;
+
+// Get the current directory using import.meta.url
+const fileName = fileURLToPath(import.meta.url);
+const dirName = path.dirname(fileName);
+
+// Serve static files from the React app
+app.use(express.static(path.join(dirName, '../client/dist')));
+// Serve the index.html file for all other routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(dirName, '../client/dist/index.html'));
+});
 
 // Middleware set up:
 
@@ -46,25 +60,16 @@ app.post("/login", async (req, res) => {
 app.post('/signup', async (req, res) => {
     try {
         
-        console.log(req.body);
         // check if user already exists using unqiue email
         const existingUser = await UserModel.findOne({ email: req.body.email });
         if (existingUser) {
             return res.status(400).json('User already exists');
         }
 
-        // hash the password before saving it to the database
-        //const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        
         // create a new user in the database
         const newUser = await UserModel(req.body);
-        await newUser.save().then(() => {
-            console.log('User saved to user database');
-          })
-          .catch((err) => {
-            console.error('Error saving user:', err);
-          });
-        res.json(newUser);
+        await newUser.save();
+        res.status(201).json('User created successfully');
     }
     catch (error) {
         res.status(400).json('Error: ' + error);
@@ -97,3 +102,29 @@ app.get('/users', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server is running on port: ${port}`);
 });
+
+
+const router = express.Router();
+
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const user = await UserModel.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const userData = {
+            fullName: `${user.firstName} ${user.lastName}`,
+        };
+
+        console.log('API Response:', userData); // Log the data
+        res.json(userData);
+    } catch (error) {
+        console.error('API Error:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+export default router;
