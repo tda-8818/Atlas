@@ -50,8 +50,9 @@ const Calendar = () => {
     const handleEventClick = async (selected) => {
         if (window.confirm(`Are you sure you want to delete the event '${selected.event.title}'`)) {        //CHANGE THIS FOR A CUSTOM POPUP
             try {
-                console.log("xdd is ", selected.event.id);
+                //console.log("xdd is ", selected.event.id);
                 const response = await axios.delete(`http://localhost:5001/calendar/${selected.event.id}`);
+                
                 selected.event.remove();
 
             } catch (error) {

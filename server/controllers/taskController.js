@@ -50,16 +50,18 @@ export const createEvent = async (req, res) => {
 
 export const createTask = async (req, res) => {
     try {
-        const { title } = req.body;
-        console.log( title );
+        const { title, start, end } = req.body;
+        console.log("created tasks has been executed:");
+        console.log(title, start, end);
         // other data points required.
         // Not sure if the current HTML request sends any other information other than the title and the date.
         const newTask = new Task({
-            title
+            title,
+            start_date:start,
+            due_date:end
+           
         })
-
         const savedTask = await newTask.save();
-        console.log('createTasks has been executed');
         res.status(201).json(savedTask);
     } catch (error) {
         console.error("Error creating task:", error);

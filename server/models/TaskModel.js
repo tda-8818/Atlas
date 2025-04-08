@@ -9,7 +9,7 @@ const taskSchema = new mongoose.Schema(
        priority: {type: String},
        assigned_to: [{type: mongoose.Schema.Types.ObjectId, ref: 'user'}],
        due_date: {type: Date},
-       created_at: {type: Date, default: Date.now}
+       start_date: {type: Date}
     }, {timestamps: true}
 );
 
