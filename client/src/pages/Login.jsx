@@ -29,7 +29,7 @@ const Login = () => {
   const submitHandler = async (data) => {
     try {
       // API endpoint for login
-      const response = await axios.post("http://localhost:5001/users/login", data);
+      const response = await axios.post("http://localhost:5001/api/users/login", data);
       const { token, user } = response.data; // response should contain token and user data
       dispatch(setUserCredentials({ user, token })); // Dispatch action to set user credentials in redux store
       // Set default Authorization header for future requests
