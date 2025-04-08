@@ -26,8 +26,17 @@ const Signup = () => {
         setSuccess(""); // Reset success message
        
         try {
-            // Remove confirmPassword from data before sending to API
-            const { confirmPassword, ...userData } = data;
+            // Convert email, firstName, and lastName to lowercase
+        const userData = {
+            ...data,
+            email: data.email.toLowerCase(),
+            firstName: data.firstName.toLowerCase(),
+            lastName: data.lastName.toLowerCase(),
+        };
+
+        // Remove confirmPassword from data before sending to API
+        delete userData.confirmPassword;
+        
             // API endpoint for signup
             const response = await axios.post(
                 "http://localhost:5001/api/users/signup",

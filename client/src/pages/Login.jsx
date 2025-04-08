@@ -6,6 +6,7 @@ import {Button} from "@headlessui/react";
 import { useSelector, useDispatch } from "react-redux";
 import logo from "../assets/logo.png";
 import axios from "axios";
+import { setUserCredentials } from "../redux/slices/authSlice";
 
 /**
  * 
@@ -30,7 +31,7 @@ const Login = () => {
       // API endpoint for login
       const response = await axios.post("http://localhost:5001/users/login", data);
       const { token, user } = response.data; // response should contain token and user data
-      dispatch(setCredentials({ user, token })); // Dispatch action to set user credentials in redux store
+      dispatch(setUserCredentials({ user, token })); // Dispatch action to set user credentials in redux store
       // Set default Authorization header for future requests
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     
