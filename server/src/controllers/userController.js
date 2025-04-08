@@ -33,14 +33,14 @@ export const signup = async (req, res) => {
     try {
         const existingUser = await UserModel.findOne({ email: req.body.email });
         if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
+            return res.status(409).json({ message: 'User already exists' });
         }
 
         const newUser = new UserModel(req.body);
         await newUser.save();
         res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
-        res.status(400).json({ message: 'Error: ' + error.message });
+        res.status(400).json({ message: error.message.includes('duplicate') ? error.message : 'Invalid registration data' });
     }
 };
 

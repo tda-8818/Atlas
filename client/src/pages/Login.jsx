@@ -28,17 +28,18 @@ const Login = () => {
   const submitHandler = async (data) => {
     try {
       // API endpoint for login
-      const response = await axios.post("http://localhost:5001/login", data);
-      // If login is successful, navigate to home page
-      if (response.data) {
-        // dispatch login action
-        dispatch({ type: "LOGIN", payload: response.data });
-        navigate("/home");
-      }
+      const response = await axios.post("http://localhost:5001/users/login", data);
+      const { token, user } = response.data; // response should contain token and user data
+      dispatch(setCredentials({ user, token })); // Dispatch action to set user credentials in redux store
+      // Set default Authorization header for future requests
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    
+      navigate("/home");
+      
     }
     catch (error) {
       console.error(error);
-      alert("Invalid email or password"); // Show error message to user
+      alert(error.response?.data?.message || "Invalid email or password"); // Show error message to user
     }
   };
 
