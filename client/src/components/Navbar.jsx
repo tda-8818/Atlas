@@ -1,7 +1,7 @@
 import React from 'react';
 import logoName from '../assets/logoName.png';
 
-import { RxDashboard, RxCalendar } from "react-icons/rx";
+import { RxDashboard, RxCalendar,RxHome } from "react-icons/rx";
 import { LuChartGantt, LuMessageSquareMore, LuSquareKanban } from "react-icons/lu";
 import UserAvatar from './UserAvatar';
 
@@ -15,6 +15,14 @@ const Navbar = () => {
                 </a>
             </div>
             <ul className="p-0 m-0 mb-[60px] w-full">
+            <li >
+                    <a href="/Home">
+                        <button className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer">
+                            <RxHome className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
+                            Home
+                        </button>
+                    </a>
+                </li>
                 <li >
                     <a href="/Home">
                         <button className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer">
