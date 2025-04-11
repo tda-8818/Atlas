@@ -48,13 +48,14 @@ export const createEvent = async (req, res) => {
 
 export const createTask = async (req, res) => {
     try {
-        const { title, start, end } = req.body;
+        const { title, description, start, end } = req.body;
         console.log("created tasks has been executed:");
         console.log(title, start, end);
         // other data points required.
         // Not sure if the current HTML request sends any other information other than the title and the date.
         const newTask = new Task({
             title,
+            description,
             start_date:start,
             due_date:end
            
@@ -67,10 +68,10 @@ export const createTask = async (req, res) => {
     }
 };
 
-
 export const editTask = async (req, res) => {
     try {
-        
+        const {taskId, title, description,
+        startDate, due_date} = req.body;
     } catch (error) {
         
     }
