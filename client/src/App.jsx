@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
@@ -8,64 +8,56 @@ import Kanban from "./pages/Kanban";
 import Gantt from "./pages/Gantt";
 import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
-import axios from "axios";
-import { useEffect } from "react";
 
-// Protected route component
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+function Layout (){
+  const {user} = useSelector((state) => state.auth);
+  const location = useLocation();
   
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return children ? children : <Outlet />;
-};
+  return user ? (
+    <div className="w-full h-screen flex flex-col md:flex-row">
+      <div className='w-1/5 h-screen bg-white sticky top-0 hidden md:block'>
+      {/* <Sidebar/> */}
+      </div>
 
-// Public route component (for login/signup when already authenticated)
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
-  
-  if (isAuthenticated) {
-    return <Navigate to="/home" replace />;
-  }
-  
-  return children ? children : <Outlet />;
-};
+      <div className="flex-1 overflow-y-auto">
 
-// The main App component that defines the routes for the application
+      </div>
+
+    </div>
+  ) : (
+    <Navigate to='/log-in' state={{ from: location }} replace/>
+  )
+}
+
+// function App() {
+//   return (
+//     <main className='w-full min-h-screen bg[f3f446]'>
+//       <Routes>
+//         <Route element={<Layout/>}>
+//           <Route path="/" element={<Navigate to="/home" />} />
+//           <Route path="/home" element={<Home />} />
+//           {/* <Route path="/gantt" element={<Gantt />} />
+//           <Route path="/calendar" element={<Calendar />} />
+//           <Route path="/messages" element={<Messages />} />
+//           <Route path="/settings" element={<Settings />} /> */}
+
+//           <Route path="/log-in" element={<Login />} />
+//         </Route>
+//       </Routes>
+//     </main>
+//   );
+// }
 
 function App() {
-  const { token } = useSelector((state) => state.auth);
-
-  // Set axios default headers when token changes
-  useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-    }
-  }, [token]);
-
   return (
     <Routes>
-      {/* Public routes */}
-      <Route element={<PublicRoute />}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-      </Route>
-
-      {/* Protected routes */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/" element={<Navigate to="/home" replace />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/calendar" element={<Calendar />} />
-        <Route path="/gantt" element={<Gantt />} />
-        <Route path="/kanban" element={<Kanban />} />
-      </Route>
-
-      {/* Catch-all route */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path='/' element={<Signup/>}/>
+      <Route path='/signup' element={<Signup/>}/>
+      <Route path='/login' element={<Login/>}/>
+      <Route path='/home' element={<Home/>}/>
+      <Route path='/calendar' element={<Calendar/>}/>
+      <Route path='/gantt' element={<Gantt/>}/>
+      <Route path='/kanban' element={<Kanban/>} />
     </Routes>
   
   );

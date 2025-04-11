@@ -1,50 +1,31 @@
 /**
- * Manages authentication state with JWT support
+ * Manages authentication state.
  */
 import { createSlice } from "@reduxjs/toolkit";
 
-// Helper function to get initial state from localStorage
-const getInitialState = () => {
-  const user = localStorage.getItem("user");
-  const token = localStorage.getItem("token");
-  
-  return {
-    user: user ? JSON.parse(user) : null,
-    token: token || null,
-    isAuthenticated: !!token, // Authentication status based on token presence
-  };
+const initialState = {
+  user: localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null,
+  isAuthenticated: false,
 };
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: getInitialState(),
+  initialState,
   reducers: {
-    setUserCredentials: (state, action) => {
-      const { user, token } = action.payload;
-      state.user = user;
-      state.token = token;
-      state.isAuthenticated = true;
-      
-      // Persist to localStorage
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", token);
+    login: (state, action) => {
+        state.user = action.payload;
+        localStorage.setItem("user", JSON.stringify(action.payload));
+        state.isAuthenticated = true;
     },
     logout: (state) => {
-      state.user = null;
-      state.token = null;
-      state.isAuthenticated = false;
-      
-      // Clear localStorage
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
+        state.user = null;
+        localStorage.removeItem("user");
+        state.isAuthenticated = false;
     },
-    updateUser: (state, action) => {
-      state.user = action.payload;
-      localStorage.setItem("user", JSON.stringify(action.payload));
-    }
   },
 });
 
-export const { setUserCredentials, logout, updateUser } = authSlice.actions;
-
+export const { login, logout } = authSlice.actions;
 export default authSlice.reducer;
