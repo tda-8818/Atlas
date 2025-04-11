@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
 import Calendar from "./pages/Calendar";
 import Kanban from "./pages/Kanban"; 
 import Gantt from "./pages/Gantt";
@@ -55,6 +56,7 @@ function App() {
       <Route path='/signup' element={<Signup/>}/>
       <Route path='/login' element={<Login/>}/>
       <Route path='/home' element={<Home/>}/>
+      <Route path='/Dashboard' element={<Dashboard/>}/>
       <Route path='/calendar' element={<Calendar/>}/>
       <Route path='/gantt' element={<Gantt/>}/>
       <Route path='/kanban' element={<Kanban/>} />
