@@ -5,8 +5,8 @@ const router = express.Router();
 
 router.get('/', getTask);
 
-router.post('/', createEvent);
-//router.post('/', createTask);
+//router.post('/', createEvent);
+router.post('/', createTask);
 
 router.delete('/:id', deleteTask);
 

@@ -8,6 +8,7 @@ export default class GanttComp extends Component {
     if (!this.eventAttached) {
       gantt.attachEvent("onAfterTaskAdd", async (id, task) => {
         try {
+          // At this point, the id is created by the gantt API. We want to change this to the mongoID later on
           const newTask = {
             id: id,
             title: task.text,
@@ -15,10 +16,18 @@ export default class GanttComp extends Component {
             duration: task.duration,
             progress: task.progress,
           };
-          console.log("New task added:", newTask);
           
           const response = await axios.post("http://localhost:5001/Gantt", newTask);
-          console.log(response.data);
+          if (response.data){
+            console.log("response from server received. MongoID: ", response.data);
+            const savedTask = response.data;
+            // Change the ID to be the respective mongoDB id
+            // The mongoDB id can be found on task creation by sending a HTTP response 201 in taskController.js 
+            gantt.changeTaskId(newTask.id, savedTask._id);
+
+            console.log(savedTask._id);
+          }
+
         } catch (error) {
 
           console.error("Error creating task:", error);

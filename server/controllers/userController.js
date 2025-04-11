@@ -1,25 +1,26 @@
 // server/index.js (or your API route file)
 import express from 'express';
-import User from '../models/UserModel.js'; // Assuming you have a User model
+import Project from '../models/ProjectModel.js'; // Assuming you have a User model
+import User from '../models/UserModel.js';
+import UserModel from '../models/UserModel.js';
 
-const router = express.Router();
-
-router.get('/user/:userId', async (req, res) => {
+export const createUser = async (req, res) => {
     try {
-        const userId = req.params.userId;
-        const user = await User.findById(userId);
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        
+        // check if user already exists using unqiue email
+        const existingUser = await UserModel.findOne({ email: req.body.email });
+        if (existingUser) {
+            return res.status(400).json('User already exists');
         }
 
-        res.json({
-            fullName: `${user.firstName} ${user.lastName}`, // Construct full name
-            // Add other user data as needed
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+        // create a new user in the database
+        const newUser = await UserModel(req.body);
+        await newUser.save();
+        res.status(201).json('User created successfully');
     }
-});
+    catch (error) {
+        res.status(400).json('Error: ' + error);
+    }
+}
 
-export default router;
+export const 
