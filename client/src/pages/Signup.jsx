@@ -9,8 +9,8 @@ import { Transition, Button, Input } from '@headlessui/react';
 import ErrorMessage from '../components/ErrorMessage';
 
 const Signup = () => {
-   const [error, setError] = useState(""); // Error message state
-   const [success, setSuccess] = useState(""); // Success message state
+    const [error, setError] = useState(""); // Error message state
+    const [success, setSuccess] = useState(""); // Success message state
     const {
         register,
         handleSubmit,
@@ -19,79 +19,134 @@ const Signup = () => {
     } = useForm(); // Use react-hook-form
 
     const password = watch("password", ""); // Watch password input
-    
+
     // Handles form submission
     const onSubmit = async (data) => {
         setError(""); // Reset error message
         setSuccess(""); // Reset success message
-        // Check if passwords match
-
+       
         try {
-            // API endpoint for sign up
-            const response = await axios.post("http://localhost:5001/signup", data);
-            setSuccess("Signup successful. Please login.");
-            console.log(response.data);
-        } catch (axiosError) {
-                setError(axiosError.response.data.message);
-            // } else {
-            //     setError('Network error. Please try again.', axiosError.response.data.message);
-            // }
+            // Convert email, firstName, and lastName to lowercase
+        const userData = {
+            ...data,
+            email: data.email.toLowerCase(),
+            firstName: data.firstName.toLowerCase(),
+            lastName: data.lastName.toLowerCase(),
+        };
+
+        // Remove confirmPassword from data before sending to API
+        delete userData.confirmPassword;
+        
+            // API endpoint for signup
+            const response = await axios.post(
+                "http://localhost:5001/api/users/signup",
+                userData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            setSuccess("Account created successfully! Redirecting to login...");
+            reset();
+
+            // Redirect after 2 seconds
+            setTimeout(() => navigate('/login'), 2000);
+
+        } catch (error) {
+            // Enhanced error handling
+            if (error.response) {
+                switch (error.response.status) {
+                    case 400:
+                        if (error.response.data?.message?.includes('already exists')) {
+                            setError("An account with this email already exists");
+                        } else {
+                            setError("Invalid registration data. Please check your inputs.");
+                        }
+                        break;
+                    case 409:
+                        setError("An account with this email already exists.");
+                        break;
+                    case 500:
+                        setError("Server error. Please try again later.");
+                        break;
+                    default:
+                        setError("Registration failed. Please try again.");
+                }
+            } else if (error.request) {
+                setError("Network error. Please check your connection.");
+            } else {
+                setError("An unexpected error occurred.");
+            }
         }
     };
-    
+
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100"> {/* centres signup form */}
             <div className="bg-white p-8 rounded shadow-md w-96">
                 <h2 className="text-2xl font-semibold mb-6">Sign Up</h2>
                 <form onSubmit={handleSubmit(onSubmit)}> {/* calls handle submit here */}
-                    
+
                     <Input
                         type="text"
                         id="firstName"
                         placeholder="First Name"
                         {...register("firstName", {
                             required: "First name is required!",
+                            minLength: {
+                                value: 2,
+                                message: "First name must be at least 2 characters"
+                            }
                         })}
                         className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
                     />
                     <ErrorMessage message={errors.firstName?.message} />
 
-                    
-                        <Input
-                            type="text"
-                            id="lastName"
-                            placeholder="Last Name"
-                            {...register("lastName", {
-                                required: "Last name is required!",
-                            })}
-                            className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
-                        />
-                        <ErrorMessage message={errors.lastName?.message} />
-                   
-                        <Input
-                            type="email"
-                            id="email"
-                            placeholder="Email"
-                            {...register("email", {
-                                required: "Email is required!",
-                            })}
-                            className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
-                        />
-                        <ErrorMessage message={errors.email?.message} />
-                   
-                        <Input
-                            type="password"
-                            id="password"
-                            placeholder="New Password"
-                            {...register("password", {
-                                minLength: { value: 8, message: "Password must be at least 8 characters long" },
-                                pattern: { value: /^(?=.*[A-Z])(?=.*\d).+$/, message: "Password must contain at least one upper case letter and one number" },
-                            })}
-                            className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
-                        />
-                        <ErrorMessage message={errors.password?.message} />
 
-                        <Input
+                    <Input
+                        type="text"
+                        id="lastName"
+                        placeholder="Last Name"
+                        {...register("lastName", {
+                            required: "Last name is required!",
+                            minLength: {
+                                value: 2,
+                                message: "Last name must be at least 2 characters"
+                            }
+                        })}
+                        className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
+                    />
+                    <ErrorMessage message={errors.lastName?.message} />
+
+                    <Input
+                        type="email"
+                        id="email"
+                        placeholder="Email"
+                        {...register("email", {
+                            required: "Email is required!",
+                            pattern: {
+                                value: /^[a-zA-Z0-9._%+-]+@student\.monash\.edu$/,
+                                message: "Email must be a valid Monash address",
+                            }
+                        })}
+                        className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
+                    />
+                    <ErrorMessage message={errors.email?.message} />
+
+                    <Input
+                        type="password"
+                        id="password"
+                        placeholder="New Password"
+                        {...register("password", {
+                            minLength: { value: 8, message: "Password must be at least 8 characters long" },
+                            pattern: { value: /^(?=.*[A-Z])(?=.*\d).+$/, message: "Password must contain at least one upper case letter and one number" },
+                        })}
+                        className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
+                    />
+                    <ErrorMessage message={errors.password?.message} />
+
+                    <Input
                         type="password"
                         id="confirmPassword"
                         placeholder="Confirm Password"
@@ -99,12 +154,12 @@ const Signup = () => {
                             validate: (value) => value === password || 'Passwords do not match.',
                         })}
                         className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
-                        />
-                        <ErrorMessage message={errors.confirmPassword?.message} />
-                        
-                    
-                    
-                        
+                    />
+                    <ErrorMessage message={errors.confirmPassword?.message} />
+
+
+
+
                     {error && (
                         <Transition
                             show={!!error}

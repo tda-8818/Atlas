@@ -3,7 +3,6 @@ import { Fragment, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaSignOutAlt } from 'react-icons/fa';
 import { LuSettings, LuUser, LuCircleArrowOutUpLeft } from 'react-icons/lu';
 
 /**
