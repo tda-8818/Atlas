@@ -1,0 +1,59 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-test  # Depends on successful build
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Download client build
+      uses: actions/download-artifact@v4
+      with:
+        name: client-build
+        path: client/dist
+        
+    - name: Download server build
+      uses: actions/download-artifact@v4
+      with:
+        name: server-build
+        path: server
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-southeast-2  # Change to your preferred region
+    
+    # Example for Elastic Beanstalk deployment
+    - name: Generate deployment package
+      run: |
+        mkdir -p deploy
+        cp -r server/* deploy/
+        mkdir -p deploy/client
+        cp -r client/dist/* deploy/client/
+        cd deploy && zip -r ../deploy.zip .
+    
+    - name: Deploy to Elastic Beanstalk
+      uses: einaregilsson/beanstalk-deploy@v21
+      with:
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        application_name: UniFlow  # Replace with your EB app name
+        environment_name: UniFlow-env  # Replace with your EB environment name
+        version_label: ${{ github.sha }}
+        region: ap-southeast-2  # Match the region from above
+        deployment_package: deploy.zip
+        wait_for_deployment: true
