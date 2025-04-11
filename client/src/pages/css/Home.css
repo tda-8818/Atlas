@@ -6,8 +6,8 @@
     flex-grow: 1;
     padding: 40px;
     background-color: #fafafa;
-    height: 100vh; /* Take full screen */
-    overflow-y: auto; /* ✅ Scroll if overflow */
+    height: 100vh;
+    overflow-y: auto;
     margin-left: 15%;
   }
   
@@ -111,5 +111,40 @@
     object-fit: cover;
     margin-left: -8px;
     border: 2px solid white;
+  }
+  
+  /* Add Project Special Card */
+  .add-project-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f5f5f7;
+    border: 2px dashed #ccc;
+    border-radius: 20px;
+    cursor: pointer;
+    width: 300px;
+    height: 300px;
+    transition: all 0.3s ease;
+  }
+  
+  .add-project-card:hover {
+    background: #e0e0e5;
+    border-color: #888;
+  }
+  
+  .add-project-content {
+    text-align: center;
+  }
+  
+  .add-icon {
+    font-size: 50px;
+    font-weight: bold;
+    color: #5b5fc7;
+  }
+  
+  .add-text {
+    margin-top: 10px;
+    font-size: 18px;
+    color: #555;
   }
   

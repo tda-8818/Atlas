@@ -52,8 +52,12 @@ const Home = () => {
         image: 'https://via.placeholder.com/300x180',
         team: ['/avatars/avatar11.png', '/avatars/avatar12.png']
       },
-      // You can add even more...
+      // You can add even more if you want
     ];
+  
+    const handleAddProject = () => {
+      alert("Open Add Project Modal or Navigate to Add Project Page! 🚀");
+    };
   
     return (
       <div className="home-page">
@@ -87,6 +91,15 @@ const Home = () => {
                 </div>
               </div>
             ))}
+  
+            {/* Add Project Block */}
+            <div className="card add-project-card" onClick={handleAddProject}>
+              <div className="add-project-content">
+                <div className="add-icon">+</div>
+                <div className="add-text">Add Project</div>
+              </div>
+            </div>
+  
           </div>
         </div>
       </div>
