@@ -11,7 +11,7 @@ function AddTaskPopup(props) {
   const [description,setDescription] = useState('');
 
   const handleConfirm = () =>{
-    onSubmit({title})
+    onSubmit({title,description})
 
     setTitle('');
     setDescription('');
@@ -48,7 +48,7 @@ function AddTaskPopup(props) {
              <Dialog.Panel className="space-y-8 bg-white m-auto content-center w-[50vh] rounded-[6%]">
 
                 <Fieldset className="space-y-8 bg-white m-auto content-center w-[50vh] rounded-[6%]">
-                  <Legend className="text-lg font-bold ml-[20px] mt-[10px]">Task Details</Legend>
+                  <Legend className="text-lg font-bold ml-[20px] mt-[10px]">Add a new task</Legend>
                   <Field>
                     <Label className="block ml-[20px]">Title</Label>
                     <Input className="mt-1 block bg-[#f5f5f7] ml-[20px] w-[80%]" name="title" value={title} onChange={(e) => setTitle(e.target.value)}/>
@@ -63,7 +63,7 @@ function AddTaskPopup(props) {
                   </Field> */}
                   <Field>   
                     <Label className="block ml-[20px]">Description</Label>
-                    <Textarea className="mt-1 block ml-[20px] w-[80%] bg-[#f5f5f7]" name="description" />
+                    <Textarea className="mt-1 block ml-[20px] w-[80%] bg-[#f5f5f7]" name="description" value={description} onChange={(e) => setDescription(e.target.value)} />
                   </Field>
                   <Field>
                     <button onClick={handleConfirm} className="ml-[20px] mb-[10px] bg-[#f5f5f7] px-[10px] rounded-[6%] cursor-pointer">comfirm</button>

@@ -2,3 +2,11 @@
     height: 100%;
     width: 100%;
 }
+.fc-daygrid-day-frame:hover{
+    cursor: pointer;
+    background-color: #f5f5f7;
+}
+.fc-event-title-container:hover{
+    cursor: pointer;
+    background-color: #1f63a3;
+}

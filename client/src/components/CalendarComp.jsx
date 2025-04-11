@@ -4,55 +4,22 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import AddTaskPopup from "./AddTaskPopup";
+import ViewTaskModal from "./ViewTaskModal";
 import "./CalendarComp.css"
 import axios from "axios";
 
 
 const CalendarComp = () => {
-  const [modalState, setModalState] = useState(false);
+  const [modalStateAdd, setmodalStateAdd] = useState(false);
+  const [modalStateView, setModalStateView] = useState(false);
 
   const [selectedDateInfo, setSelectedDateInfo] = useState(null)
+  const [selectedEvent,setSelectedEvent] = useState(null);
   const [currentEvents, setCurrentEvents] = useState([]);
 
-  function openModal() {
-    setModalState(!modalState);
-  }
   const handleDateSelect = async (selectInfo) => {
     setSelectedDateInfo(selectInfo);
-    setModalState(true);
-    // const title = prompt("Please enter a new title for your event");            //CHANGE THIS FOR A CUSTOM POPUP
-    // const calendarApi = selectInfo.view.calendar;
-
-    // calendarApi.unselect(); // clear date selection
-
-    // if (title) {
-    //   try {
-
-    //     const newEvent = {
-    //       title,
-    //       start: selectInfo.startStr,
-    //       end: selectInfo.endStr,
-    //       allDay: selectInfo.allDay,
-    //     };
-
-
-    //     const response = await axios.post("http://localhost:5001/Calendar", newEvent);
-
-    //     if (response.data) {
-    //       const savedTask = response.data;
-    //       console.log("Task created:", savedTask);
-
-    //       calendarApi.addEvent({
-    //         id: savedTask._id,
-    //         ...newEvent
-    //       });
-
-    //     }
-
-    //   } catch (error) {
-    //     console.error("Error adding event:", error);
-    //   }
-    // }
+    setmodalStateAdd(true);
   };
   const handleEventSubmission = async (formData) =>{
     const calendarApi = selectedDateInfo.view.calendar;
@@ -83,22 +50,41 @@ const CalendarComp = () => {
     };
 
     // Close the modal and clear our saved selection.
-    setModalState(false);
+    setmodalStateAdd(false);
     setSelectedDateInfo(false);
 
   };
-  const handleEventClick = async (selected) => {
-    if (window.confirm(`Are you sure you want to delete the event '${selected.event.title}'`)) {        //CHANGE THIS FOR A CUSTOM POPUP
-      try {
-        console.log("xdd is ", selected.event.id);
-        const response = await axios.delete(`http://localhost:5001/calendar/${selected.event.id}`);
-        selected.event.remove();
+  // const handleEventClick = async (selected) => {
+  //   if (window.confirm(`Are you sure you want to delete the event '${selected.event.title}'`)) {        //CHANGE THIS FOR A CUSTOM POPUP
+  //     try {
+  //       console.log("xdd is ", selected.event.id);
+  //       const response = await axios.delete(`http://localhost:5001/calendar/${selected.event.id}`);
+  //       selected.event.remove();
 
-      } catch (error) {
-        console.error("Error deleting task:", error);
-      }
+  //     } catch (error) {
+  //       console.error("Error deleting task:", error);
+  //     }
+  //   }
+  // };
+  const handleEventClick = async (selected) => {
+    setSelectedEvent(selected.event);
+    setModalStateView(true);
+  };
+  const handleEventDelete = async () => {
+    if (!selectedEvent) return;
+
+    try {
+      console.log("Deleting event id:", selectedEvent.id);
+      await axios.delete(`http://localhost:5001/calendar/${selectedEvent.id}`);
+      selectedEvent.remove();
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    } finally {
+      setModalStateView(false);
+      setSelectedEvent(null); // Clear the selected event
     }
   };
+  
   return (
     <>
       <FullCalendar
@@ -127,7 +113,9 @@ const CalendarComp = () => {
           ]
         }
       />
-     <AddTaskPopup toggle={modalState} onSubmit={handleEventSubmission} onClose={()=>{openModal(); setSelectedDateInfo(null);}} />
+     <AddTaskPopup toggle={modalStateAdd} onSubmit={handleEventSubmission} onClose={()=>{setmodalStateAdd(!modalStateAdd); setSelectedDateInfo(null);}} />
+    <ViewTaskModal toggle={modalStateView} action={()=>{setModalStateView(!modalStateView); setSelectedEvent(null);}} onSubmit={handleEventDelete} />
+
     </>
   );
 }
