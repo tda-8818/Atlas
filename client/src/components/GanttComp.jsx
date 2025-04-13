@@ -38,7 +38,7 @@ export default class GanttComp extends Component {
 
   render() {
     return (
-        <div ref={(input) => { this.ganttContainer = input }} className='h-[80vh] mr-[20px] '></div>
+        <div ref={(input) => { this.ganttContainer = input }} className='h-[85vh] w-full mr-[20px] '></div>
     );
   }
 }

@@ -14,30 +14,30 @@ const ProjectHeader = ({ projectName }) => {
     </div>
     <div className="nav">
         <ul className='flex mt-[3px] ml-[10px]  text-[16px]'>
-            <li><a href="">
+            <li><a href="/Home">
                 <button className='px-[10px] rounded-[6%] hover:bg-[#f5f5f7] hover:text-black  cursor-pointer'>                          
                     <RxDashboard className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
                     Dashboard</button>
                     </a>
                     </li>
             <li>
-                <a href=""><button className='px-[10px] rounded-[6%] hover:bg-[#f5f5f7] hover:text-black  cursor-pointer'>
+                <a href="/Kanban"><button className='px-[10px] rounded-[6%] hover:bg-[#f5f5f7] hover:text-black  cursor-pointer'>
                     <LuSquareKanban className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
                     Kanban Board
                     </button>
                     </a>
                     </li>
-            <li><a href="">
+            <li><a href="/Calendar">
                 <button className='px-[10px] rounded-[6%] hover:bg-[#f5f5f7] hover:text-black  cursor-pointer'>
                 <RxCalendar className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
 
                     Calendar</button>
                     </a>
                     </li>
-            <li><a href=""><button className='px-[10px] rounded-[6%] hover:bg-[#f5f5f7] hover:text-black  cursor-pointer'>
+            <li><a href="/Gantt"><button className='px-[10px] rounded-[6%] hover:bg-[#f5f5f7] hover:text-black  cursor-pointer'>
                 <LuChartGantt className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
                 Gantt Chart</button></a></li>
-            <li><a href=""><button className='px-[10px] rounded-[6%] hover:bg-[#f5f5f7] hover:text-black  cursor-pointer'>
+            <li><a href="/Messages"><button className='px-[10px] rounded-[6%] hover:bg-[#f5f5f7] hover:text-black  cursor-pointer'>
                 <LuMessageSquareMore className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
                 Messages</button></a></li>
         </ul>

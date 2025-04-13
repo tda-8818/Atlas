@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar"; // ✅ 导入你的侧边栏
+import ProjectHeader from "../components/ProjectHeader";
 import "./css/Kanban.css";
 
 const defaultProject = {
@@ -83,7 +84,9 @@ const Kanban = () => {
     <div>
       {/* ✅ Navbar stays fixed on the left */}
       <Navbar />
-
+      <div className=" ml-[15%] w-[85%] h-[9vh]">
+                <ProjectHeader title="Calendar" />
+      </div>
       {/* ✅ Main content shifted right by 15% */}
       <div className="p-4 font-sans ml-[15%]">
         {/* Project Controls */}
