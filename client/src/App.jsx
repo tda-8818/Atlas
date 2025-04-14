@@ -49,7 +49,9 @@ function Layout (){
 // }
 
 function App() {
+
   return (
+   <div className="dark">
     <Routes>
       <Route path='/' element={<Signup/>}/>
       <Route path='/signup' element={<Signup/>}/>
@@ -59,7 +61,7 @@ function App() {
       <Route path='/gantt' element={<Gantt/>}/>
       <Route path='/kanban' element={<Kanban/>} />
     </Routes>
-  
+    </div>
   );
 
 }

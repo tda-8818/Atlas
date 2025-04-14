@@ -1,12 +1,15 @@
+@import "../index.css";
+
 .fc-media-screen{
     height: 100%;
     width: 100%;
+    object-fit: contain;
 }
 .fc-daygrid-day-frame:hover{
     cursor: pointer;
-    background-color: #f5f5f7;
+    background-color: var(--nav-hover);
 }
 .fc-event-title-container:hover{
     cursor: pointer;
-    background-color: #1f63a3;
+    background-color: var(--text-hover);
 }

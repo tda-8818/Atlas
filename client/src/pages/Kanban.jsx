@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar"; // ✅ 导入你的侧边栏
 import ProjectHeader from "../components/ProjectHeader";
-import "./css/Kanban.css";
 
 const defaultProject = {
   name: "Project A",
