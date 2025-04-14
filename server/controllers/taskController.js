@@ -1,38 +1,32 @@
 import Task from '../models/TaskModel.js';
-//import Project from '../models/ProjectModel.js';
-
-// // Generic function to get all tasks
-// export const getAllTasks = async (req, res) => {
-//     try {
-//       const tasks = await Task.find();  // Example of fetching tasks
-//       res.status(200).json(tasks);
-//       console.log('getAllTasks has been executed');
-//     } catch (error) {
-//       res.status(500).json({ message: 'Error fetching tasks', error });
-//     }
-//   };
   
-// export const getAllTasks = async (req, res) => {
+// export const getTask = async (req, res) => {
 //     try {
-//         const tasks = await Task.find();
-//         console.log("Fetched tasks:", tasks);  // Debugging log
-//         res.status(200).json(tasks);
+//         const { due_date } = req.body;
+//         console.log("req.params is:", due_date);  // Debugging log
+//         res.status(200).json(due_date);
 //     } catch (error) {
 //         console.error("Error fetching tasks:", error);
 //         res.status(500).json({ message: "Error fetching tasks", error });
 //     }
 // };
 
-//export const moveCard = async (req, res) = { };
-  
 export const getTask = async (req, res) => {
     try {
-        const { due_date } = req.body;
-        console.log("req.params is:", due_date);  // Debugging log
-        res.status(200).json(due_date);
+        const tasks = await Task.find(); // or filter by project/user/etc
+
+        const calendarEvents = tasks.map(task => ({
+            id: task._id,
+            title: task.title,
+            start: task.startDate,
+            end: task.dueDate,
+            allDay: true, // optional: assume all tasks span full days
+            description: task.description,
+        }));
+
+        res.status(200).json(calendarEvents);
     } catch (error) {
-        console.error("Error fetching tasks:", error);
-        res.status(500).json({ message: "Error fetching tasks", error });
+        res.status(500).json({ message: 'Error fetching tasks', error });
     }
 };
 

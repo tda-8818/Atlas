@@ -3,7 +3,7 @@ import { getTask, createTask, editTask, deleteTask, createEvent } from '../contr
 
 const router = express.Router();
 
-router.get('/', getTask);
+router.get('/calendar', getTask);
 
 //router.post('/', createEvent);
 router.post('/', createTask);

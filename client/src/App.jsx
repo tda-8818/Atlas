@@ -58,6 +58,7 @@ function App() {
       <Route path='/calendar' element={<Calendar/>}/>
       <Route path='/gantt' element={<Gantt/>}/>
       <Route path='/kanban' element={<Kanban/>} />
+      <Route path='/settings' element={<Settings/>} />
     </Routes>
   
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -61,7 +61,18 @@ const Calendar = () => {
         }
     };
 
-
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const response = await axios.get("http://localhost:5001/calendar"); // adjust if endpoint is different
+                setCurrentEvents(response.data); // stores events in state
+            } catch (error) {
+                console.error("Error fetching calendar events:", error);
+            }
+        };
+    
+        fetchEvents();
+    }, []);
     return (
         <>
             <div>
@@ -97,13 +108,14 @@ const Calendar = () => {
                         // eventContent={renderEventContent} // custom render function
                         eventClick={handleEventClick}
                         eventsSet={(events) => setCurrentEvents(events)} // called after events are initialized/added/changed/removed
-                        initialEvents={
-                            [
-                                { id: 1, title: "event 1", date: "2025-03-01" },
-                                { id: 2, title: "event 2", date: "2025-03-02" },
-                                { id: 3, title: "event 3", date: "2025-03-03" }
-                            ]
-                        }
+                        // initialEvents={
+                        //     [
+                        //         { id: 1, title: "event 1", date: "2025-03-01" },
+                        //         { id: 2, title: "event 2", date: "2025-03-02" },
+                        //         { id: 3, title: "event 3", date: "2025-03-03" }
+                        //     ]
+                        // }
+                        events={currentEvents}
                     />
                 </div>
             </div>
