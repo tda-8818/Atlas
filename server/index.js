@@ -1,4 +1,4 @@
-/**
+ /**
  * index.js is the entry point of the server. It is the file that is run when you start the server.
  * - It is responsible for creating the server, connecting to the database, and defining the routes.
  * - Handles API endpoints for user login and signup.
@@ -11,7 +11,7 @@ import bcrypt from 'bcryptjs';
 import path from 'path'; // Path module provides utilities for working with file and directory paths
 import { fileURLToPath } from 'url'; // fileURLToPath is used to convert a URL to a file path
 //import userController from './userController.js';
-
+import userRoutes from './routes/userRoutes.js';
 // Create an Express server
 const app = express();
 const port = 5001;
@@ -97,6 +97,7 @@ app.get('/users', async (req, res) => {
     }
 });
 
+app.use('/settings', userRoutes);
 
 // Start the Express server
 app.listen(port, () => {

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Task from "./task.model.js";
+import Task from "./TaskModel.js";
 // TODO: LEARN MONGOOSE SCHEMA 
 // https://mongoosejs.com/ READ THE DOCS
 
