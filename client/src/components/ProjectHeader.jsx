@@ -14,7 +14,7 @@ const ProjectHeader = ({ projectName }) => {
     </div>
     <div className="nav">
         <ul className='flex mt-[3px] ml-[10px]  text-[16px]'>
-            <li><a href="/Home">
+            <li><a href="/Dashboard">
                 <button className='px-[10px] rounded-[6%] bg-[var(--background)]  hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] text-[var(--nav-text)] cursor-pointer'>                          
                     <RxDashboard className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
                     Dashboard</button>
