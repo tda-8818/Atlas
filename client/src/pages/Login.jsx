@@ -19,7 +19,7 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      
+      console.log("login data:", data)
       // 2. Make login request
       await login(data).unwrap();
       

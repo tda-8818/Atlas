@@ -14,6 +14,7 @@ const cookieOptions = {
 // Login controller
 export const login = async (req, res) => {
   try {
+    
     const { email, password } = req.body;
 
     // Validation
@@ -39,12 +40,10 @@ export const login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '7d' } // Match cookie maxAge
     );
-    console.log('Generated token:', token);
-
+    
     // Set HTTP-only cookie
     res.cookie('token', token, cookieOptions);
-    console.log('Cookie options set');
-
+    
     // Return user data (without sensitive info)
     res.status(200).json({
       user: {

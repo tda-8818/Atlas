@@ -8,6 +8,7 @@ import cors from 'cors'; // CORS is a Connect/Express middleware for handling cr
 import userRoutes from './routes/userRoutes.js';
 import mongoose from 'mongoose'; // Mongoose used for connecting to MongoDB
 import dotenv from 'dotenv'; 
+import cookieParser from 'cookie-parser';
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -16,14 +17,16 @@ const app = express();
 const port = process.env.PORT || 5001;
 
 // Middleware set up:
+app.use(express.json());
+app.use(cookieParser());
 app.use(cors({
     origin: 'http://localhost:5173', 
     credentials: true, // for cookies
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     exposedHeaders: ['set-cookie']
 })); 
-app.options('*', cors());
-app.use(json()); // parse incoming JSON requests
+//app.use(json()); // parse incoming JSON requests
+
 const mongoURI = process.env.MONGO_URI; // MongoDB connection URI
 
 // Connect to the MongoDB database

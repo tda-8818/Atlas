@@ -2,31 +2,33 @@
 import jwt from 'jsonwebtoken';
 import UserModel from '../models/UserModel.js'
 
-console.log('AuthMiddleware initialized');  // Should log on server start
-
 const authMiddleware = async (req, res, next) => {
   try {
 
-    console.log('Incoming cookies:', req.cookies);
-    console.log('Headers:', req.headers.cookie);
     // 1. Get token from cookies
-    console.log('🔑 Token verification started');
+   
     const token = req.cookies.token;
 
-
-
     if (!token) {
-      console.log('❌ No token provided');
       return res.status(401).json({ message: 'Not authorized, no token' });
     }
 
     // 2. Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Decoded:', decoded);  // 🚨 Log the decoded payload
 
+    console.log('Looking up user:', decoded.id);
     // 3. Check user exists
     const user = await UserModel.findById(decoded.id).select('-password');
 
+    if (!user) {
+      console.log('❌ User not found for token');
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log('✅ Authenticated user:', user.email);
+    req.user = user;
+    next();
+    
     next();
   } catch (error) {
     res.status(401).json({ message: 'Not authorized, token failed' });
