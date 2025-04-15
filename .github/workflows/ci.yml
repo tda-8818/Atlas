@@ -2,9 +2,9 @@ name: MERN Stack CI
 
 on:
   push:
-    branches: [ main, project-restructure ]
+    branches: [ main, project_restructure ]
   pull_request:
-    branches: [ main, project-restructure ]
+    branches: [ main, project_restructure ]
 
 jobs:
   build-and-test:
