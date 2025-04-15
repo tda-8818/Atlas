@@ -19,15 +19,15 @@ jobs:
       with:
         node-version: '18'
         
-    # Server tests
-    - name: install server dependencies
-      working-directory: ./server
-      run: |
-        npm ci
-        npm install jsonwebtoken
-        npm install bcrypt
-        npm install express-rate-limit
-        npm install eslint
+    # # Server tests
+    # - name: install server dependencies
+    #   working-directory: ./server
+    #   run: |
+    #     npm ci
+    #     npm install jsonwebtoken
+    #     npm install bcrypt
+    #     npm install express-rate-limit
+    #     npm install eslint
       
     - name: Run server linting/tests
       working-directory: ./server
