@@ -1,23 +1,32 @@
 import React from 'react';
-import logoName from '../assets/logoName.png';
+import logo from '../assets/logo.png';
 
-import { RxDashboard, RxCalendar } from "react-icons/rx";
+import { RxDashboard, RxCalendar,RxHome } from "react-icons/rx";
 import { LuChartGantt, LuMessageSquareMore, LuSquareKanban } from "react-icons/lu";
 import UserAvatar from './UserAvatar';
 
 
 const Navbar = () => {
     return (
-        <nav className="fixed bg-white h-full w-[15%] border-r-[3px] border-[#f5f5f7]">
+        <nav className="fixed bg-[var(--background)] h-full w-[15%] border-r-[3px] border-[var(--border-color)]">
             <div className="w-full">
-                <a href="/Home" className="block">
-                    <img src={logoName} alt="Logo" className="w-full" />
+                <a href="/Home" className="flex items-center bg-[var(--background)] my-[15px] mx-[40px]">
+                    <img src={logo} alt="Logo" className="w-[30%]" />
+                    <h1 className='text-[var(--text)] font-extrabold text-lg'>UniFlow</h1>
                 </a>
             </div>
             <ul className="p-0 m-0 mb-[60px] w-full">
+            <li >
+                    <a href="/Home">
+                        <button className="list-none bg-[var(--background)] text-[var(--nav-text)] py-[15px] px-[20px] rounded-[6%] mx-[20px] hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] cursor-pointer">
+                            <RxHome className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
+                            Home
+                        </button>
+                    </a>
+                </li>
                 <li >
                     <a href="/Home">
-                        <button className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer">
+                        <button  className="list-none bg-[var(--background)] text-[var(--nav-text)] py-[15px] px-[20px] rounded-[6%] mx-[20px] hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] cursor-pointer">
                             <RxDashboard className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
                             Dashboard
                         </button>
@@ -25,7 +34,7 @@ const Navbar = () => {
                 </li>
                 <li>
                     <a href="/Calendar">
-                        <button className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer">
+                        <button  className="list-none bg-[var(--background)] text-[var(--nav-text)] py-[15px] px-[20px] rounded-[6%] mx-[20px] hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] cursor-pointer">
                             <RxCalendar className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
                             Calendar
                         </button>
@@ -33,7 +42,7 @@ const Navbar = () => {
                 </li>
                 <li>
                     <a href="/Gantt">
-                        <button className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer">
+                        <button  className="list-none bg-[var(--background)] text-[var(--nav-text)] py-[15px] px-[20px] rounded-[6%] mx-[20px] hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] cursor-pointer">
                             <LuChartGantt className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
                             Gantt Chart
                         </button>                    
@@ -41,7 +50,7 @@ const Navbar = () => {
                 </li>
                 <li>
                     <a href="/Kanban">
-                        <button className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer">
+                        <button  className="list-none bg-[var(--background)] text-[var(--nav-text)] py-[15px] px-[20px] rounded-[6%] mx-[20px] hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] cursor-pointer">
                             <LuSquareKanban className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
                             Task
                         </button>                    
@@ -49,7 +58,7 @@ const Navbar = () => {
                 </li>
                 <li>
                     <a href="/Messages">
-                        <button className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer">
+                        <button  className="list-none bg-[var(--background)] text-[var(--nav-text)] py-[15px] px-[20px] rounded-[6%] mx-[20px] hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] cursor-pointer">
                             <LuMessageSquareMore className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
                             Messages
                         </button>                    

@@ -1,6 +1,7 @@
 import React from 'react'
 import Navbar from '../components/Navbar'
 import GanttComp from '../components/GanttComp'
+import ProjectHeader from '../components/ProjectHeader'
 
 
 
@@ -20,13 +21,11 @@ const Gantt = () => {
             <div className='fixed'>
             <Navbar />
             </div>
+            <div className=" ml-[15%] w-[85%] h-[9vh]">
+                <ProjectHeader title="Calendar" />
+            </div>
 
-            <div className="pl-[15%] pt-[20px]">
-                <div className='relative pl-[20px]'>
-                <h1 className="text-2xl font-bold">Gantt Chart</h1>
-                <p className="text-lg">Project Name</p>
-                </div>
-                
+            <div className="pl-[15%] pt-[20px]">                
                 <div className='relative'>
                 <GanttComp tasks={data}/>
                 </div>
