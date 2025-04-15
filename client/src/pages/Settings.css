@@ -192,4 +192,27 @@
   .settings-container.dark .upload-placeholder {
     color: #94a3b8;
   }
+  .back-button {
+    background: none;
+    border: none;
+    color: #4f46e5;
+    font-weight: 500;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+  }
+  
+  .back-button:hover {
+    color: #3730a3;
+  }
+  
+  .settings-container.dark .back-button {
+    color: #a5b4fc;
+  }
+  
+  .settings-container.dark .back-button:hover {
+    color: #c7d2fe;
+  }
   

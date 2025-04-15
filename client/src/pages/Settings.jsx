@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import "./Settings.css"; 
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
+  const navigate = useNavigate();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -35,6 +37,10 @@ const Settings = () => {
 
   return (
     <div className={`settings-container ${isDarkMode ? "dark" : ""}`}>
+      <button className="back-button" onClick={() => navigate("/")}>
+        ← Back to Home
+      </button>
+
       <h1 className="settings-title">Settings</h1>
 
       {/* General Info */}
