@@ -113,8 +113,21 @@ export const signup = async (req, res) => {
 
 // Logout Controller
 export const logout = (req, res) => {
-  res.clearCookie('token', cookieOptions);
-  res.status(200).json({ message: 'Logged out successfully' });
+  try {
+    // Remove the cookie without unnecessary options
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+      domain: process.env.NODE_ENV === 'development' ? 'localhost' : 'yourdomain.com'
+    });
+    
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'Logout failed' });
+  }
 };
 
 // Get user controller
