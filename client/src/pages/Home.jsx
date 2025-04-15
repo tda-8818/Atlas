@@ -1,8 +1,41 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar"; // Your existing Navbar
-import "./css/Home.css"; // Correct path
+import "./css/Home.css"; // Correct pathimport { useGetCurrentUserQuery } from '../redux/slices/apiSlice';
+
 
 const Home = () => {
+    const [firstName, setFirstName] = useState('');
+    const { data: currentUser, isLoading, isError } = useGetCurrentUserQuery();
+
+    useEffect(() => {
+        if (currentUser?.user?.firstName) {
+            setFirstName(currentUser.user.firstName);
+        }
+    }, [currentUser]);
+
+    if (isLoading) return <div>Loading...</div>;
+    if (isError) return <div>Error loading user data</div>;
+
+    return (
+        <>
+            <Navbar />
+            <div className="inline-block ml-[15%] w-[55%] h-[100vh]">
+                <div className="m-[35px]">
+                    <div className="ml-[10px]">
+                        <h1 className='font-bold text-[20px]'>Hi, {firstName}</h1>
+                        <h2>Let's finish your task today</h2>
+                    </div>
+                </div>
+            </div>
+            <div className="inline-block h-[100vh] w-[30%] bg-[#f5f5f7] float-right">
+                <div className="m-[40px] bg-white h-[20vh]">calendar</div>
+                <div className="m-[40px] bg-white h-[65vh]">
+                    task today
+                </div>
+            </div>
+        </>
+    )
+}
   const [projects, setProjects] = useState([
     {
       title: "Creating Mobile App Design",
