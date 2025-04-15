@@ -1,5 +1,5 @@
 import React from 'react';
-import logoName from '../assets/logoName.png';
+import logo from '../assets/logo.png';
 
 import { RxDashboard, RxCalendar,RxHome } from "react-icons/rx";
 import { LuChartGantt, LuMessageSquareMore, LuSquareKanban } from "react-icons/lu";
@@ -10,8 +10,9 @@ const Navbar = () => {
     return (
         <nav className="fixed bg-[var(--background)] h-full w-[15%] border-r-[3px] border-[var(--border-color)]">
             <div className="w-full">
-                <a href="/Home" className="block">
-                    <img src={logoName} alt="Logo" className="w-full" />
+                <a href="/Home" className="flex items-center bg-[var(--background)] my-[15px] mx-[40px]">
+                    <img src={logo} alt="Logo" className="w-[30%]" />
+                    <h1 className='text-[var(--text)] font-extrabold text-lg'>UniFlow</h1>
                 </a>
             </div>
             <ul className="p-0 m-0 mb-[60px] w-full">

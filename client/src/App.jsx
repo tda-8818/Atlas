@@ -51,7 +51,7 @@ function Layout (){
 function App() {
 
   return (
-   <div className="dark">
+   <div className="light">
     <Routes>
       <Route path='/' element={<Signup/>}/>
       <Route path='/signup' element={<Signup/>}/>
