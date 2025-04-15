@@ -1,15 +1,4 @@
 import Task from '../models/TaskModel.js';
-  
-// export const getTask = async (req, res) => {
-//     try {
-//         const { due_date } = req.body;
-//         console.log("req.params is:", due_date);  // Debugging log
-//         res.status(200).json(due_date);
-//     } catch (error) {
-//         console.error("Error fetching tasks:", error);
-//         res.status(500).json({ message: "Error fetching tasks", error });
-//     }
-// };
 
 export const getTask = async (req, res) => {
     try {
