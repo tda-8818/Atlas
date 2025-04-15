@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Calendar from "./pages/Calendar";
-import Kanban from "./pages/Kanban"; 
+import Kanban from "./pages/Kanban";
 import Gantt from "./pages/Gantt";
 import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
@@ -26,26 +26,27 @@ function App() {
   if (isLoading) return <div>Loading...</div>;
 
   return (
-   <div className="light">
-    <Routes>
-      {/* Public routes */}
-      <Route path="/login" element={!user ? <Login /> : <Navigate to="/home" replace />} />
-      <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/home" replace />} />
+    <div className="light">
+      <Routes>
+        {/* Public routes */}
+        <Route path="/login" element={!user ? <Login /> : <Navigate to="/home" replace />} />
+        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/home" replace />} />
 
-      {/* Protected routes */}
-      <Route path="/" element={user ? <Outlet /> : <Navigate to="/login" replace />}>
-        <Route index element={<Navigate to="/home" replace />} />
-        <Route path="home" element={<Home />} />
-        <Route path="calendar" element={<Calendar />} />
-        <Route path="kanban" element={<Kanban />} />
-        <Route path="gantt" element={<Gantt />} />
-        <Route path="settings" element={<Settings />} />
-        
-      </Route>
+        {/* Protected routes */}
+        <Route path="/" element={user ? <Outlet /> : <Navigate to="/login" replace />}>
+          <Route index element={<Navigate to="/home" replace />} />
+          <Route path="home" element={<Home />} />
+          <Route path="calendar" element={<Calendar />} />
+          <Route path="kanban" element={<Kanban />} />
+          <Route path="gantt" element={<Gantt />} />
+          <Route path="settings" element={<Settings />} />
 
-      {/* Catch-all route */}
-      <Route path="*" element={<Navigate to={user ? "/home" : "/login"} replace />} />
-    </Routes>
+        </Route>
+
+        {/* Catch-all route */}
+        <Route path="*" element={<Navigate to={user ? "/home" : "/login"} replace />} />
+      </Routes>
+    </div>
   );
 }
 
