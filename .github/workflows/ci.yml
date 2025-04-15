@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, project-restructure ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, project-restructure ]
 
 jobs:
   build-and-test:
