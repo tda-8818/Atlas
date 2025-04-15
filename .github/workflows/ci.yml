@@ -35,7 +35,7 @@ jobs:
     - name: install server dependencies
       working-directory: ./server
       run: |
-        npm install
+        npm ci
         npm install jsonwebtoken
         npm install bycrypt
         npm install express-rate-limit
@@ -44,7 +44,7 @@ jobs:
     - name: Install client dependencies
       working-directory: ./client
       run: |
-        npm install
+        npm ci
         npm install @tailwindcss/vite fullcalendar
         npm install @fullcalendar/react @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction @fullcalendar/core
         npm install @headlessui/react
