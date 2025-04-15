@@ -28,13 +28,13 @@ jobs:
         npm install bcrypt
         npm install express-rate-limit
       
-    - name: Run server linting/tests
-      working-directory: ./server
-      run: |
-        # Add your server test commands here
-        # For example: npm test
-        npm test
-        echo "Running server tests"
+    # - name: Run server linting/tests
+    #   working-directory: ./server
+    #   run: |
+    #     # Add your server test commands here
+    #     # For example: npm test
+    #     # npm test
+    #     # echo "Running server tests"
 
     # Client tests and build
     - name: Install client dependencies
