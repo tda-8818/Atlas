@@ -1,29 +1,43 @@
 /**
  * Manages authentication state.
  */
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
+// verify
 const initialState = {
-  user: localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user"))
-    : null,
-  isAuthenticated: false,
+  user: null,
+  isLoading: false,
+  error: null
 };
+
+// Add async thunk to make api call to server to check if user's token is still valid
+export const verifyAuth = createAsyncThunk(
+  'auth/verify',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get('/api/users/me', { 
+        withCredentials: true 
+      });
+      return response.data.user;
+    } catch (error) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    login: (state, action) => {
-        state.user = action.payload;
-        localStorage.setItem("user", JSON.stringify(action.payload));
-        state.isAuthenticated = true;
+    setUserCredentials: (state, action) => {
+      state.user = action.payload.user;
     },
     logout: (state) => {
-        state.user = null;
-        localStorage.removeItem("user");
-        state.isAuthenticated = false;
+      state.user = null;
     },
+    updateUser: (state, action) => {
+      state.user = action.payload;
+    }
   },
 });
 

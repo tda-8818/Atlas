@@ -24,18 +24,62 @@ const Signup = () => {
     const onSubmit = async (data) => {
         setError(""); // Reset error message
         setSuccess(""); // Reset success message
-        // Check if passwords match
 
         try {
-            // API endpoint for sign up
-            const response = await axios.post("http://localhost:5001/signup", data);
-            setSuccess("Signup successful. Please login.");
-            console.log(response.data);
-        } catch (axiosError) {
-                setError(axiosError.response.data.message);
-            // } else {
-            //     setError('Network error. Please try again.', axiosError.response.data.message);
-            // }
+            // Convert email, firstName, and lastName to lowercase
+            const userData = {
+                ...data,
+                email: data.email.toLowerCase(),
+                firstName: data.firstName.toLowerCase(),
+                lastName: data.lastName.toLowerCase(),
+            };
+
+            // Remove confirmPassword from data before sending to API
+            delete userData.confirmPassword;
+
+            // API endpoint for signup
+            const response = await axios.post(
+                "/api/users/signup",
+                userData,
+                {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            setSuccess("Account created successfully! Redirecting to login...");
+            reset();
+
+            // Redirect after 2 seconds
+            setTimeout(() => navigate('/home'), 2000);
+
+        } catch (error) {
+            // Enhanced error handling
+            if (error.response) {
+                switch (error.response.status) {
+                    case 400:
+                        if (error.response.data?.message?.includes('already exists')) {
+                            setError("An account with this email already exists");
+                        } else {
+                            setError("Invalid registration data. Please check your inputs.");
+                        }
+                        break;
+                    case 409:
+                        setError("An account with this email already exists.");
+                        break;
+                    case 500:
+                        setError("Server error. Please try again later.");
+                        break;
+                    default:
+                        setError("Registration failed. Please try again.");
+                }
+            } else if (error.request) {
+                setError("Network error. Please check your connection.");
+            } else {
+                setError("An unexpected error occurred.");
+            }
         }
     };
     

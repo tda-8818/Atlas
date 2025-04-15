@@ -6,6 +6,8 @@ import {Button} from "@headlessui/react";
 import { useSelector, useDispatch } from "react-redux";
 import logo from "../assets/logo.png";
 import axios from "axios";
+import { setUserCredentials } from "../redux/slices/authSlice";
+import { useLoginMutation } from "../redux/slices/apiSlice";
 
 /**
  * 
@@ -24,21 +26,19 @@ const Login = () => {
   const navigate = useNavigate(); 
   const dispatch = useDispatch(); // useDispatch hook to dispatch actions
 
+  const [login] = useLoginMutation();
+
   // Handles form submission using async function
-  const submitHandler = async (data) => {
+  const handleLogin = async (credentials) => {
     try {
-      // API endpoint for login
-      const response = await axios.post("http://localhost:5001/login", data);
-      // If login is successful, navigate to home page
-      if (response.data) {
-        // dispatch login action
-        dispatch({ type: "LOGIN", payload: response.data });
-        navigate("/home");
-      }
-    }
-    catch (error) {
-      console.error(error);
-      alert("Invalid email or password"); // Show error message to user
+      const response = await axios.post('/api/users/login', credentials, {
+        withCredentials: true // Crucial for cookies
+      });
+      
+      dispatch(setUserCredentials(response.data.user));
+      navigate('/home');
+    } catch (error) {
+      console.error('Login error:', error);
     }
   };
 
@@ -63,7 +63,7 @@ const Login = () => {
         {/* right side */}
         <div className='w-full md:w-1/3 p-4 md:p-1 flex flex-col justify-center items-center'>
           <form
-            onSubmit={handleSubmit(submitHandler)}
+            onSubmit={handleSubmit(handleLogin)}
             className='form-container w-full md:w-[400px] flex flex-col gap-y-8 bg-white px-10 pt-14 pb-14'
           >
             <div className=''>

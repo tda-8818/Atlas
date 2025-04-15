@@ -2,6 +2,25 @@ import UserModel from '../models/UserModel.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+import mongoose from 'mongoose';
+
+
+// Add this temporary route for testing
+export const testUser = async (req, res) => {
+  try {
+    const count = await User.countDocuments({});
+    res.json({ 
+      success: true,
+      userCount: count 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
+  }
+};
+
 // Cookie configuration (reusable across routes)
 const cookieOptions = {
   httpOnly: true,
@@ -23,11 +42,16 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Add validation
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Please provide email and password' });
+    }
+
     // 1. Check if user exists
-    const user = await User.findOne({ email }).select('+password');
+    const user = await UserModel.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({
-        status: 'fail',
+        success: false,
         message: 'Invalid email or password',
       });
     }
@@ -36,7 +60,7 @@ export const login = async (req, res) => {
     const isCorrect = await bcrypt.compare(password, user.password);
     if (!isCorrect) {
       return res.status(401).json({
-        status: 'fail',
+        success: false,
         message: 'Invalid email or password',
       });
     }
@@ -49,11 +73,12 @@ export const login = async (req, res) => {
 
     // 5. Send response
     res.status(200).json({
-      status: 'success',
+      success: true,
       data: {
         user: {
           id: user._id,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
         },
       },
@@ -69,7 +94,7 @@ export const signup = async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
 
     // 1. check if user exists
-    const existingUser = await User.findOne({email});
+    const existingUser = await UserModel.findOne({email});
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -81,7 +106,7 @@ export const signup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // 3. create user
-    const user = await User.create({
+    const user = await UserModel.create({
       firstName,
       lastName,
       email,
@@ -127,12 +152,10 @@ export const logout = (req, res) => {
 // Get user controller
 export const getMe = async (req, res) => {
   try {
-    const userId = req.user.userId; // Get userId from the decoded JWT
-    const user = await UserModel.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    res.status(200).json({
+      success: true,
+      user: req.user // user already attached to req by authmiddleware
+    });
 
     const userData = {
       fullName: `${user.firstName} ${user.lastName}`,
@@ -149,4 +172,5 @@ export default {
   signup,
   logout,
   getMe,
+  testUser
 };

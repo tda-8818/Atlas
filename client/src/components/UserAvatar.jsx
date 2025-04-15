@@ -5,6 +5,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { LuSettings, LuUser, LuCircleArrowOutUpLeft } from 'react-icons/lu';
+import { logout as logoutAction } from "../redux/slices/authSlice";
+import { useLogoutMutation } from '../redux/slices/apiSlice';
 
 /**
  * Gets the initials given full name.
@@ -31,12 +33,13 @@ const UserAvatar = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null); // store user data
+    const [logout] = useLogoutMutation();
     
     // Fetch user data from API
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await axios.get('api/user/${user._id}'); // fetch user data from API
+                const response = await axios.get('api/users/me'); // fetch user data from API
                 setUserData(response.data);
             } catch (error) {
                 console.error('Error fetching user data:', error); 
@@ -52,9 +55,25 @@ const UserAvatar = () => {
 
 
     // dispatch logout action and navigate to login page
-    const handleLogout = () => {
-        dispatch({ type: 'LOGOUT' });
-        navigate('/login');
+    const handleLogout = async () => {
+        try {
+            // 1. Call the logout API endpoint
+            await logout().unwrap();
+            
+            // 2. Dispatch logout action to clear Redux state
+            dispatch(logout());
+            
+            // 3. Navigate to login page
+            navigate('/login');
+            
+            // Optional: Force reload to ensure all state is cleared
+            window.location.reload();
+          } catch (err) {
+            console.error('Failed to logout:', err);
+            // Fallback: Still clear local state if API fails
+            dispatch(logoutAction());
+            navigate('/login');
+          }
     };
     
     return <>

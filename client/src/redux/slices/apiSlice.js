@@ -5,17 +5,41 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const API_URL = "http://localhost:5000/api";
 
-const baseQuery = fetchBaseQuery({ baseUrl: API_URL }); // Base URL for API requests
-
-
 export const apiSlice = createApi({
-    baseQuery,
-    tagTypes: [],
-    endpoints: (builder) => ({}),
     reducerPath: 'api',
-    
-    // Define the endpoints for the API
+    baseQuery: fetchBaseQuery({
+        baseUrl: API_URL,
+        credentials: 'include', // This enables cookies
+        prepareHeaders: (headers) => {
+            // Remove localStorage token logic completely
+            return headers;
+        }
+    }),
     endpoints: (builder) => ({
+        // User endpoints
+        login: builder.mutation({
+            query: (credentials) => ({
+                url: '/users/login',
+                method: 'POST',
+                body: credentials
+            }),
+            invalidatesTags: ['User']
+        }),
+
+        logout: builder.mutation({
+            query: () => ({
+                url: '/users/logout',
+                method: 'POST',
+            }),
+        }),
+
+        // Current user endpoint
+        getCurrentUser: builder.query({
+            query: () => '/users/me',
+            providesTags: ['User']
+        }),
+
+        // Task endpoints
         getTasks: builder.query({
             query: () => '/tasks',
         }),
@@ -43,10 +67,14 @@ export const apiSlice = createApi({
 });
 
 export const {
+    useLoginMutation,
+    useLogoutMutation,
+    useGetCurrentUserQuery,
     useGetTasksQuery,
     useAddTaskMutation,
     useUpdateTaskMutation,
     useDeleteTaskMutation,
+
 } = apiSlice;
 
 export default apiSlice;
