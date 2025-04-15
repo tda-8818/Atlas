@@ -20,25 +20,21 @@ jobs:
         node-version: '18'
         
     # Server tests
-    - name: Install server dependencies
+    - name: install server dependencies
       working-directory: ./server
-      run: npm install
+      run: |
+        npm ci
+        npm install jsonwebtoken
+        npm install bcrypt
+        npm install express-rate-limit
       
     - name: Run server linting/tests
       working-directory: ./server
       run: |
         # Add your server test commands here
         # For example: npm test
-        npm run lint && npm test
+        npm test
         echo "Running server tests"
-
-    - name: install server dependencies
-      working-directory: ./server
-      run: |
-        npm ci
-        npm install jsonwebtoken
-        npm install bycrypt
-        npm install express-rate-limit
 
     # Client tests and build
     - name: Install client dependencies
@@ -56,24 +52,25 @@ jobs:
       run: |
         # Add your client test commands here
         # For example: npm test
-        npm run lint && npm test
+        npm run lint
+        npm test
         echo "Running client tests"
         
     - name: Build client
       working-directory: ./client
       run: npm run build
       
-    - name: Upload client build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: client-build
-        path: client/dist
+    # - name: Upload client build artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: client-build
+    #     path: client/dist
       
-    - name: Upload server artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: server-build
-        path: |
-          server/
-          !server/node_modules/
+    # - name: Upload server artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: server-build
+    #     path: |
+    #       server/
+    #       !server/node_modules/
     
