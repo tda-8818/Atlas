@@ -57,6 +57,12 @@ const Settings = () => {
                 className="hidden"
               />
             </div>
+          </Dialog>
+        </Transition>
+      </div>
+    </div>
+  );
+};
 
             <hr className="divider" />
 

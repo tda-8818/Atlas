@@ -1,39 +1,45 @@
 import { gantt } from 'dhtmlx-gantt';
 import React, { Component } from 'react';
 import 'dhtmlx-gantt/codebase/dhtmlxgantt.css';
+import axios from 'axios';
 
 export default class GanttComp extends Component {
   componentDidMount() {
-    gantt.config.date_format = '%d-%m-%Y %H:%i:%s';
-    const { tasks } = this.props;
-    gantt.init(this.ganttContainer);
-    gantt.parse(tasks);
+    if (!this.eventAttached) {
+      gantt.attachEvent("onAfterTaskAdd", async (id, task) => {
+        try {
+          // At this point, the id is created by the gantt API. We want to change this to the mongoID later on
+          const newTask = {
+            id: id,
+            title: task.text,
+            start: task.start_date,
+            duration: task.duration,
+            progress: task.progress,
+          };
+          
+          const response = await axios.post("http://localhost:5001/Gantt", newTask);
+          if (response.data){
+            console.log("response from server received. MongoID: ", response.data);
+            const savedTask = response.data;
+            // Change the ID to be the respective mongoDB id
+            // The mongoDB id can be found on task creation by sending a HTTP response 201 in taskController.js 
+            gantt.changeTaskId(newTask.id, savedTask._id);
 
-    gantt.attachEvent("onAfterTaskAdd", async (id, task) => {
-      console.log("New task added xdd:", task);
+            console.log(savedTask._id);
+          }
 
-      // try {
-      //   // Convert Gantt task to backend format
-      //   const newTask = {
-      //     title: task.text,
-      //     start: task.start_date,
-      //     duration: task.duration,
-      //     progress: task.progress,
-      //   };
+        } catch (error) {
 
-      //   // Send the task to the backend
-      //   const response = await axios.post("http://localhost:5001/gantt", newTask);
-      //   console.log("Task created:", response.data);
-
-      //   // Update the Gantt task ID with MongoDB _id
-      //   if (response.data && response.data._id) {
-      //     gantt.changeTaskId(id, response.data._id);
-      //   }
-      // } catch (error) {
-      //   console.error("Error creating task:", error);
+          console.error("Error creating task:", error);
+        }
       });
-  }
+      this.eventAttached = true;
+    }
 
+    gantt.config.date_format = '%d-%m-%Y %H:%i:%s';
+    gantt.init(this.ganttContainer);
+    gantt.parse(this.props.tasks);
+  }
 
 
   render() {

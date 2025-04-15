@@ -1,40 +1,32 @@
 import Task from '../models/TaskModel.js';
-//import Project from '../models/ProjectModel.js';
-
-// // Generic function to get all tasks
-// export const getAllTasks = async (req, res) => {
-//     try {
-//       const tasks = await Task.find();  // Example of fetching tasks
-//       res.status(200).json(tasks);
-//       console.log('getAllTasks has been executed');
-//     } catch (error) {
-//       res.status(500).json({ message: 'Error fetching tasks', error });
-//     }
-//   };
   
-// export const getAllTasks = async (req, res) => {
+// export const getTask = async (req, res) => {
 //     try {
-//         const tasks = await Task.find();
-//         console.log("Fetched tasks:", tasks);  // Debugging log
-//         res.status(200).json(tasks);
+//         const { due_date } = req.body;
+//         console.log("req.params is:", due_date);  // Debugging log
+//         res.status(200).json(due_date);
 //     } catch (error) {
 //         console.error("Error fetching tasks:", error);
 //         res.status(500).json({ message: "Error fetching tasks", error });
 //     }
 // };
 
-//export const moveCard = async (req, res) = { };
-  
 export const getTask = async (req, res) => {
     try {
+        const tasks = await Task.find(); // or filter by project/user/etc
 
-        const { due_date } = req.body;
+        const calendarEvents = tasks.map(task => ({
+            id: task._id,
+            title: task.title,
+            start: task.startDate,
+            end: task.dueDate,
+            allDay: true, // optional: assume all tasks span full days
+            description: task.description,
+        }));
 
-        console.log("req.params is:", due_date);  // Debugging log
-        res.status(200).json(due_date);
+        res.status(200).json(calendarEvents);
     } catch (error) {
-        console.error("Error fetching tasks:", error);
-        res.status(500).json({ message: "Error fetching tasks", error });
+        res.status(500).json({ message: 'Error fetching tasks', error });
     }
 };
 
@@ -50,16 +42,19 @@ export const createEvent = async (req, res) => {
 
 export const createTask = async (req, res) => {
     try {
-        const { title } = req.body;
-        console.log( title );
+        const { title, description, start, end } = req.body;
+        console.log("created tasks has been executed:");
+        console.log(title, start, end);
         // other data points required.
         // Not sure if the current HTML request sends any other information other than the title and the date.
         const newTask = new Task({
-            title
+            title,
+            description,
+            start_date:start,
+            due_date:end
+           
         })
-
         const savedTask = await newTask.save();
-        console.log('createTasks has been executed');
         res.status(201).json(savedTask);
     } catch (error) {
         console.error("Error creating task:", error);
@@ -67,10 +62,10 @@ export const createTask = async (req, res) => {
     }
 };
 
-
 export const editTask = async (req, res) => {
     try {
-        
+        const {taskId, title, description,
+        startDate, due_date} = req.body;
     } catch (error) {
         
     }

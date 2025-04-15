@@ -27,6 +27,8 @@ connect(MONGO_URI);
 // Routes
 app.use("/calendar", taskRoute);  // Now all "/calendar" requests go to calendarRoutes
 
+app.use('/gantt', taskRoute);
+
 // Start server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

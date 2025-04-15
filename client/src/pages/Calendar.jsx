@@ -3,7 +3,6 @@ import Navbar from '../components/Navbar'
 import ProjectHeader from "../components/ProjectHeader";
 import CalendarComp from "../components/CalendarComp";
 const Calendar = () => {
-
     return (
         <>
             <div className="z-1 bg-[var(--background)] h-[100vh] w-full">
