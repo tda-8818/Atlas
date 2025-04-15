@@ -38,6 +38,7 @@ jobs:
         npm install
         npm install jsonwebtoken
         npm install bycrypt
+        npm install express-rate-limit
 
     # Client tests and build
     - name: Install client dependencies
