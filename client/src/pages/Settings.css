@@ -4,49 +4,26 @@
     min-height: 100vh;
   }
   
+  .settings-container.dark {
+    background-color: #0f172a;
+    color: #f1f5f9;
+  }
+  
   .settings-title {
     font-size: 2rem;
     font-weight: 700;
     margin-bottom: 2rem;
   }
   
-  .tabs {
-    display: flex;
-    gap: 2rem;
-    border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 2rem;
+  .section {
+    margin-bottom: 3rem;
   }
   
-  .tab-button {
-    background: none;
-    border: none;
-    font-size: 1rem;
-    font-weight: 500;
-    color: #6b7280;
-    padding-bottom: 0.5rem;
-    cursor: pointer;
-    position: relative;
-  }
-  
-  .tab-button.active {
-    color: #4f46e5;
+  .section-title {
+    font-size: 1.25rem;
     font-weight: 600;
-  }
-  
-  .tab-button.active::after {
-    content: "";
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: #4f46e5;
-  }
-  
-  .profile-settings {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    margin-bottom: 1.5rem;
+    color: inherit;
   }
   
   .upload-section {
@@ -187,21 +164,10 @@
     transform: translateX(20px);
   }
   
-  .coming-soon {
-    text-align: center;
-    color: #9ca3af;
-    font-size: 1.2rem;
-    padding: 4rem 0;
-  }
-  
-  .settings-container.dark {
-    background-color: #0f172a;
-    color: #f1f5f9;
-  }
-  
   .settings-container.dark .settings-title,
   .settings-container.dark .form-label,
-  .settings-container.dark .toggle-label {
+  .settings-container.dark .toggle-label,
+  .settings-container.dark .section-title {
     color: #cbd5e1;
   }
   
@@ -212,18 +178,6 @@
   
   .settings-container.dark .form-group input::placeholder {
     color: #94a3b8;
-  }
-  
-  .settings-container.dark .tabs {
-    border-color: #334155;
-  }
-  
-  .settings-container.dark .tab-button {
-    color: #94a3b8;
-  }
-  
-  .settings-container.dark .tab-button.active {
-    color: #818cf8;
   }
   
   .settings-container.dark .divider {
@@ -237,15 +191,5 @@
   
   .settings-container.dark .upload-placeholder {
     color: #94a3b8;
-  }
-  .section {
-    margin-bottom: 3rem;
-  }
-  
-  .section-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: inherit;
   }
   
