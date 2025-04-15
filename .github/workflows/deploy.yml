@@ -1,10 +1,9 @@
 name: Deploy to AWS
 
 on:
-  workflow_run:
-    workflows: ["MERN Stack CI"]  # Name of the CI workflow
-    types:
-      - completed
+  push:
+    branches: [ main, project_restructure ]
+  workflow_dispatch:  # Allows manual trigger
 
 jobs:
   deploy:
