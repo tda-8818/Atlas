@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Set up Node.js
       uses: actions/setup-node@v4
@@ -28,20 +29,33 @@ jobs:
       run: |
         # Add your server test commands here
         # For example: npm test
+        npm run lint && npm test
         echo "Running server tests"
-        
+
+    - name: install server dependencies
+      working-directory: ./server
+      run: |
+        npm install
+        npm install jsonwebtoken
+        npm install bycrypt
+
     # Client tests and build
     - name: Install client dependencies
       working-directory: ./client
       run: |
         npm install
         npm install @tailwindcss/vite fullcalendar
-        
+        npm install @fullcalendar/react @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction @fullcalendar/core
+        npm install @headlessui/react
+        npm install dhtmlx-gantt
+        npm install axios
+
     - name: Run client tests
       working-directory: ./client
       run: |
         # Add your client test commands here
         # For example: npm test
+        npm run lint && npm test
         echo "Running client tests"
         
     - name: Build client
@@ -53,7 +67,7 @@ jobs:
       with:
         name: client-build
         path: client/dist
-        
+      
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
       with:
@@ -61,3 +75,4 @@ jobs:
         path: |
           server/
           !server/node_modules/
+    
