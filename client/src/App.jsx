@@ -36,6 +36,7 @@ function App() {
         <Route path="/" element={user ? <Outlet /> : <Navigate to="/login" replace />}>
           <Route index element={<Navigate to="/home" replace />} />
           <Route path="home" element={<Home />} />
+          <Route path="dashboard" element={<Dashboard/>} />
           <Route path="calendar" element={<Calendar />} />
           <Route path="kanban" element={<Kanban />} />
           <Route path="gantt" element={<Gantt />} />
