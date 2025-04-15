@@ -6,9 +6,42 @@ on:
   workflow_dispatch:  # Allows manual trigger
 
 jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Install client dependencies
+      working-directory: ./client
+      run: npm ci
+    
+    - name: Build client
+      working-directory: ./client
+      run: npm run build
+
+    - name: Upload client build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: client-build
+        path: client/dist
+    
+    - name: Upload server artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: server-build
+        path: |
+          server/
+          !server/node_modules/
+
   deploy:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/project_restructure'  # Trigger only for project_restructure branch
+    needs: build-and-test  # Depends on successful build-and-test job
 
     steps:
     - uses: actions/checkout@v4
