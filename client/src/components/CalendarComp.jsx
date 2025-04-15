@@ -56,7 +56,7 @@ const CalendarComp = () => {
   };
   const handleEventClick = async (selected) => {
     setSelectedEvent(selected.event);
-    setModalStateView(true);
+    setmodalStateAdd(true);
   };
   const handleEventDelete = async () => {
     if (!selectedEvent) return;
@@ -101,8 +101,8 @@ const CalendarComp = () => {
           ]
         }
       />
-     <AddTaskPopup toggle={modalStateAdd} onSubmit={handleEventSubmission} onClose={()=>{setmodalStateAdd(!modalStateAdd); setSelectedDateInfo(null);}} />
-    <ViewTaskModal toggle={modalStateView} action={()=>{setModalStateView(!modalStateView); setSelectedEvent(null);}} onSubmit={handleEventDelete} />
+     <AddTaskPopup toggle={modalStateAdd} onSubmit={handleEventSubmission} onClose={()=>{setmodalStateAdd(!modalStateAdd); setSelectedDateInfo(null); setSelectedEvent(null);}} onDelete={handleEventDelete} event={selectedEvent}  />
+    {/* <ViewTaskModal toggle={modalStateView} action={()=>{setModalStateView(!modalStateView); setSelectedEvent(null);}} onSubmit={handleEventDelete} /> */}
 
     </>
   );
