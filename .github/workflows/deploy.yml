@@ -1,6 +1,8 @@
 name: Deploy to AWS
 
 on:
+  push:
+    branches: [ main, project_restructure ]
   workflow_run:
     workflows: ["MERN Stack CI"]  # Name of the CI workflow
     types:
