@@ -28,6 +28,7 @@ jobs:
         npm install bcrypt
         npm install express-rate-limit
         npm install eslint
+        npm install cookie-parser
       
     # - name: Run server linting/tests
     #   working-directory: ./server
