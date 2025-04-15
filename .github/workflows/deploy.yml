@@ -5,12 +5,11 @@ on:
     workflows: ["MERN Stack CI"]  # Name of the CI workflow
     types:
       - completed
-  workflow_dispatch:  # Allows manual trigger
+  # workflow_dispatch:  # Allows manual trigger
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/project_restructure'
 
     steps:
     - uses: actions/checkout@v4
