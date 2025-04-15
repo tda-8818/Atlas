@@ -6,6 +6,7 @@
 import express, {json} from 'express'; // Express.js used for creating the server
 import cors from 'cors'; // CORS is a Connect/Express middleware for handling cross-origin requests.
 import userRoutes from './routes/userRoutes.js';
+import taskRoutes from './routes/taskRoutes.js';
 import mongoose from 'mongoose'; // Mongoose used for connecting to MongoDB
 import dotenv from 'dotenv'; 
 import cookieParser from 'cookie-parser';
@@ -30,9 +31,7 @@ app.use(cors({
 const mongoURI = process.env.MONGO_URI; // MongoDB connection URI
 
 // Connect to the MongoDB database
-mongoose.connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,})
+mongoose.connect(mongoURI)
     .then(() => {
         console.log('Connected to MongoDB');
     })
@@ -42,7 +41,10 @@ mongoose.connect(mongoURI, {
 
 // Import routes
 app.use('/api/users', userRoutes);
+// Routes
+app.use("/calendar", taskRoutes);  // Now all "/calendar" requests go to calendarRoutes
 
+app.use('/gantt', taskRoutes);
 // Global error handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
