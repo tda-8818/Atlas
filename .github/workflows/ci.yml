@@ -27,14 +27,16 @@ jobs:
         npm install jsonwebtoken
         npm install bcrypt
         npm install express-rate-limit
+        npm install eslint
       
-    # - name: Run server linting/tests
-    #   working-directory: ./server
-    #   run: |
-    #     # Add your server test commands here
-    #     # For example: npm test
-    #     # npm test
-    #     # echo "Running server tests"
+    - name: Run server linting/tests
+      working-directory: ./server
+      run: |
+        # Add your server test commands here
+        # For example: npm test
+        npm run lint
+        npm test
+        echo "Running server tests"
 
     # Client tests and build
     - name: Install client dependencies
@@ -46,15 +48,17 @@ jobs:
         npm install @headlessui/react
         npm install dhtmlx-gantt
         npm install axios
+        npm install eslint
 
-    # - name: Run client tests
-    #   working-directory: ./client
-    #   run: |
-    #     # Add your client test commands here
-    #     # For example: npm test
-    #     npm run lint
-    #     npm test
-    #     echo "Running client tests"
+
+    - name: Run client tests
+      working-directory: ./client
+      run: |
+        # Add your client test commands here
+        # For example: npm test
+        npm run lint
+        npm test
+        echo "Running client tests"
         
     - name: Build client
       working-directory: ./client
