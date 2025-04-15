@@ -1,129 +1,79 @@
 import { Menu, Transition, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
-import { Fragment, useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { FaSignOutAlt } from 'react-icons/fa';
+import { Fragment } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LuSettings, LuUser, LuCircleArrowOutUpLeft } from 'react-icons/lu';
-import { logout as logoutAction } from "../redux/slices/authSlice";
-import { useLogoutMutation } from '../redux/slices/apiSlice';
+import { useLogoutMutation, useGetCurrentUserQuery } from '../redux/slices/apiSlice';
 
-/**
- * Gets the initials given full name.
- * @param {} fullName 
- */
-export const getInitials = (fullName) => {
-    // check if its a string
-    if (typeof fullName !== 'string' || !fullName) {
-        return '';
-    }
-    // split the full name into names
-    const names = fullName.split(' ');
-    const initials = names.slice(0, 2).map((name) => name[0].toUpperCase());
-    return initials.join('');
-
+const getInitials = (firstName = '', lastName = '') => {
+  return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
 }
 
-/**
- * Displays a user's avatar and a dropdown menu on click.
- * @returns 
- */
 const UserAvatar = () => {
-    const { user } = useSelector((state) => state.auth); // extract user from auth slice
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const [userData, setUserData] = useState(null); // store user data
-    const [logout] = useLogoutMutation();
-    
-    // Fetch user data from API
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await axios.get('api/users/me'); // fetch user data from API
-                setUserData(response.data);
-            } catch (error) {
-                console.error('Error fetching user data:', error); 
-            }
-        };
-
-        if (user && user._id) { // check if user is logged in
-            // fetch user data from API
-            fetchUserData();
-        }
+  const navigate = useNavigate();
+  const [logout] = useLogoutMutation();
+  const { data: currentUser } = useGetCurrentUserQuery();
+  
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      navigate('/login');
+    } catch (err) {
+      console.error('Failed to logout:', err);
+      navigate('/login');
     }
-    , [user]);
+  };
+  
+  return (
+    <Menu as='div' className='relative'>
+      <MenuButton className='w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition-colors'>
+        {currentUser?.user ? (
+          <span className='text-lg font-semibold text-gray-700'>
+            {getInitials(currentUser.user.firstName, currentUser.user.lastName)}
+          </span>
+        ) : (
+          <LuUser className="w-6 h-6 text-gray-700" />
+        )}
+      </MenuButton>
+      
+      <Transition as={Fragment} {...transitionProps}>
+        <MenuItems className="dropdown-menu">
+          <div className="px-1 py-1">
+            <MenuItem>
+              {({ active }) => (
+                <button
+                  onClick={() => navigate('/settings')}
+                  className={`dropdown-item ${active ? 'bg-gray-100' : ''}`}
+                >
+                  <LuSettings className="mr-3 h-5 w-5" />
+                  Settings
+                </button>
+              )}
+            </MenuItem>
+            <MenuItem>
+              {({ active }) => (
+                <button
+                  onClick={handleLogout}
+                  className={`dropdown-item ${active ? 'bg-gray-100' : ''}`}
+                >
+                  <LuCircleArrowOutUpLeft className="mr-3 h-5 w-5" />
+                  Logout
+                </button>
+              )}
+            </MenuItem>
+          </div>
+        </MenuItems>
+      </Transition>
+    </Menu>
+  );
+};
 
-
-    // dispatch logout action and navigate to login page
-    const handleLogout = async () => {
-        try {
-            // 1. Call the logout API endpoint
-            await logout().unwrap();
-            
-            // 2. Dispatch logout action to clear Redux state
-            dispatch(logout());
-            
-            // 3. Navigate to login page
-            navigate('/login');
-            
-            // Optional: Force reload to ensure all state is cleared
-            window.location.reload();
-          } catch (err) {
-            console.error('Failed to logout:', err);
-            // Fallback: Still clear local state if API fails
-            dispatch(logoutAction());
-            navigate('/login');
-          }
-    };
-    
-    return <>
-        <div>
-            <Menu as='div' className='absolute bottom-4 left-4 w-10 h-10 2x1:w-12 2x1:h-12'>
-                <div>
-                    {/* Avatar button */}
-                    <MenuButton className='w-fit h-fit 2x1:w-12 2x1:h-12 items-center justify-center rounded-full bg-gray-200'>
-                        {/* TODO: display initials*/}
-                        {/* <span className='text-lg 2x1:text-xl font-semibold text-gray-700'>
-                            {getInitials(userData?.fullName)}
-                        </span> */}
-                        <LuUser className="w-10 h-10 text-2xl text-gray-700" /> {/* Use the icon */}
-                        
-                    </MenuButton>
-                </div>
-                
-                    <MenuItems
-                        className="absolute bottom-20 left-0 w-fit h-fit mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                        anchor="bottom"
-                        transition
-                    >
-                        <div className="py-1">
-                            <MenuItem>
-                                {({ active }) => (
-                                    <button
-                                        onClick={() => navigate('/settings')}
-                                        // navigate to settings page
-                                        className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'} flex items-center w-full px-6 py-4 text-left text-sm`}
-                                    >
-                                        <LuSettings className='mr-2' aria-hidden='true'/> Settings
-                                    </button>
-                                )}
-                            </MenuItem>
-                            <MenuItem>
-                                {({ active }) => (
-                                    <button
-                                        onClick={handleLogout}
-                                        className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'} flex items-center w-full px-6 py-4 text-left text-sm`}
-                                    >
-                                        <LuCircleArrowOutUpLeft className="mr-2" aria-hidden="true" />Logout
-                                    </button>
-                                )}
-                            </MenuItem>
-                            {/* Add more MenuItems here */}
-                        </div>
-                    </MenuItems>
-            </Menu>
-        </div>
-    </>;
-}
+const transitionProps = {
+  enter: "transition ease-out duration-100",
+  enterFrom: "transform opacity-0 scale-95",
+  enterTo: "transform opacity-100 scale-100",
+  leave: "transition ease-in duration-75",
+  leaveFrom: "transform opacity-100 scale-100",
+  leaveTo: "transform opacity-0 scale-95"
+};
 
 export default UserAvatar;

@@ -9,12 +9,14 @@ export const apiSlice = createApi({
     reducerPath: 'api',
     baseQuery: fetchBaseQuery({
         baseUrl: API_URL,
-        credentials: 'include', // This enables cookies
-        prepareHeaders: (headers) => {
-            // Remove localStorage token logic completely
-            return headers;
-        }
+        credentials: 'include',
     }),
+    prepareHeaders: (headers, { getState }) => {
+        // Force cookies to be sent (even for cross-origin if needed)
+        headers.set('Accept', 'application/json');
+        headers.set('Cache-Control', 'no-cache');
+        return headers;
+    },
     endpoints: (builder) => ({
         // User endpoints
         login: builder.mutation({

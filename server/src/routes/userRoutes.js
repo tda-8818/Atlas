@@ -1,5 +1,5 @@
 import express from 'express';
-import { signup, login, logout, getMe, testUser } from "../controllers/userController.js";
+import { signup, login, logout, getMe } from "../controllers/userController.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 import rateLimit from 'express-rate-limit';
 
@@ -11,7 +11,8 @@ const authLimiter = rateLimit({
   message: 'Too many attempts, please try again later'
 });
 
-router.get('/test-user', authLimiter, testUser);
+console.log('User routes loaded');  // Should appear when server starts
+
 router.post('/login', authLimiter, login);
 router.post('/signup', authLimiter, signup);
 router.post('/logout', authMiddleware, logout);

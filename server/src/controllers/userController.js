@@ -2,91 +2,64 @@ import UserModel from '../models/UserModel.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-import mongoose from 'mongoose';
-
-
-// Add this temporary route for testing
-export const testUser = async (req, res) => {
-  try {
-    const count = await User.countDocuments({});
-    res.json({ 
-      success: true,
-      userCount: count 
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      success: false,
-      error: error.message 
-    });
-  }
-};
-
-// Cookie configuration (reusable across routes)
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production', // HTTPS in production
-  sameSite: 'strict',
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-};
-
-// Helper function to generate token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '1d',
-  });
+  secure: false, // false for localhost development
+  sameSite: 'lax', // or 'none' if cross-site
+  domain: 'localhost', // Explicitly set domain
+  path: '/', // Root path
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 };
 
 // Login controller
 export const login = async (req, res) => {
-  const { email, password } = req.body;
   try {
     const { email, password } = req.body;
 
-    // Add validation
+    // Validation
     if (!email || !password) {
       return res.status(400).json({ message: 'Please provide email and password' });
     }
 
-    // 1. Check if user exists
+    // Find user
     const user = await UserModel.findOne({ email }).select('+password');
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password',
-      });
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // 2. Verify password 
+    // Verify password
     const isCorrect = await bcrypt.compare(password, user.password);
     if (!isCorrect) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password',
-      });
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // 3. Generate token
-    const token = generateToken(user._id);
+    // Generate token
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' } // Match cookie maxAge
+    );
+    console.log('Generated token:', token);
 
-    // 4. Set HTTP-only cookie
+    // Set HTTP-only cookie
     res.cookie('token', token, cookieOptions);
+    console.log('Cookie options set');
 
-    // 5. Send response
+    // Return user data (without sensitive info)
     res.status(200).json({
-      success: true,
-      data: {
-        user: {
-          id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-        },
-      },
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName
+      }
     });
+
   } catch (error) {
     res.status(500).json({ message: 'Server error: ' + error.message });
   }
 };
+
 
 // Signup controller
 export const signup = async (req, res) => {
@@ -141,27 +114,22 @@ export const signup = async (req, res) => {
 
 // Logout Controller
 export const logout = (req, res) => {
-  res.clearCookie('token', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
-  });
-  res.status(200).json({ success: true, message: 'Logged out successfully' });
+  res.clearCookie('token', cookieOptions);
+  res.status(200).json({ message: 'Logged out successfully' });
 };
 
 // Get user controller
 export const getMe = async (req, res) => {
   try {
+    // Return minimal needed user data
     res.status(200).json({
-      success: true,
-      user: req.user // user already attached to req by authmiddleware
+      user: {
+        id: req.user._id,
+        email: req.user.email,
+        firstName: req.user.firstName,
+        lastName: req.user.lastName
+      }
     });
-
-    const userData = {
-      fullName: `${user.firstName} ${user.lastName}`,
-    };
-
-    res.json(userData);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -171,6 +139,5 @@ export default {
   login,
   signup,
   logout,
-  getMe,
-  testUser
+  getMe
 };

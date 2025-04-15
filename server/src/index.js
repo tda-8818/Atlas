@@ -19,8 +19,10 @@ const port = process.env.PORT || 5001;
 app.use(cors({
     origin: 'http://localhost:5173', 
     credentials: true, // for cookies
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    exposedHeaders: ['set-cookie']
 })); 
+app.options('*', cors());
 app.use(json()); // parse incoming JSON requests
 const mongoURI = process.env.MONGO_URI; // MongoDB connection URI
 
