@@ -2,7 +2,7 @@ name: Deploy to AWS
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, project_restructure ]
   workflow_dispatch:  # Allows manual trigger
 
 jobs:
