@@ -1,37 +1,61 @@
 // TODO: test if the user is authenticated using JWT token
 import jwt from 'jsonwebtoken';
-import UserModel from '../models/UserModel.js'
+import UserModel from '../models/UserModel.js';
 
 const authMiddleware = async (req, res, next) => {
   try {
-
-    // 1. Get token from cookies
-   
-    const token = req.cookies.token;
+    // 1. Token extraction - more robust checking
+    const token = req.cookies?.token;
 
     if (!token) {
-      return res.status(401).json({ message: 'Not authorized, no token' });
+      console.warn('Authentication attempt without token');
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      });
     }
 
-    // 2. Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // 2. Token verification with better error handling
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (jwtError) {
+      console.error('JWT verification failed:', jwtError.message);
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired token',
+        error: jwtError.message
+      });
+    }
 
-    console.log('Looking up user:', decoded.id);
-    // 3. Check user exists
-    const user = await UserModel.findById(decoded.id).select('-password');
+    // 3. User lookup - optimized query
+    const user = await UserModel.findById(decoded.id)
+      .select('-password') // Always exclude password
+      .lean(); // Convert to plain object
 
     if (!user) {
-      console.log('❌ User not found for token');
-      return res.status(404).json({ message: 'User not found' });
+      console.warn(`User not found for ID: ${decoded.id}`);
+      return res.status(404).json({
+        success: false,
+        message: 'User account not found'
+      });
     }
 
-    console.log('✅ Authenticated user:', user.email);
+    // 4. Attach user to request
     req.user = user;
+    console.log(`Authenticated user: ${user.email}`); // Debug
     next();
-    
-    next();
+
   } catch (error) {
-    res.status(401).json({ message: 'Not authorized, token failed' });
+    console.error('Authentication system error:', {
+      error: error.message,
+      stack: error.stack // For debugging
+    });
+    res.status(500).json({ 
+      success: false,
+      message: 'Authentication system error',
+      error: error.message 
+    });
   }
 };
 

@@ -11,10 +11,8 @@ export const apiSlice = createApi({
         baseUrl: API_URL,
         credentials: 'include',
     }),
-    prepareHeaders: (headers, { getState }) => {
-        // Force cookies to be sent (even for cross-origin if needed)
+    prepareHeaders: (headers) => {
         headers.set('Accept', 'application/json');
-        headers.set('Cache-Control', 'no-cache');
         return headers;
     },
     endpoints: (builder) => ({

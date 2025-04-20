@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 const cookieOptions = {
   httpOnly: true,
   secure: false, // false for localhost development
-  sameSite: 'lax', // or 'none' if cross-site
+  sameSite: 'strict', // or 'none' if cross-site
   domain: 'localhost', // Explicitly set domain
   path: '/', // Root path
   maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
@@ -14,48 +14,47 @@ const cookieOptions = {
 // Login controller
 export const login = async (req, res) => {
   try {
-    
     const { email, password } = req.body;
-
-    // Validation
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Please provide email and password' });
-    }
-
-    // Find user
+    
+    // 1. Find user WITH password
     const user = await UserModel.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Verify password
-    const isCorrect = await bcrypt.compare(password, user.password);
-    if (!isCorrect) {
+    // 2. Debug password comparison
+    console.log('Comparing:', {
+      input: password,
+      stored: user.password,
+      match: await bcrypt.compare(password, user.password)
+    });
+
+    if (!(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Generate token
+    // 3. Create token
     const token = jwt.sign(
-      { id: user._id },
+      { id: user._id.toString() }, // Ensure string conversion
       process.env.JWT_SECRET,
-      { expiresIn: '7d' } // Match cookie maxAge
+      { expiresIn: '1d' }
     );
-    
-    // Set HTTP-only cookie
+
+    // 4. Set cookie
     res.cookie('token', token, cookieOptions);
-    
-    // Return user data (without sensitive info)
-    res.status(200).json({
+
+    // 5. Send response (excluding password)
+    res.json({ 
       user: {
         id: user._id,
-        email: user.email,
         firstName: user.firstName,
-        lastName: user.lastName
+        lastName: user.lastName,
+        email: user.email
+        // Other safe fields
       }
     });
-
   } catch (error) {
-    res.status(500).json({ message: 'Server error: ' + error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -76,7 +75,8 @@ export const signup = async (req, res) => {
 
     // 2. hash password 
     const hashedPassword = await bcrypt.hash(password, 12);
-
+    console.log('Hashed password:', hashedPassword); // Verify output
+    
     // 3. create user
     const user = await UserModel.create({
       firstName,
@@ -85,8 +85,12 @@ export const signup = async (req, res) => {
       password: hashedPassword,
     });
 
-    // 4. Generate token
-    const token = generateToken(user._id);
+     // Generate token
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' } // Match cookie maxAge
+    );
 
     // 5. set http-only cookie
     res.cookie('token', token, cookieOptions);
@@ -97,7 +101,8 @@ export const signup = async (req, res) => {
       data: {
         user: {
           id: user._id,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
         },
       },
@@ -117,7 +122,7 @@ export const logout = (req, res) => {
     // Remove the cookie without unnecessary options
     res.clearCookie('token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: 'lax',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
       domain: process.env.NODE_ENV === 'development' ? 'localhost' : 'yourdomain.com'
