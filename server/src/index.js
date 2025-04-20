@@ -48,6 +48,7 @@ app.use("/calendar", taskRoutes);  // Now all "/calendar" requests go to calenda
 
 app.use('/gantt', taskRoutes);
 
+app.use('/settings', userRoutes);
 app.use('/home', projectRoutes);
 
 // Global error handler

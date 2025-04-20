@@ -22,7 +22,7 @@ export const createProject = async (req, res) => {
         console.log("Project created by: ", userCreator);
         
         const userId = await UserModel.findOne({email: userCreator});
-        console.log("MongoId of user is: ", userId);
+        console.log("MongoId of user is: ", userId._id);
 
         const projectData = new Project({
             title: title,

@@ -19,5 +19,5 @@ router.post('/logout', authMiddleware, logout);
 router.get('/me', authMiddleware, getMe);
 
 // pass authMiddleware as an argument if you are wanting to deal with cookie data
-router.put('/settings', authMiddleware, updatePassword);
+router.put('/', authMiddleware, updatePassword);
 export default router;

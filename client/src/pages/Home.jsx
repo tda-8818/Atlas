@@ -114,7 +114,7 @@ const Home = () => {
                 id: savedProject._id,
                 ...projectData
             }
-            
+            console.log("Recieved mongoID of project:", savedProject._id);
             setProjects((prev) => [...prev, createdProject]);
             setNewProject({ title: "", subtitle: "", deadline: "" });
             setShowModal(false);

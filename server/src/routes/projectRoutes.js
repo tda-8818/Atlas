@@ -14,7 +14,7 @@ const authLimiter = rateLimit({
 console.log('project routes loaded');  // Should appear when server starts
 
 // pass authMiddleware as an argument if you are wanting to deal with cookie data
-router.post('/', createProject);
+router.post('/', authMiddleware, createProject);
 
 
 export default router;
