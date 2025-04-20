@@ -25,7 +25,7 @@ const Gantt = () => {
                 <ProjectHeader title="Calendar" />
             </div>
 
-            <div className="pl-[15%] pt-[20px]">                
+            <div className="pl-[15%] pt-[20px] bg-[var(--background-primary)]">                
                 <div className='relative'>
                 <GanttComp tasks={data}/>
                 </div>

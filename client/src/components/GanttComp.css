@@ -1,0 +1,13 @@
+.body{
+    background-color: var(--background);
+}
+.gantt_grid_data{
+    background: var(--background);
+}
+.gantt_data_area{
+    background: var(--background);
+}
+.gantt_cell{
+    background: var(--background);
+    color: var(--text);
+}

@@ -87,7 +87,7 @@ const Kanban = () => {
                 <ProjectHeader title="Calendar" />
       </div>
       {/* ✅ Main content shifted right by 15% */}
-      <div className="p-4 font-sans ml-[15%]">
+      <div className="p-4 font-sans ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
         {/* Project Controls */}
         <div className="mb-4 flex items-center gap-4">
           <select
@@ -117,7 +117,7 @@ const Kanban = () => {
         <div className="kanban-board">
           {currentProject.columns.map((col, colIndex) => (
             <div key={colIndex} className="kanban-list">
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between items-center mb-2 bg-[var(--background)] p-2 rounded">
                 <h2 className="font-bold">{col.title}</h2>
                 <button onClick={() => deleteColumn(colIndex)} className="text-red-400 hover:text-red-600">🗑</button>
               </div>
