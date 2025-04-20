@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "./Settings.css"; 
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { current } from "@reduxjs/toolkit";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -11,6 +13,7 @@ const Settings = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profileImage, setProfileImage] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -23,12 +26,31 @@ const Settings = () => {
     alert("Profile updated!");
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-    alert("Password updated successfully!");
+
+    try {
+      const response = await axios.put(
+        "http://localhost:5001/settings",
+        {
+          currentPassword,
+          confirmPassword,
+        },
+        {
+          withCredentials:true,
+        }
+      );
+
+      alert("Password updated successfully!");
+
+    } catch (error) {
+      console.error("Password update error:", error);
+      alert("Failed to update password.");
+
+    }
   };
 
   const toggleDarkMode = () => {
@@ -112,6 +134,17 @@ const Settings = () => {
       <div className="section">
         <h2 className="section-title">Change Password</h2>
         <div className="form-card">
+        <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Current Password</label>
+              <input
+                type="password"
+                placeholder="Enter current password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+              </div>
+            </div>
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">New Password</label>

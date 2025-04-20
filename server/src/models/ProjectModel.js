@@ -5,7 +5,6 @@ import Task from "./TaskModel.js";
 
 
 const projectSchema = new mongoose.Schema({
-    id: {type: Number, required: true },
     title: {type: String, required: true},
     description: {type: String, required: true},
     project_admin_priveliges: [{type: mongoose.Schema.Types.ObjectId, ref:'user',  default: []}],

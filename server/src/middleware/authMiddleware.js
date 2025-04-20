@@ -28,8 +28,7 @@ const authMiddleware = async (req, res, next) => {
     console.log('✅ Authenticated user:', user.email);
     req.user = user;
     next();
-    
-    next();
+
   } catch (error) {
     res.status(401).json({ message: 'Not authorized, token failed' });
   }

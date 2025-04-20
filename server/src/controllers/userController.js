@@ -25,12 +25,14 @@ export const login = async (req, res) => {
     // Find user
     const user = await UserModel.findOne({ email }).select('+password');
     if (!user) {
+      console.log("user not found");
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Verify password
     const isCorrect = await bcrypt.compare(password, user.password);
     if (!isCorrect) {
+      console.log("incorrect password");
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
@@ -151,11 +153,15 @@ export const getMe = async (req, res) => {
 export const updatePassword = async (req, res) => {
   try {
       // receive username and plaintext password from the settings page 
-      const {email, oldPassword, newPassword} = req.body
-      //oldPassword and newPassword are both unhashed, plaintext passwords
+      const {currentPassword, confirmPassword} = req.body
+      //currentPassword and confirmPassword are both unhashed, plaintext passwords
+      console.log("recieved token: ", req.user);
 
-      console.log("User entered old password:", oldPassword);
-      console.log("User entered new password:", newPassword);
+      const email = req.user.email;
+      console.log(email);
+
+      console.log("User entered old password:", currentPassword);
+      console.log("User entered new password:", confirmPassword);
 
       // find if the user exists
       const existingUser = await UserModel.findOne({ email: email });
@@ -168,25 +174,20 @@ export const updatePassword = async (req, res) => {
       // Compare passwords -> if they enter the same password: continue, else: fail 
       // compare hashed passwords 
       const hashed_pw = existingUser.password;
-      const isMatch = await bcrypt.compare(oldPassword, hashed_pw)
+      const isMatch = await bcrypt.compare(currentPassword, hashed_pw)
       
       if (!isMatch) {
           return res.status(401).json({ message: 'Incorrect Password.'})
       }
 
-      const newHashedPassword = await bcrypt.hash(newPassword, 10);
-      // if (newPassword && newPassword.length > 0) {
-      //     const newHashedPassword = await bcrypt.hash(newPassword, 10);
-      //     console.log("Successfully created", newHashedPassword);
-      //     const updatedUser = await UserModel.findOneAndUpdate(
-      //         {email}, 
-      //         {password: newHashedPassword}, 
-      //         {new: true}
-      //     );
-      // }
-      const updatedUser = await UserModel.findOneAndUpdate({email}, {password:newHashedPassword}, {new:true});
-      
-      console.log("Updated User found with password", updatedUser.password);
+      // hash new password
+      const newHashedPassword = await bcrypt.hash(confirmPassword, 10);
+
+      // update user password
+      //const updatedUser = await UserModel.findOneAndUpdate({email}, {password:newHashedPassword}, {new:true});
+      const updatedUser = await UserModel.findOne({email});
+      console.log(updatedUser);
+
 
       res.status(200).json( { message: "User Updated.", user: updatedUser});
 

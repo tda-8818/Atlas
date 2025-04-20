@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar"; // Your existing Navbar
 import "./css/Home.css"; // Correct path
 import { useGetCurrentUserQuery } from '../redux/slices/apiSlice';
+import axios from "axios";
+import { retry } from "@reduxjs/toolkit/query";
 
 
 const Home = () => {
@@ -80,7 +82,7 @@ const Home = () => {
         setNewProject((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleCreateProject = () => {
+    const handleCreateProject = async () => {
         if (!newProject.title || !newProject.subtitle || !newProject.deadline) {
             alert("Please fill all fields!");
             return;
@@ -93,7 +95,7 @@ const Home = () => {
             0
         );
 
-        const createdProject = {
+        const projectData = {
             title: newProject.title,
             subtitle: newProject.subtitle,
             progress: 0,
@@ -101,9 +103,27 @@ const Home = () => {
             team: ["/avatars/avatar1.png"]
         };
 
-        setProjects((prev) => [...prev, createdProject]);
-        setNewProject({ title: "", subtitle: "", deadline: "" });
-        setShowModal(false);
+        // Send project object to database
+        const response = await axios.post("http://localhost:5001/home", projectData, {
+            withCredentials: true
+        });
+        
+        if (response.data) {
+            const savedProject = response.data;
+            const createdProject = {
+                id: savedProject._id,
+                ...projectData
+            }
+            
+            setProjects((prev) => [...prev, createdProject]);
+            setNewProject({ title: "", subtitle: "", deadline: "" });
+            setShowModal(false);
+        }
+        else{
+            alert("Bad Response when creating project.")
+            return;
+        }
+
     };
 
     return (
