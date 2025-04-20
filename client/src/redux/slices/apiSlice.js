@@ -30,6 +30,7 @@ export const apiSlice = createApi({
             query: () => ({
                 url: '/users/logout',
                 method: 'POST',
+                invalidatesTags: ['User']
             }),
         }),
 

@@ -76,7 +76,7 @@ export const signup = async (req, res) => {
     // 2. hash password 
     const hashedPassword = await bcrypt.hash(password, 12);
     console.log('Hashed password:', hashedPassword); // Verify output
-    
+
     // 3. create user
     const user = await UserModel.create({
       firstName,
@@ -123,11 +123,10 @@ export const logout = (req, res) => {
     res.clearCookie('token', {
       httpOnly: true,
       secure: 'lax',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      path: '/',
-      domain: process.env.NODE_ENV === 'development' ? 'localhost' : 'yourdomain.com'
+      sameSite: 'strict',
+      path: '/'
     });
-    
+    console.log('User logged out, cookie cleared');
     res.status(200).json({ message: 'Logged out successfully' });
   } catch (error) {
     console.error('Logout error:', error);
