@@ -10,7 +10,6 @@
   --color-text-hover-dark: #FFFFFF;
   --color-text-active-dark: #FFFFFF;
   --color-nav-hover-dark: #1E293B;
-  --color-button-dark: 
 
   --color-background-light:#FFFFFF;
 }
@@ -26,6 +25,7 @@
 }
 .light{
   --background: var(--color-background-light);
+  --background-primary: var(--color-gray-100);
   --text: black;
   --nav-text: #8E92BC;
   --nav-hover: #f5f5f7;
