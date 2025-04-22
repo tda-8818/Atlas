@@ -150,21 +150,23 @@ const Settings = ({ setTheme }) => {
 
       <hr className="h-px bg-gray-200 my-8" />
 
+
       {/* Password */}
       <div className="mb-12">
         <h2 className="text-xl text-[var(--text)] font-semibold mb-6">Change Password</h2>
         <div>
-        <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Current Password</label>
-              <input
-                type="password"
-                placeholder="Enter current password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
-              </div>
-            </div>
+          <div className="flex flex-col flex-1 mb-6">
+            <label className="text-[0.9rem] text-gray-500 mb-2">
+              Current Password
+            </label>
+            <input
+              type="password"
+              placeholder="Enter current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="bg-[var(--background-primary)] text-[var(--text)] p-3 rounded-lg text-base border-0"
+            />
+          </div>
           <div className="flex gap-4 mb-6 flex-wrap">
             <div className="flex flex-col flex-1">
               <label className="text-[0.9rem] text-gray-500 mb-2">
@@ -201,6 +203,7 @@ const Settings = ({ setTheme }) => {
           </div>
         </div>
       </div>
+
 
       <hr className="h-px bg-[var(--border-color)] my-8" />
 
