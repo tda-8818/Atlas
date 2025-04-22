@@ -2,6 +2,7 @@ import { gantt } from 'dhtmlx-gantt';
 import React, { Component } from 'react';
 import 'dhtmlx-gantt/codebase/dhtmlxgantt.css';
 import axios from 'axios';
+import "./GanttComp.css"; // Assuming you have a CSS file for GanttComp
 
 export default class GanttComp extends Component {
   componentDidMount() {
@@ -44,7 +45,7 @@ export default class GanttComp extends Component {
 
   render() {
     return (
-        <div ref={(input) => { this.ganttContainer = input }} className='h-[85vh] w-full mr-[20px] '></div>
+        <div ref={(input) => { this.ganttContainer = input }} className='h-[85vh] w-full mr-[20px] bg-[var(--background-primary)]'></div>
     );
   }
 }

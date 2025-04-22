@@ -17,17 +17,17 @@ const Navbar = () => {
                 </a>
             </div>
             <ul className="p-0 m-0 mb-[60px] w-full">
-                <li>
+            <li >
                     <a href="/Home">
-                        <button className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px] hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer">
-                            <AiOutlineHome className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
+                        <button className="list-none bg-[var(--background)] text-[var(--nav-text)] py-[15px] px-[20px] rounded-[6%] mx-[20px] hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] cursor-pointer">
+                            <RxHome className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
                             Home
                         </button>
                     </a>
                 </li>
                 <li >
                     <a href="/Dashboard">
-                        <button className="list-none text-[#8E92BC] py-[15px] px-[20px] rounded-[6%] mx-[20px]  hover:bg-[#f5f5f7] hover:text-black bg-white cursor-pointer">
+                        <button  className="list-none bg-[var(--background)] text-[var(--nav-text)] py-[15px] px-[20px] rounded-[6%] mx-[20px] hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] cursor-pointer">
                             <RxDashboard className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
                             Dashboard
                         </button>

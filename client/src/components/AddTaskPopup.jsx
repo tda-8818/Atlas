@@ -62,9 +62,9 @@ function AddTaskPopup(props) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className=" max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
 
-                <Fieldset className="space-y-8 bg-white m-auto content-center w-[50vh] rounded-[6%]">
+                <Fieldset className="space-y-8 bg-[var(--background)] m-auto content-center w-[50vh] rounded-[6%]">
                   <Legend className="text-lg font-bold ml-[20px] mt-[10px]">Add a new task</Legend>
                   <Field>
                     <Label className="block ml-[20px]">Title</Label>
