@@ -83,7 +83,7 @@ function AddTaskPopup(props) {
                     <Textarea className="mt-1 block ml-[20px] w-[80%] bg-[#f5f5f7]" name="description" value={description} onChange={(e) => setDescription(e.target.value)} />
                   </Field>
                   <div className="flex justify-between mt-4">
-                    <button onClick={handleConfirm} className="flex justify-between rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">comfirm</button>
+                    <button onClick={handleConfirm} className="flex justify-between rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">confirm</button>
                     <button
                       type="button"
                       className={`flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${event ? '' : 'hidden'}`}

@@ -10,4 +10,6 @@ router.post('/', createTask);
 
 router.delete('/:id', deleteTask);
 
+router.put('/:id', editTask);
+
 export default router;

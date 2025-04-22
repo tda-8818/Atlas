@@ -52,11 +52,40 @@ export const createTask = async (req, res) => {
 };
 
 export const editTask = async (req, res) => {
+    const { id } = req.params;
+    const {
+        title,
+        description,
+        status,
+        priority,
+        assignedTo,
+        dueDate,
+        startDate
+    } = req.body;
+
     try {
-        const {taskId, title, description,
-        startDate, due_date} = req.body;
+        const updatedTask = await Task.findByIdAndUpdate(
+            id,
+            {
+                title,
+                description,
+                status,
+                priority,
+                assignedTo,
+                dueDate,
+                startDate
+            },
+            { new: true } 
+        );
+
+        if (!updatedTask) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        res.status(200).json(updatedTask);
     } catch (error) {
-        
+        console.error("Error updating task:", error);
+        res.status(500).json({ message: "Error updating task", error });
     }
 };
 
