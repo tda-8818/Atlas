@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar"; // ✅ 导入你的侧边栏
+import Navbar from "../components/Navbar"; 
 import ProjectHeader from "../components/ProjectHeader";
 
 const defaultProject = {
