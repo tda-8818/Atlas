@@ -13,44 +13,39 @@ const teamMembers = [
   { id: "user-5", name: "Michael Brown", avatar: "https://i.pravatar.cc/150?img=5", initials: "MB" },
 ];
 
-const defaultProject = {
-  name: "Project A",
-  columns: [
-    {
-      id: "column-1",
-      title: "To Do",
-      cards: [
-        { 
-          id: "card-1", 
-          title: "Example Task", 
-          tag: "Design",
-          dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(), // 7 days from now
-          assignedTo: ["user-1"], // Changed to array for multiple assignments 
-          description: "",
-          subtasks: [
-            { id: "subtask-1", title: "Research component libraries", completed: false },
-          ] 
-        }
-      ]
-    },
-    {
-      id: "column-2",
-      title: "In Progress",
-      cards: []
-    },
-    {
-      id: "column-3",
-      title: "Done",
-      cards: []
-    }
-  ]
-};
+const defaultColumns = [
+  {
+    id: "column-1",
+    title: "To Do",
+    cards: [
+      { 
+        id: "card-1", 
+        title: "Example Task", 
+        tag: "Design",
+        dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(), // 7 days from now
+        assignedTo: ["user-1"], // Changed to array for multiple assignments 
+        description: "",
+        subtasks: [
+          { id: "subtask-1", title: "Research component libraries", completed: false },
+        ] 
+      }
+    ]
+  },
+  {
+    id: "column-2",
+    title: "In Progress",
+    cards: []
+  },
+  {
+    id: "column-3",
+    title: "Done",
+    cards: []
+  }
+];
 
 const Kanban = () => {
-  const [projects, setProjects] = useState([defaultProject]);
-  const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
+  const [columns, setColumns] = useState(defaultColumns);
   const [showCardInput, setShowCardInput] = useState(null);
-  const [newProjectName, setNewProjectName] = useState("");
   const [newColumnName, setNewColumnName] = useState("");
   const [newCardTitle, setNewCardTitle] = useState("");
   const [newCardTag, setNewCardTag] = useState("");
@@ -58,8 +53,6 @@ const Kanban = () => {
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [newDueDate, setNewDueDate] = useState("");
-
-  const currentProject = projects[currentProjectIndex];
 
   // Helper function to generate IDs
   const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -101,44 +94,23 @@ const Kanban = () => {
     });
   };
 
-  const addProject = () => {
-    if (!newProjectName.trim()) return;
-    setProjects([...projects, { 
-      name: newProjectName, 
-      columns: [
-        { id: generateId("column"), title: "To Do", cards: [] },
-        { id: generateId("column"), title: "In Progress", cards: [] },
-        { id: generateId("column"), title: "Done", cards: [] }
-      ] 
-    }]);
-    setCurrentProjectIndex(projects.length);
-    setNewProjectName("");
-  };
-
-  const deleteProject = () => {
-    if (projects.length <= 1) return; // Prevent deleting if it's the only project
-    const newList = [...projects];
-    newList.splice(currentProjectIndex, 1);
-    setProjects(newList);
-    setCurrentProjectIndex(0);
-  };
-
   const addColumn = () => {
     if (!newColumnName.trim()) return;
-    const updated = [...projects];
-    updated[currentProjectIndex].columns.push({ 
-      id: generateId("column"), 
-      title: newColumnName, 
-      cards: [] 
-    });
-    setProjects(updated);
+    setColumns([
+      ...columns,
+      { 
+        id: generateId("column"), 
+        title: newColumnName, 
+        cards: [] 
+      }
+    ]);
     setNewColumnName("");
   };
 
   const addCard = (columnIndex) => {
     if (!newCardTitle.trim()) return;
-    const updated = [...projects];
-    updated[currentProjectIndex].columns[columnIndex].cards.push({
+    const updated = [...columns];
+    updated[columnIndex].cards.push({
       id: generateId("card"),
       title: newCardTitle,
       tag: newCardTag,
@@ -147,7 +119,7 @@ const Kanban = () => {
       description: "",
       subtasks: []
     });
-    setProjects(updated);
+    setColumns(updated);
     setNewCardTitle("");
     setNewCardTag("");
     setNewDueDate("");
@@ -163,12 +135,12 @@ const Kanban = () => {
 
   const deleteColumn = () => {
     if (!confirmDelete || confirmDelete.type !== 'column') return;
-    if (currentProject.columns.length <= 1) return; // Prevent deleting if it's the only column
+    if (columns.length <= 1) return; // Prevent deleting if it's the only column
     
     const columnIndex = confirmDelete.index;
-    const updated = [...projects];
-    updated[currentProjectIndex].columns.splice(columnIndex, 1);
-    setProjects(updated);
+    const updated = [...columns];
+    updated.splice(columnIndex, 1);
+    setColumns(updated);
     setConfirmDelete(null);
   };
 
@@ -176,9 +148,9 @@ const Kanban = () => {
     if (e && e.stopPropagation) {
       e.stopPropagation();
     }
-    const updated = [...projects];
-    updated[currentProjectIndex].columns[columnIndex].cards.splice(cardIndex, 1);
-    setProjects(updated);
+    const updated = [...columns];
+    updated[columnIndex].cards.splice(cardIndex, 1);
+    setColumns(updated);
     
     // Close any open modals
     setSelectedCard(null);
@@ -188,7 +160,7 @@ const Kanban = () => {
   const addSubtask = () => {
     if (!newSubtaskTitle.trim() || !selectedCard) return;
     
-    const updated = [...projects];
+    const updated = [...columns];
     const { columnIndex, cardIndex } = selectedCard;
     
     // Create a new subtask object
@@ -198,16 +170,16 @@ const Kanban = () => {
       completed: false
     };
     
-    // Add it to the project data
-    updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].subtasks.push(newSubtask);
+    // Add it to the data
+    updated[columnIndex].cards[cardIndex].subtasks.push(newSubtask);
     
-    // Update the projects state
-    setProjects(updated);
+    // Update the columns state
+    setColumns(updated);
     
     // Get the updated card with the new subtask array directly from the updated state
-    const updatedCard = updated[currentProjectIndex].columns[columnIndex].cards[cardIndex];
+    const updatedCard = updated[columnIndex].cards[cardIndex];
     
-    // Update the selected card with the same subtasks array from the updated projects state
+    // Update the selected card with the same subtasks array from the updated state
     setSelectedCard({
       ...selectedCard,
       subtasks: [...updatedCard.subtasks]
@@ -220,19 +192,19 @@ const Kanban = () => {
   const toggleSubtask = (subtaskIndex) => {
     if (!selectedCard) return;
   
-    const updated = [...projects];
+    const updated = [...columns];
     const { columnIndex, cardIndex } = selectedCard;
   
-    const subtasks = updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].subtasks;
+    const subtasks = updated[columnIndex].cards[cardIndex].subtasks;
     if (subtaskIndex >= 0 && subtaskIndex < subtasks.length) {
       subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
     }
   
-    // Update the projects state
-    setProjects(updated);
+    // Update the columns state
+    setColumns(updated);
   
     // Ensure the selected card is updated with the latest subtasks array
-    const updatedCard = updated[currentProjectIndex].columns[columnIndex].cards[cardIndex];
+    const updatedCard = updated[columnIndex].cards[cardIndex];
     setSelectedCard({
       ...selectedCard,
       subtasks: [...updatedCard.subtasks]
@@ -243,11 +215,11 @@ const Kanban = () => {
   const deleteSubtask = (subtaskIndex) => {
     if (!selectedCard) return;
     
-    const updated = [...projects];
+    const updated = [...columns];
     const { columnIndex, cardIndex } = selectedCard;
     
-    updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].subtasks.splice(subtaskIndex, 1);
-    setProjects(updated);
+    updated[columnIndex].cards[cardIndex].subtasks.splice(subtaskIndex, 1);
+    setColumns(updated);
     
     // Update the selected card to reflect changes
     const updatedSubtasks = [...selectedCard.subtasks];
@@ -262,11 +234,11 @@ const Kanban = () => {
   const handleUpdateCardDescription = (description) => {
     if (!selectedCard) return;
     
-    const updated = [...projects];
+    const updated = [...columns];
     const { columnIndex, cardIndex } = selectedCard;
     
-    updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].description = description;
-    setProjects(updated);
+    updated[columnIndex].cards[cardIndex].description = description;
+    setColumns(updated);
     
     // Update the selected card to reflect changes
     setSelectedCard({
@@ -278,11 +250,11 @@ const Kanban = () => {
   const handleUpdateDueDate = (dueDate) => {
     if (!selectedCard) return;
     
-    const updated = [...projects];
+    const updated = [...columns];
     const { columnIndex, cardIndex } = selectedCard;
     
-    updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].dueDate = dueDate;
-    setProjects(updated);
+    updated[columnIndex].cards[cardIndex].dueDate = dueDate;
+    setColumns(updated);
     
     // Update the selected card to reflect changes
     setSelectedCard({
@@ -295,18 +267,18 @@ const Kanban = () => {
   const toggleUserAssignment = (userId) => {
     if (!selectedCard) return;
     
-    const updated = [...projects];
+    const updated = [...columns];
     const { columnIndex, cardIndex } = selectedCard;
     
-    const currentAssignees = updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].assignedTo || [];
+    const currentAssignees = updated[columnIndex].cards[cardIndex].assignedTo || [];
     
     // If user is already assigned, remove them, otherwise add them
     const newAssignees = currentAssignees.includes(userId)
       ? currentAssignees.filter(id => id !== userId)
       : [...currentAssignees, userId];
     
-    updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].assignedTo = newAssignees;
-    setProjects(updated);
+    updated[columnIndex].cards[cardIndex].assignedTo = newAssignees;
+    setColumns(updated);
     
     // Update the selected card to reflect changes
     setSelectedCard({
@@ -326,47 +298,40 @@ const Kanban = () => {
     if (!result.destination) return;
 
     const { source, destination, type } = result;
-
-    const projectCopy = { ...currentProject };
+    const columnsCopy = [...columns];
 
     // If we're dragging columns
     if (type === "column") {
-      const columns = Array.from(projectCopy.columns);
-      const [removed] = columns.splice(source.index, 1);
-      columns.splice(destination.index, 0, removed);
-
-      projectCopy.columns = columns;
-      
-      const updatedProjects = [...projects];
-      updatedProjects[currentProjectIndex] = projectCopy;
-      setProjects(updatedProjects);
+      const [removed] = columnsCopy.splice(source.index, 1);
+      columnsCopy.splice(destination.index, 0, removed);
+      setColumns(columnsCopy);
       return;
     }
 
     // If the destination is the same as the source (same column)
     if (source.droppableId === destination.droppableId) {
-      const columnIndex = projectCopy.columns.findIndex(
+      const columnIndex = columnsCopy.findIndex(
         col => col.id === source.droppableId
       );
       
-      const column = projectCopy.columns[columnIndex];
+      const column = columnsCopy[columnIndex];
       const cards = Array.from(column.cards);
       const [removed] = cards.splice(source.index, 1);
       cards.splice(destination.index, 0, removed);
       
-      projectCopy.columns[columnIndex].cards = cards;
+      columnsCopy[columnIndex].cards = cards;
       
     } else {
       // Moving from one column to another
-      const sourceColumnIndex = projectCopy.columns.findIndex(
+      const sourceColumnIndex = columnsCopy.findIndex(
         col => col.id === source.droppableId
       );
-      const destColumnIndex = projectCopy.columns.findIndex(
+      const destColumnIndex = columnsCopy.findIndex(
         col => col.id === destination.droppableId
       );
       
-      const sourceColumn = projectCopy.columns[sourceColumnIndex];
-      const destColumn = projectCopy.columns[destColumnIndex];
+      const sourceColumn = columnsCopy[sourceColumnIndex];
+      const destColumn = columnsCopy[destColumnIndex];
       
       const sourceCards = Array.from(sourceColumn.cards);
       const destCards = Array.from(destColumn.cards);
@@ -374,22 +339,20 @@ const Kanban = () => {
       const [removed] = sourceCards.splice(source.index, 1);
       destCards.splice(destination.index, 0, removed);
       
-      projectCopy.columns[sourceColumnIndex].cards = sourceCards;
-      projectCopy.columns[destColumnIndex].cards = destCards;
+      columnsCopy[sourceColumnIndex].cards = sourceCards;
+      columnsCopy[destColumnIndex].cards = destCards;
     }
     
-    const updatedProjects = [...projects];
-    updatedProjects[currentProjectIndex] = projectCopy;
-    setProjects(updatedProjects);
+    setColumns(columnsCopy);
   };
 
   const openCardDetails = (columnIndex, cardIndex) => {
-    const card = currentProject.columns[columnIndex].cards[cardIndex];
+    const card = columns[columnIndex].cards[cardIndex];
     setSelectedCard({
       ...card,
       columnIndex,
       cardIndex,
-      colTitle: currentProject.columns[columnIndex].title
+      colTitle: columns[columnIndex].title
     });
   };
 
@@ -467,38 +430,6 @@ const Kanban = () => {
         <ProjectHeader title="Kanban Board" />
       </div>
       <div className="p-4 font-sans ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
-        {/* Project Controls */}
-        <div className="mb-4 flex items-center gap-4">
-          <select
-            value={currentProjectIndex}
-            onChange={(e) => setCurrentProjectIndex(parseInt(e.target.value))}
-            className="border rounded px-2 py-1 bg-[var(--background)] text-[var(--text)]"
-          >
-            {projects.map((p, i) => (
-              <option key={i} value={i}>{p.name}</option>
-            ))}
-          </select>
-          <input
-            value={newProjectName}
-            onChange={(e) => setNewProjectName(e.target.value)}
-            placeholder="New Project"
-            className="border px-2 py-1 rounded bg-[var(--background)] text-[var(--text)]"
-          />
-          <button 
-            onClick={addProject} 
-            className="bg-green-100 border border-green-300 px-3 py-1 rounded text-green-700 hover:bg-green-200"
-          >
-            + Add Project
-          </button>
-          <button 
-            onClick={deleteProject} 
-            className="bg-red-100 border border-red-300 px-3 py-1 rounded text-red-700 hover:bg-red-200"
-            disabled={projects.length <= 1}
-          >
-            Delete Project
-          </button>
-        </div>
-
         {/* Kanban Board */}
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="all-columns" direction="horizontal" type="column">
@@ -508,7 +439,7 @@ const Kanban = () => {
                 ref={provided.innerRef}
                 className="flex flex-row gap-4 overflow-x-auto pb-4"
               >
-                {currentProject.columns.map((column, columnIndex) => (
+                {columns.map((column, columnIndex) => (
                   <Draggable 
                     key={column.id} 
                     draggableId={column.id} 
@@ -531,7 +462,7 @@ const Kanban = () => {
                           <button 
                             onClick={() => confirmDeleteColumn(columnIndex)} 
                             className="text-gray-400 hover:text-red-500 transition-colors"
-                            disabled={currentProject.columns.length <= 1}
+                            disabled={columns.length <= 1}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
