@@ -9,7 +9,8 @@ const taskSchema = new mongoose.Schema(
        priority: {type: String},
        assignedTo: [{type: mongoose.Schema.Types.ObjectId, ref: 'user'}],
        dueDate: {type: Date},
-       startDate: {type: Date}
+       startDate: {type: Date},
+       favourite_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
     }, {timestamps: true}
 );
 

@@ -41,3 +41,17 @@ export const createProject = async (req, res) => {
         res.status(500).json({message: "Error creating project.", error});
     }
 }
+
+export const selectProject = async (req, res) => {
+    /*
+    Selecting a project in from the homepage directs a user to the dashboard
+    It also set the cookie to the current project so that the rest of the app can access and render project-specific content like tasks 
+    ONLY ONE PROJECT SHOULD BE STORED IN THE COOKIE
+    */
+};
+
+export const deselectProject = async (params) => {
+    /*
+    Clears the project cookie 
+    */
+};
