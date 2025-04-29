@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar"; // Your existing Navbar
 import "./css/Home.css"; // Correct path
 import { useGetCurrentUserQuery } from '../redux/slices/apiSlice';
+import axios from "axios";
+import { retry } from "@reduxjs/toolkit/query";
 
 
 const Home = () => {
@@ -27,41 +29,41 @@ const Home = () => {
             daysLeft: 3,
             team: ["/avatars/avatar1.png", "/avatars/avatar2.png"]
         },
-        {
-            title: "Creating Perfect Website",
-            subtitle: "Web Developer",
-            progress: 85,
-            daysLeft: 4,
-            team: ["/avatars/avatar3.png", "/avatars/avatar4.png"]
-        },
-        {
-            title: "Building Dashboard",
-            subtitle: "React Developer",
-            progress: 60,
-            daysLeft: 6,
-            team: ["/avatars/avatar5.png", "/avatars/avatar6.png"]
-        },
-        {
-            title: "Design New Logo",
-            subtitle: "Graphic Design",
-            progress: 40,
-            daysLeft: 2,
-            team: ["/avatars/avatar7.png", "/avatars/avatar8.png"]
-        },
-        {
-            title: "Develop Landing Page",
-            subtitle: "Frontend Developer",
-            progress: 90,
-            daysLeft: 1,
-            team: ["/avatars/avatar9.png", "/avatars/avatar10.png"]
-        },
-        {
-            title: "Fix Website Bugs",
-            subtitle: "QA Engineer",
-            progress: 55,
-            daysLeft: 5,
-            team: ["/avatars/avatar11.png", "/avatars/avatar12.png"]
-        }
+        // {
+        //     title: "Creating Perfect Website",
+        //     subtitle: "Web Developer",
+        //     progress: 85,
+        //     daysLeft: 4,
+        //     team: ["/avatars/avatar3.png", "/avatars/avatar4.png"]
+        // },
+        // {
+        //     title: "Building Dashboard",
+        //     subtitle: "React Developer",
+        //     progress: 60,
+        //     daysLeft: 6,
+        //     team: ["/avatars/avatar5.png", "/avatars/avatar6.png"]
+        // },
+        // {
+        //     title: "Design New Logo",
+        //     subtitle: "Graphic Design",
+        //     progress: 40,
+        //     daysLeft: 2,
+        //     team: ["/avatars/avatar7.png", "/avatars/avatar8.png"]
+        // },
+        // {
+        //     title: "Develop Landing Page",
+        //     subtitle: "Frontend Developer",
+        //     progress: 90,
+        //     daysLeft: 1,
+        //     team: ["/avatars/avatar9.png", "/avatars/avatar10.png"]
+        // },
+        // {
+        //     title: "Fix Website Bugs",
+        //     subtitle: "QA Engineer",
+        //     progress: 55,
+        //     daysLeft: 5,
+        //     team: ["/avatars/avatar11.png", "/avatars/avatar12.png"]
+        // }
     ]);
 
     const [showModal, setShowModal] = useState(false);
@@ -70,6 +72,29 @@ const Home = () => {
         subtitle: "",
         deadline: ""
     });
+
+    const handleProjectClick = async (project) => {
+        /**
+         * Switches the view to the dashboard and sets the cookie for the selected project.
+         */
+        console.log("Clicked Project:", project);
+        
+        // Clear the project cookie if not null. 
+        // set the current clicked project to be the new project cookie. 
+
+        // selectedProject is the name of the cookie i defined in projectController.js
+        
+        const response = await axios.post(`http://localhost:5001/home/${project}`, project, {
+            withCredentials: true
+        });
+        
+        if (response.status === 200) {
+            console.log("Project cookie set:", document.cookie);
+        }
+        else{
+            console.error("Failed to set project cookie");
+        }
+    };
 
     const handleAddProjectClick = () => {
         setShowModal(true);
@@ -80,7 +105,7 @@ const Home = () => {
         setNewProject((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleCreateProject = () => {
+    const handleCreateProject = async () => {
         if (!newProject.title || !newProject.subtitle || !newProject.deadline) {
             alert("Please fill all fields!");
             return;
@@ -93,7 +118,7 @@ const Home = () => {
             0
         );
 
-        const createdProject = {
+        const projectData = {
             title: newProject.title,
             subtitle: newProject.subtitle,
             progress: 0,
@@ -101,9 +126,27 @@ const Home = () => {
             team: ["/avatars/avatar1.png"]
         };
 
-        setProjects((prev) => [...prev, createdProject]);
-        setNewProject({ title: "", subtitle: "", deadline: "" });
-        setShowModal(false);
+        // Send project object to database
+        const response = await axios.post("http://localhost:5001/home", projectData, {
+            withCredentials: true
+        });
+        
+        if (response.data) {
+            const savedProject = response.data;
+            const createdProject = {
+                id: savedProject._id,
+                ...projectData
+            }
+            console.log("Recieved mongoID of project:", savedProject._id);
+            setProjects((prev) => [...prev, createdProject]);
+            setNewProject({ title: "", subtitle: "", deadline: "" });
+            setShowModal(false);
+        }
+        else{
+            alert("Bad Response when creating project.")
+            return;
+        }
+
     };
 
     return (
@@ -113,7 +156,7 @@ const Home = () => {
                 <h1 className="home-title">Projects</h1>
                 <div className="cards-container">
                     {projects.map((project, index) => (
-                        <div className="card" key={index}>
+                        <div className="card" key={index} onClick={() => handleProjectClick(project)}> 
                             <div className="card-body">
                                 <h2 className="card-title">{project.title}</h2>
                                 <p className="card-subtitle">{project.subtitle}</p>

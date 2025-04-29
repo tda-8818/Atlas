@@ -2,18 +2,20 @@
 @import "tailwindcss";
 
 :root {
-  --color-background-dark: #030712;
-  --color-border-dark: #1d202a;
-  --color-text-dark: #FFF;
-  --color-nav-text-dark: #94a1af;
+  --color-backgorund-dark-primary: #080d17;
+  --color-background-dark: #0F172A;
+  --color-border-dark: #1E293B;
+  --color-text-dark: #CBD5E1;
+  --color-nav-text-dark: #CBD5E1;
   --color-text-hover-dark: #FFFFFF;
   --color-text-active-dark: #FFFFFF;
-  --color-nav-hover-dark: #1d202a;
+  --color-nav-hover-dark: #1E293B;
 
   --color-background-light:#FFFFFF;
 }
 .dark{
   --background: var(--color-background-dark);
+  --background-primary: var(--color-backgorund-dark-primary);
   --text: var(--color-text-dark);
   --nav-text: var(--color-nav-text-dark);
   --nav-hover: var(--color-nav-hover-dark);
@@ -23,6 +25,7 @@
 }
 .light{
   --background: var(--color-background-light);
+  --background-primary: var(--color-gray-100);
   --text: black;
   --nav-text: #8E92BC;
   --nav-hover: #f5f5f7;

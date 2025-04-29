@@ -8,7 +8,7 @@ const Dashboard = () => {
     return (
     <>
         <Navbar /> 
-        <div className="inline-block ml-[15%] w-[85%] h-[100vh]">
+        <div className="bg-[var(--background-primary)] inline-block ml-[15%] w-[85%] h-[100vh]">
             <ProjectHeader title="Home" />
             <div></div>
             <div className='grid grid-cols-12 grid-row-4 gap-5 row-auto flex-row justify-between m-[35px] h-[75vh]'>

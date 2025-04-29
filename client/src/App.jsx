@@ -8,7 +8,7 @@ import Kanban from "./pages/Kanban";
 import Gantt from "./pages/Gantt";
 import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useGetCurrentUserQuery } from './redux/slices/apiSlice.js';
 
 
@@ -16,6 +16,7 @@ import { useGetCurrentUserQuery } from './redux/slices/apiSlice.js';
 
 function App() {
   const { data: user, isLoading, isError } = useGetCurrentUserQuery();
+  const [theme, setTheme] = useState("light");
 
   useEffect(() => {
     if (!isLoading && !isError && user) {
@@ -26,7 +27,7 @@ function App() {
   if (isLoading) return <div>Loading...</div>;
 
   return (
-    <div className="light">
+    <div className={theme}>
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/home" replace />} />
@@ -40,7 +41,7 @@ function App() {
           <Route path="calendar" element={<Calendar />} />
           <Route path="kanban" element={<Kanban />} />
           <Route path="gantt" element={<Gantt />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="settings" element={<Settings setTheme={setTheme} />} />
 
         </Route>
 

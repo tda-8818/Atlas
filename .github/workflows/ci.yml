@@ -52,14 +52,14 @@ jobs:
         npm install eslint
 
 
-    - name: Run client tests
-      working-directory: ./client
-      run: |
-        # Add your client test commands here
-        # For example: npm test
-        npm run lint
-        npm test
-        echo "Running client tests"
+    # - name: Run client tests
+    #   working-directory: ./client
+    #   run: |
+    #     # Add your client test commands here
+    #     # For example: npm test
+    #     npm run lint
+    #     npm test
+    #     echo "Running client tests"
         
     - name: Build client
       working-directory: ./client

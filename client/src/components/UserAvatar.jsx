@@ -12,7 +12,7 @@ const UserAvatar = () => {
   const navigate = useNavigate();
   const [logout, { isLoading }] = useLogoutMutation();
   const { data: currentUser } = useGetCurrentUserQuery();
-  
+
   const handleLogout = async () => {
     try {
       await logout().unwrap();
@@ -38,7 +38,7 @@ const UserAvatar = () => {
           <LuUser className="w-6 h-6 text-gray-700" />
         )}
       </MenuButton>
-      
+
       <Transition
         as={Fragment}
         enter="transition ease-out duration-100"
@@ -48,15 +48,14 @@ const UserAvatar = () => {
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <MenuItems className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-1000">
+        <MenuItems className="absolute right-0 bottom-full mb-2 w-56 origin-bottom-right rounded-md bg-[var(--background-primary)] shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-1000">
           <div className="px-1 py-1">
             <MenuItem>
               {({ active }) => (
                 <button
                   onClick={() => navigate('/settings')}
-                  className={`${
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                  } group flex w-full items-center px-4 py-2 text-sm`}
+                  className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                    } group flex w-full items-center px-4 py-2 text-sm`}
                 >
                   <LuSettings className="mr-3 h-5 w-5" />
                   Settings
@@ -68,9 +67,8 @@ const UserAvatar = () => {
                 <button
                   onClick={handleLogout}
                   disabled={isLoading}
-                  className={`${
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                  } group flex w-full items-center px-4 py-2 text-sm`}
+                  className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                    } group flex w-full items-center px-4 py-2 text-sm`}
                 >
                   <LuCircleArrowOutUpLeft className="mr-3 h-5 w-5" />
                   {isLoading ? 'Logging out...' : 'Logout'}

@@ -1,5 +1,5 @@
 import express from 'express';
-import { signup, login, logout, getMe, updatePassword } from "../controllers/userController.js";
+import { createProject, deselectProject, selectProject } from "../controllers/projectController.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 import rateLimit from 'express-rate-limit';
 
@@ -11,13 +11,14 @@ const authLimiter = rateLimit({
   message: 'Too many attempts, please try again later'
 });
 
-console.log('User routes loaded');  // Should appear when server starts
-
-router.post('/login', authLimiter, login);
-router.post('/signup', authLimiter, signup);
-router.post('/logout', authMiddleware, logout);
-router.get('/me', authMiddleware, getMe);
+console.log('project routes loaded');  // Should appear when server starts
 
 // pass authMiddleware as an argument if you are wanting to deal with cookie data
-router.put('/', authMiddleware, updatePassword);
+router.post('/', authMiddleware, createProject);
+
+//
+router.post('/id', authMiddleware, selectProject);
+
+router.put('/:id', authMiddleware, deselectProject);
+
 export default router;

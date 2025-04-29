@@ -46,12 +46,12 @@ It’s commonly used for tasks such as data validation, generating timestamps, o
 //     });
 // });
 
-userSchema.methods.comparePassword = function(candidatePassword, cb) {
-    bcrypt.compare(candidatePassword, this.password, function(err, isMatch){
-        if (err) return cb(err);
-        cb(null, isMatch);
-    })
-}
+// userSchema.methods.comparePassword = function(candidatePassword, cb) {
+//     bcrypt.compare(candidatePassword, this.password, function(err, isMatch){
+//         if (err) return cb(err);
+//         cb(null, isMatch);
+//     })
+// }
 
 /*
 The default name for an index is the concatenation of the indexed keys and each key's direction in the index (1 or -1) using underscores as a separator. 
