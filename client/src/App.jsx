@@ -24,7 +24,7 @@ function App() {
   if (isLoading) return <div>Loading...</div>;
 
   return (
-    <div className="dark">
+    <div className="white">
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/home" replace />} />

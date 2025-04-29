@@ -1,19 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Navbar from "../components/Navbar"; 
 import ProjectHeader from "../components/ProjectHeader";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import DeleteTaskPopup from '../components/DeleteTaskPopup';
+
+// Sample team members data 
+const teamMembers = [
+  { id: "user-1", name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", initials: "AJ" },
+  { id: "user-2", name: "Sarah Wilson", avatar: "https://i.pravatar.cc/150?img=2", initials: "SW" },
+  { id: "user-3", name: "David Chen", avatar: "https://i.pravatar.cc/150?img=3", initials: "DC" },
+  { id: "user-4", name: "Emma Rodriguez", avatar: "https://i.pravatar.cc/150?img=4", initials: "ER" },
+  { id: "user-5", name: "Michael Brown", avatar: "https://i.pravatar.cc/150?img=5", initials: "MB" },
+];
 
 const defaultProject = {
   name: "Project A",
   columns: [
     {
+      id: "column-1",
       title: "To Do",
-      cards: [{ title: "Example Task", tag: "Design" }]
+      cards: [
+        { 
+          id: "card-1", 
+          title: "Example Task", 
+          tag: "Design",
+          dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(), // 7 days from now
+          assignedTo: ["user-1"], // Changed to array for multiple assignments 
+          description: "",
+          subtasks: [
+            { id: "subtask-1", title: "Research component libraries", completed: false },
+          ] 
+        }
+      ]
     },
     {
+      id: "column-2",
       title: "In Progress",
       cards: []
     },
     {
+      id: "column-3",
       title: "Done",
       cards: []
     }
@@ -29,17 +55,68 @@ const Kanban = () => {
   const [newCardTitle, setNewCardTitle] = useState("");
   const [newCardTag, setNewCardTag] = useState("");
   const [selectedCard, setSelectedCard] = useState(null);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [newDueDate, setNewDueDate] = useState("");
 
   const currentProject = projects[currentProjectIndex];
 
+  // Helper function to generate IDs
+  const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+  // Get the emergency level based on due date
+  const getEmergencyLevel = (dueDate) => {
+    if (!dueDate) return "none";
+    
+    const today = new Date();
+    const due = new Date(dueDate);
+    const diffTime = due - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return "overdue";
+    if (diffDays <= 2) return "high";
+    if (diffDays <= 5) return "medium";
+    return "low";
+  };
+
+  // Get color based on emergency level
+  const getEmergencyColor = (level) => {
+    switch (level) {
+      case "overdue": return "bg-red-500 text-white";
+      case "high": return "bg-orange-500 text-white";
+      case "medium": return "bg-yellow-500 text-black";
+      case "low": return "bg-green-500 text-white";
+      default: return "bg-gray-500 text-white";
+    }
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
+
   const addProject = () => {
     if (!newProjectName.trim()) return;
-    setProjects([...projects, { name: newProjectName, columns: [] }]);
+    setProjects([...projects, { 
+      name: newProjectName, 
+      columns: [
+        { id: generateId("column"), title: "To Do", cards: [] },
+        { id: generateId("column"), title: "In Progress", cards: [] },
+        { id: generateId("column"), title: "Done", cards: [] }
+      ] 
+    }]);
     setCurrentProjectIndex(projects.length);
     setNewProjectName("");
   };
 
   const deleteProject = () => {
+    if (projects.length <= 1) return; // Prevent deleting if it's the only project
     const newList = [...projects];
     newList.splice(currentProjectIndex, 1);
     setProjects(newList);
@@ -49,7 +126,11 @@ const Kanban = () => {
   const addColumn = () => {
     if (!newColumnName.trim()) return;
     const updated = [...projects];
-    updated[currentProjectIndex].columns.push({ title: newColumnName, cards: [] });
+    updated[currentProjectIndex].columns.push({ 
+      id: generateId("column"), 
+      title: newColumnName, 
+      cards: [] 
+    });
     setProjects(updated);
     setNewColumnName("");
   };
@@ -58,42 +139,340 @@ const Kanban = () => {
     if (!newCardTitle.trim()) return;
     const updated = [...projects];
     updated[currentProjectIndex].columns[columnIndex].cards.push({
+      id: generateId("card"),
       title: newCardTitle,
-      tag: newCardTag
+      tag: newCardTag,
+      dueDate: newDueDate || null,
+      assignedTo: [], // Empty array for multiple assignments
+      description: "",
+      subtasks: []
     });
     setProjects(updated);
     setNewCardTitle("");
     setNewCardTag("");
+    setNewDueDate("");
     setShowCardInput(null);
   };
 
-  const deleteColumn = (columnIndex) => {
+  const confirmDeleteColumn = (columnIndex) => {
+    setConfirmDelete({
+      type: 'column',
+      index: columnIndex
+    });
+  };
+
+  const deleteColumn = () => {
+    if (!confirmDelete || confirmDelete.type !== 'column') return;
+    if (currentProject.columns.length <= 1) return; // Prevent deleting if it's the only column
+    
+    const columnIndex = confirmDelete.index;
     const updated = [...projects];
     updated[currentProjectIndex].columns.splice(columnIndex, 1);
     setProjects(updated);
+    setConfirmDelete(null);
   };
 
-  const deleteCard = (columnIndex, cardIndex) => {
+  const deleteCard = (columnIndex, cardIndex, e) => {
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
     const updated = [...projects];
     updated[currentProjectIndex].columns[columnIndex].cards.splice(cardIndex, 1);
     setProjects(updated);
+    
+    // Close any open modals
+    setSelectedCard(null);
+    setConfirmDelete(null);
+  };
+
+  const addSubtask = () => {
+    if (!newSubtaskTitle.trim() || !selectedCard) return;
+    
+    const updated = [...projects];
+    const { columnIndex, cardIndex } = selectedCard;
+    
+    // Create a new subtask object
+    const newSubtask = {
+      id: generateId("subtask"),
+      title: newSubtaskTitle,
+      completed: false
+    };
+    
+    // Add it to the project data
+    updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].subtasks.push(newSubtask);
+    
+    // Update the projects state
+    setProjects(updated);
+    
+    // Get the updated card with the new subtask array directly from the updated state
+    const updatedCard = updated[currentProjectIndex].columns[columnIndex].cards[cardIndex];
+    
+    // Update the selected card with the same subtasks array from the updated projects state
+    setSelectedCard({
+      ...selectedCard,
+      subtasks: [...updatedCard.subtasks]
+    });
+    
+    // Clear the input field
+    setNewSubtaskTitle("");
+  };
+
+  const toggleSubtask = (subtaskIndex) => {
+    if (!selectedCard) return;
+  
+    const updated = [...projects];
+    const { columnIndex, cardIndex } = selectedCard;
+  
+    const subtasks = updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].subtasks;
+    if (subtaskIndex >= 0 && subtaskIndex < subtasks.length) {
+      subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
+    }
+  
+    // Update the projects state
+    setProjects(updated);
+  
+    // Ensure the selected card is updated with the latest subtasks array
+    const updatedCard = updated[currentProjectIndex].columns[columnIndex].cards[cardIndex];
+    setSelectedCard({
+      ...selectedCard,
+      subtasks: [...updatedCard.subtasks]
+    });
+  };
+  
+
+  const deleteSubtask = (subtaskIndex) => {
+    if (!selectedCard) return;
+    
+    const updated = [...projects];
+    const { columnIndex, cardIndex } = selectedCard;
+    
+    updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].subtasks.splice(subtaskIndex, 1);
+    setProjects(updated);
+    
+    // Update the selected card to reflect changes
+    const updatedSubtasks = [...selectedCard.subtasks];
+    updatedSubtasks.splice(subtaskIndex, 1);
+    
+    setSelectedCard({
+      ...selectedCard,
+      subtasks: updatedSubtasks
+    });
+  };
+
+  const handleUpdateCardDescription = (description) => {
+    if (!selectedCard) return;
+    
+    const updated = [...projects];
+    const { columnIndex, cardIndex } = selectedCard;
+    
+    updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].description = description;
+    setProjects(updated);
+    
+    // Update the selected card to reflect changes
+    setSelectedCard({
+      ...selectedCard,
+      description
+    });
+  };
+
+  const handleUpdateDueDate = (dueDate) => {
+    if (!selectedCard) return;
+    
+    const updated = [...projects];
+    const { columnIndex, cardIndex } = selectedCard;
+    
+    updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].dueDate = dueDate;
+    setProjects(updated);
+    
+    // Update the selected card to reflect changes
+    setSelectedCard({
+      ...selectedCard,
+      dueDate
+    });
+  };
+
+  // Updated to handle multiple user assignments
+  const toggleUserAssignment = (userId) => {
+    if (!selectedCard) return;
+    
+    const updated = [...projects];
+    const { columnIndex, cardIndex } = selectedCard;
+    
+    const currentAssignees = updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].assignedTo || [];
+    
+    // If user is already assigned, remove them, otherwise add them
+    const newAssignees = currentAssignees.includes(userId)
+      ? currentAssignees.filter(id => id !== userId)
+      : [...currentAssignees, userId];
+    
+    updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].assignedTo = newAssignees;
+    setProjects(updated);
+    
+    // Update the selected card to reflect changes
+    setSelectedCard({
+      ...selectedCard,
+      assignedTo: newAssignees
+    });
+  };
+
+  // Find a team member by ID
+  const getTeamMember = (userId) => {
+    if (!userId) return null;
+    return teamMembers.find(member => member.id === userId);
+  };
+
+  // Handle drag and drop
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const { source, destination, type } = result;
+
+    const projectCopy = { ...currentProject };
+
+    // If we're dragging columns
+    if (type === "column") {
+      const columns = Array.from(projectCopy.columns);
+      const [removed] = columns.splice(source.index, 1);
+      columns.splice(destination.index, 0, removed);
+
+      projectCopy.columns = columns;
+      
+      const updatedProjects = [...projects];
+      updatedProjects[currentProjectIndex] = projectCopy;
+      setProjects(updatedProjects);
+      return;
+    }
+
+    // If the destination is the same as the source (same column)
+    if (source.droppableId === destination.droppableId) {
+      const columnIndex = projectCopy.columns.findIndex(
+        col => col.id === source.droppableId
+      );
+      
+      const column = projectCopy.columns[columnIndex];
+      const cards = Array.from(column.cards);
+      const [removed] = cards.splice(source.index, 1);
+      cards.splice(destination.index, 0, removed);
+      
+      projectCopy.columns[columnIndex].cards = cards;
+      
+    } else {
+      // Moving from one column to another
+      const sourceColumnIndex = projectCopy.columns.findIndex(
+        col => col.id === source.droppableId
+      );
+      const destColumnIndex = projectCopy.columns.findIndex(
+        col => col.id === destination.droppableId
+      );
+      
+      const sourceColumn = projectCopy.columns[sourceColumnIndex];
+      const destColumn = projectCopy.columns[destColumnIndex];
+      
+      const sourceCards = Array.from(sourceColumn.cards);
+      const destCards = Array.from(destColumn.cards);
+      
+      const [removed] = sourceCards.splice(source.index, 1);
+      destCards.splice(destination.index, 0, removed);
+      
+      projectCopy.columns[sourceColumnIndex].cards = sourceCards;
+      projectCopy.columns[destColumnIndex].cards = destCards;
+    }
+    
+    const updatedProjects = [...projects];
+    updatedProjects[currentProjectIndex] = projectCopy;
+    setProjects(updatedProjects);
+  };
+
+  const openCardDetails = (columnIndex, cardIndex) => {
+    const card = currentProject.columns[columnIndex].cards[cardIndex];
+    setSelectedCard({
+      ...card,
+      columnIndex,
+      cardIndex,
+      colTitle: currentProject.columns[columnIndex].title
+    });
+  };
+
+  // Multi-avatar component that shows up to 3 avatars + count for extras
+  const MultiAvatar = ({ assignedUsers }) => {
+    if (!assignedUsers || assignedUsers.length === 0) return null;
+    
+    const users = assignedUsers.map(id => getTeamMember(id)).filter(Boolean);
+    const displayUsers = users.slice(0, 3); // Show up to 3 avatars
+    const extraCount = users.length - displayUsers.length;
+    
+    return (
+      <div className="flex -space-x-2 items-center">
+        {displayUsers.map((user, index) => (
+          <div key={user.id} className="z-10" style={{ zIndex: 10 - index }}>
+            <Avatar user={user} />
+          </div>
+        ))}
+        {extraCount > 0 && (
+          <div className="z-0 flex items-center justify-center w-6 h-6 text-xs bg-gray-200 rounded-full border-2 border-white">
+            +{extraCount}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Avatar component with fallback to initials
+  const Avatar = ({ user, size = "small" }) => {
+    if (!user) return null;
+    
+    const sizeClass = size === "small" ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm";
+    
+    return (
+      <div className={`relative rounded-full overflow-hidden ${sizeClass} flex items-center justify-center`}>
+        {user.avatar ? (
+          <img 
+            src={user.avatar} 
+            alt={user.name} 
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+        ) : null}
+        <div 
+          className={`absolute inset-0 bg-blue-500 text-white flex items-center justify-center ${user.avatar ? 'hidden' : ''}`}
+          style={{ backgroundColor: stringToColor(user.name) }}
+        >
+          {user.initials}
+        </div>
+      </div>
+    );
+  };
+
+  // Generate a color based on a string (name)
+  const stringToColor = (str) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    let color = '#';
+    for (let i = 0; i < 3; i++) {
+      const value = (hash >> (i * 8)) & 0xFF;
+      color += ('00' + value.toString(16)).substr(-2);
+    }
+    return color;
   };
 
   return (
     <div>
-      {/* ✅ Navbar stays fixed on the left */}
       <Navbar />
-      <div className=" ml-[15%] w-[85%] h-[9vh]">
-                <ProjectHeader title="Calendar" />
+      <div className="ml-[15%] w-[85%] h-[9vh]">
+        <ProjectHeader title="Kanban Board" />
       </div>
-      {/* ✅ Main content shifted right by 15% */}
       <div className="p-4 font-sans ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
         {/* Project Controls */}
         <div className="mb-4 flex items-center gap-4">
           <select
             value={currentProjectIndex}
             onChange={(e) => setCurrentProjectIndex(parseInt(e.target.value))}
-            className="border rounded px-2 py-1"
+            className="border rounded px-2 py-1 bg-[var(--background)] text-[var(--text)]"
           >
             {projects.map((p, i) => (
               <option key={i} value={i}>{p.name}</option>
@@ -103,114 +482,414 @@ const Kanban = () => {
             value={newProjectName}
             onChange={(e) => setNewProjectName(e.target.value)}
             placeholder="New Project"
-            className="border px-2 py-1 rounded"
+            className="border px-2 py-1 rounded bg-[var(--background)] text-[var(--text)]"
           />
-          <button onClick={addProject} className="bg-green-100 border border-green-300 px-3 py-1 rounded text-green-700 hover:bg-green-200">
+          <button 
+            onClick={addProject} 
+            className="bg-green-100 border border-green-300 px-3 py-1 rounded text-green-700 hover:bg-green-200"
+          >
             + Add Project
           </button>
-          <button onClick={deleteProject} className="bg-red-100 border border-red-300 px-3 py-1 rounded text-red-700 hover:bg-red-200">
-            🗑 Delete Project
+          <button 
+            onClick={deleteProject} 
+            className="bg-red-100 border border-red-300 px-3 py-1 rounded text-red-700 hover:bg-red-200"
+            disabled={projects.length <= 1}
+          >
+            Delete Project
           </button>
         </div>
 
-        {/* Kanban Columns */}
-        <div className="kanban-board">
-          {currentProject.columns.map((col, colIndex) => (
-            <div key={colIndex} className="kanban-list">
-              <div className="flex justify-between items-center mb-2 bg-[var(--background)] p-2 rounded">
-                <h2 className="font-bold">{col.title}</h2>
-                <button onClick={() => deleteColumn(colIndex)} className="text-red-400 hover:text-red-600">🗑</button>
-              </div>
-              <div className="flex flex-col gap-2">
-                {col.cards.map((card, cardIndex) => (
-                  <div
-                    key={cardIndex}
-                    className="kanban-card"
-                    onClick={() => setSelectedCard({ ...card, colTitle: col.title })}
+        {/* Kanban Board */}
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="all-columns" direction="horizontal" type="column">
+            {(provided) => (
+              <div 
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className="flex flex-row gap-4 overflow-x-auto pb-4"
+              >
+                {currentProject.columns.map((column, columnIndex) => (
+                  <Draggable 
+                    key={column.id} 
+                    draggableId={column.id} 
+                    index={columnIndex}
                   >
-                    {card.tag && (
-                      <div className="text-xs bg-blue-200 text-blue-800 rounded px-2 py-1 inline-block mb-1">
-                        {card.tag}
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className="kanban-column min-w-[300px] bg-[var(--background)] rounded-lg shadow p-3 flex flex-col"
+                      >
+                        {/* Column Header */}
+                        <div 
+                          {...provided.dragHandleProps}
+                          className="flex justify-between items-center mb-3 p-2 bg-[var(--background-secondary)] rounded-t"
+                        >
+                          <h2 className="font-bold text-[var(--text)] text-sm uppercase">
+                            {column.title} ({column.cards.length})
+                          </h2>
+                          <button 
+                            onClick={() => confirmDeleteColumn(columnIndex)} 
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                            disabled={currentProject.columns.length <= 1}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+
+                        {/* Cards Container */}
+                        <Droppable droppableId={column.id} type="card">
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.droppableProps}
+                              className={`flex-1 p-1 rounded min-h-[150px] transition-colors ${
+                                snapshot.isDraggingOver ? "bg-blue-50" : ""
+                              }`}
+                            >
+                              {column.cards.map((card, cardIndex) => (
+                                <Draggable
+                                  key={card.id}
+                                  draggableId={card.id}
+                                  index={cardIndex}
+                                >
+                                  {(provided, snapshot) => (
+                                    <div
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      className={`kanban-card bg-white p-3 rounded shadow mb-2 flex flex-col cursor-pointer hover:shadow-md transition-shadow relative ${
+                                        snapshot.isDragging ? "shadow-lg" : ""
+                                      }`}
+                                      onClick={() => openCardDetails(columnIndex, cardIndex)}
+                                    >
+                                      <div className="flex justify-between items-start mb-2">
+                                        <div className="flex-1">
+                                          {card.tag && (
+                                            <div className="text-xs bg-blue-200 text-blue-800 rounded px-2 py-1 inline-block mb-2 self-start">
+                                              {card.tag}
+                                            </div>
+                                          )}
+                                          <div className="text-sm font-medium">{card.title}</div>
+                                        </div>
+                                      </div>
+                                      
+                                      {card.description && (
+                                        <div className="text-xs text-gray-600 mb-2 truncate">
+                                          {card.description.substring(0, 60)}
+                                          {card.description.length > 60 ? "..." : ""}
+                                        </div>
+                                      )}
+                                      
+                                      <div className="flex justify-between items-end mt-auto pt-2">
+                                        <div className="flex flex-col">
+                                          {card.subtasks && card.subtasks.length > 0 && (
+                                            <div className="text-xs text-gray-500">
+                                              {card.subtasks.filter(st => st.completed).length}/{card.subtasks.length} subtasks
+                                            </div>
+                                          )}
+                                          
+                                          {/* Due Date with emergency level */}
+                                          {card.dueDate && (
+                                            <div className={`text-xs mt-1 px-1 rounded ${getEmergencyColor(getEmergencyLevel(card.dueDate))}`}>
+                                              {formatDate(card.dueDate)}
+                                            </div>
+                                          )}
+                                        </div>
+                                        
+                                        {/* Assigned Users Avatars at bottom right */}
+                                        {card.assignedTo && card.assignedTo.length > 0 && (
+                                          <div className="ml-auto">
+                                            <MultiAvatar assignedUsers={card.assignedTo} />
+                                          </div>
+                                        )}
+                                      </div>
+                                      
+                                      <button
+                                        onClick={(e) => deleteCard(columnIndex, cardIndex, e)}
+                                        className="absolute top-1 right-1 text-gray-400 hover:text-red-500 transition-colors"
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  )}
+                                </Draggable>
+                              ))}
+                              {provided.placeholder}
+                            </div>
+                          )}
+                        </Droppable>
+
+                        {/* Add Card UI */}
+                        {showCardInput === columnIndex ? (
+                          <div className="mt-2 p-2 bg-[var(--background-secondary)] rounded">
+                            <input
+                              value={newCardTitle}
+                              onChange={(e) => setNewCardTitle(e.target.value)}
+                              placeholder="Card title"
+                              className="border px-2 py-1 rounded w-full text-sm mb-1 bg-white text-gray-800"
+                            />
+                            <input
+                              value={newCardTag}
+                              onChange={(e) => setNewCardTag(e.target.value)}
+                              placeholder="Card tag (optional)"
+                              className="border px-2 py-1 rounded w-full text-sm mb-1 bg-white text-gray-800"
+                            />
+                            <input
+                              type="date"
+                              value={newDueDate}
+                              onChange={(e) => setNewDueDate(e.target.value)}
+                              className="border px-2 py-1 rounded w-full text-sm mb-2 bg-white text-gray-800"
+                            />
+                            <div className="flex justify-end">
+                              <button 
+                                onClick={() => addCard(columnIndex)} 
+                                className="text-sm text-blue-600 hover:underline mr-2"
+                              >
+                                Add
+                              </button>
+                              <button 
+                                onClick={() => setShowCardInput(null)} 
+                                className="text-sm text-gray-500"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setShowCardInput(columnIndex)}
+                            className="mt-2 text-sm text-gray-500 hover:text-blue-600 w-full py-1 bg-[var(--background-secondary)] rounded"
+                          >
+                            + Add Card
+                          </button>
+                        )}
                       </div>
                     )}
-                    {card.title}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteCard(colIndex, cardIndex);
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
+                  </Draggable>
                 ))}
-                {showCardInput === colIndex ? (
-                  <div className="mt-2">
-                    <input
-                      value={newCardTitle}
-                      onChange={(e) => setNewCardTitle(e.target.value)}
-                      placeholder="Card title"
-                      className="border px-2 py-1 rounded w-full text-sm mb-1"
-                    />
-                    <input
-                      value={newCardTag}
-                      onChange={(e) => setNewCardTag(e.target.value)}
-                      placeholder="Card tag (optional)"
-                      className="border px-2 py-1 rounded w-full text-sm mb-2"
-                    />
-                    <div className="flex justify-end">
-                      <button onClick={() => addCard(colIndex)} className="text-sm text-blue-600 hover:underline">Add</button>
-                      <button onClick={() => setShowCardInput(null)} className="text-sm text-gray-500 ml-2">Cancel</button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setShowCardInput(colIndex)}
-                    className="text-sm text-gray-500 hover:text-blue-600 mt-2"
-                  >
-                    + Add Card
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
+                {provided.placeholder}
 
-          {/* Add Column UI */}
-          <div className="add-column">
-            <input
-              value={newColumnName}
-              onChange={(e) => setNewColumnName(e.target.value)}
-              placeholder="Column name"
-              className="w-full px-2 py-1 text-sm border rounded mb-2"
-            />
-            <button
-              onClick={addColumn}
-              className="text-sm text-gray-700 hover:text-black"
-            >
-              + Add Column
-            </button>
-          </div>
-        </div>
+                {/* Add Column UI */}
+                <div className="add-column min-w-[300px] bg-[var(--background)] rounded-lg shadow p-3">
+                  <h2 className="font-bold text-[var(--text)] text-sm uppercase mb-3 p-2 bg-[var(--background-secondary)] rounded-t">
+                    Add Column
+                  </h2>
+                  <input
+                    value={newColumnName}
+                    onChange={(e) => setNewColumnName(e.target.value)}
+                    placeholder="Column name"
+                    className="w-full px-2 py-1 text-sm border rounded mb-2 bg-white text-gray-800"
+                  />
+                  <button
+                    onClick={addColumn}
+                    className="w-full py-1 bg-[var(--background-secondary)] rounded text-sm text-gray-700 hover:text-black"
+                  >
+                    + Add Column
+                  </button>
+                </div>
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
 
         {/* Card Detail Modal */}
         {selectedCard && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded shadow-lg p-6 w-[320px]">
-              <h2 className="text-lg font-bold mb-2">{selectedCard.title}</h2>
-              <p className="text-sm text-gray-500 mb-1">Column: {selectedCard.colTitle}</p>
-              {selectedCard.tag && (
-                <p className="text-sm text-gray-600 mb-4">Tag: {selectedCard.tag}</p>
-              )}
-              <div className="flex justify-end">
+          <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
+            <div className="bg-white rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="text-xl font-bold mb-1">{selectedCard.title}</h2>
+                  <p className="text-sm text-gray-500">in list {selectedCard.colTitle}</p>
+                </div>
+                {selectedCard.tag && (
+                  <div className="text-xs bg-blue-200 text-blue-800 rounded px-2 py-1">
+                    {selectedCard.tag}
+                  </div>
+                )}
+              </div>
+              
+              {/* Due Date Section */}
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold mb-2">Due Date</h3>
+                <div className="flex items-center">
+                  <input
+                    type="date"
+                    value={selectedCard.dueDate ? selectedCard.dueDate.split('T')[0] : ""}
+                    onChange={(e) => handleUpdateDueDate(e.target.value)}
+                    className="border rounded px-2 py-1 text-sm"
+                  />
+                  {selectedCard.dueDate && (
+                    <div className={`ml-2 text-xs px-2 py-1 rounded ${getEmergencyColor(getEmergencyLevel(selectedCard.dueDate))}`}>
+                      {getEmergencyLevel(selectedCard.dueDate) === 'overdue' ? 'Overdue' : 
+                       getEmergencyLevel(selectedCard.dueDate) === 'high' ? 'Due soon' : 
+                       getEmergencyLevel(selectedCard.dueDate) === 'medium' ? 'Approaching' : 'On track'}
+                    </div>
+                  )}
+                  {selectedCard.dueDate && (
+                    <button 
+                      onClick={() => handleUpdateDueDate("")}
+                      className="text-xs text-red-500 hover:underline ml-2"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              {/* Assignment Section - Updated for Multiple Users */}
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold mb-2">Assigned To</h3>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {teamMembers.map(member => (
+                    <div 
+                      key={member.id}
+                      onClick={() => toggleUserAssignment(member.id)} 
+                      className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors ${
+                        selectedCard.assignedTo && selectedCard.assignedTo.includes(member.id) 
+                          ? 'bg-blue-100 border border-blue-300' 
+                          : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Avatar user={member} />
+                      <span className="text-sm">{member.name}</span>
+                    </div>
+                  ))}
+                  {selectedCard.assignedTo && selectedCard.assignedTo.length > 0 && (
+                    <button 
+                      onClick={() => {
+                        const updated = [...projects];
+                        const { columnIndex, cardIndex } = selectedCard;
+                        updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].assignedTo = [];
+                        setProjects(updated);
+                        setSelectedCard({
+                          ...selectedCard,
+                          assignedTo: []
+                        });
+                      }}
+                      className="text-xs text-red-500 hover:underline ml-1"
+                    >
+                      Clear All Assignments
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold mb-2">Description</h3>
+                <textarea
+                  value={selectedCard.description || ""}
+                  onChange={(e) => handleUpdateCardDescription(e.target.value)}
+                  placeholder="Add a more detailed description..."
+                  className="w-full border rounded p-2 text-sm min-h-[80px]"
+                />
+              </div>
+              
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold mb-2">Subtasks ({selectedCard.subtasks?.filter(st => st.completed).length || 0}/{selectedCard.subtasks?.length || 0})</h3>
+                
+                <div className="space-y-2 mb-3">
+                  {selectedCard.subtasks?.map((subtask, index) => (
+                    <div key={subtask.id} className="flex items-center bg-gray-50 p-2 rounded group">
+                      {/* Improved checkbox button with better visibility for the checkmark */}
+                      <button
+                        onClick={() => toggleSubtask(index)}
+                        className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
+                        style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
+                      >
+                        {subtask.completed && (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </button>
+                      
+                      <span 
+                        onClick={() => toggleSubtask(index)}
+                        className={`text-sm flex-1 cursor-pointer ${subtask.completed ? "line-through text-gray-400" : ""}`}
+                      >
+                        {subtask.title}
+                      </span>
+                      
+                      <button
+                        onClick={() => deleteSubtask(index)}
+                        className="text-gray-400 hover:text-red-500 text-xs"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                
+                
+                <div className="flex items-center">
+                  <input
+                    value={newSubtaskTitle}
+                    onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                    placeholder="Add a subtask..."
+                    className="flex-1 border rounded px-2 py-1 text-sm"
+                  />
+                  <button
+                    onClick={addSubtask}
+                    className="ml-2 bg-blue-100 border border-blue-300 px-3 py-1 rounded text-blue-700 hover:bg-blue-200 text-sm"
+                    disabled={!newSubtaskTitle.trim()}
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex justify-between">
+                <button
+                  onClick={() => {
+                    setConfirmDelete({
+                      type: 'card',
+                      columnIndex: selectedCard.columnIndex,
+                      cardIndex: selectedCard.cardIndex
+                    });
+                    setSelectedCard(null);
+                  }}
+                  className="px-4 py-2 bg-red-100 border border-red-300 text-red-700 rounded hover:bg-red-200"
+                >
+                  Delete Task
+                </button>
                 <button
                   onClick={() => setSelectedCard(null)}
-                  className="text-sm px-3 py-1 bg-blue-100 border border-blue-300 text-blue-700 rounded hover:bg-blue-200"
+                  className="px-4 py-2 bg-blue-100 border border-blue-300 text-blue-700 rounded hover:bg-blue-200"
                 >
                   Close
                 </button>
               </div>
             </div>
           </div>
+        )}
+
+        {/* Integration with DeleteTaskPopup for card deletion */}
+        {confirmDelete && confirmDelete.type === 'card' && (
+          <DeleteTaskPopup 
+            toggle={true}
+            onSubmit={() => {
+              const { columnIndex, cardIndex } = confirmDelete;
+              deleteCard(columnIndex, cardIndex, { stopPropagation: () => {} });
+              setConfirmDelete(null);
+            }}
+            onClose={() => setConfirmDelete(null)}
+          />
+        )}
+        
+        {/* Confirm Delete Column Modal */}
+        {confirmDelete && confirmDelete.type === 'column' && (
+          <DeleteTaskPopup 
+            toggle={true} 
+            onSubmit={deleteColumn} 
+            onClose={() => setConfirmDelete(null)} 
+          />
         )}
       </div>
     </div>
