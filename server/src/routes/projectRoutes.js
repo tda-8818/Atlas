@@ -1,5 +1,5 @@
 import express from 'express';
-import { createProject } from "../controllers/projectController.js";
+import { createProject, deselectProject, selectProject } from "../controllers/projectController.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 import rateLimit from 'express-rate-limit';
 
@@ -16,5 +16,9 @@ console.log('project routes loaded');  // Should appear when server starts
 // pass authMiddleware as an argument if you are wanting to deal with cookie data
 router.post('/', authMiddleware, createProject);
 
+//
+router.post('/id', authMiddleware, selectProject);
+
+router.put('/:id', authMiddleware, deselectProject);
 
 export default router;
