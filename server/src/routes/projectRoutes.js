@@ -1,5 +1,5 @@
 import express from 'express';
-import { createProject, deselectProject, selectProject } from "../controllers/projectController.js";
+import { createProject, selectProject, getUserProjects, deleteProject} from "../controllers/projectController.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 import rateLimit from 'express-rate-limit';
 
@@ -17,8 +17,9 @@ console.log('project routes loaded');  // Should appear when server starts
 router.post('/', authMiddleware, createProject);
 
 //
-router.post('/id', authMiddleware, selectProject);
+router.post('/:id', authMiddleware, selectProject);
 
-router.put('/:id', authMiddleware, deselectProject);
+router.get('/projects', authMiddleware, getUserProjects);
 
+router.delete('/:id', authMiddleware, deleteProject);
 export default router;

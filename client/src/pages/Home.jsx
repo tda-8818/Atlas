@@ -4,9 +4,13 @@ import "./css/Home.css"; // Correct path
 import { useGetCurrentUserQuery } from '../redux/slices/apiSlice';
 import axios from "axios";
 import { retry } from "@reduxjs/toolkit/query";
+import { useNavigate } from "react-router-dom";
 
 
 const Home = () => {
+
+    const navigate = useNavigate();
+
     // Get current user's first name to display on homepage
     const [firstName, setFirstName] = useState('');
     const { data: currentUser, isLoading, isError } = useGetCurrentUserQuery();
@@ -22,6 +26,7 @@ const Home = () => {
 
     // homepage contents
     const [projects, setProjects] = useState([
+        // STATIC PROJECT CARD: NOT RENDERED FROM DATABASE
         {
             title: "Creating Mobile App Design",
             subtitle: "UI UX Design",
@@ -29,41 +34,6 @@ const Home = () => {
             daysLeft: 3,
             team: ["/avatars/avatar1.png", "/avatars/avatar2.png"]
         },
-        // {
-        //     title: "Creating Perfect Website",
-        //     subtitle: "Web Developer",
-        //     progress: 85,
-        //     daysLeft: 4,
-        //     team: ["/avatars/avatar3.png", "/avatars/avatar4.png"]
-        // },
-        // {
-        //     title: "Building Dashboard",
-        //     subtitle: "React Developer",
-        //     progress: 60,
-        //     daysLeft: 6,
-        //     team: ["/avatars/avatar5.png", "/avatars/avatar6.png"]
-        // },
-        // {
-        //     title: "Design New Logo",
-        //     subtitle: "Graphic Design",
-        //     progress: 40,
-        //     daysLeft: 2,
-        //     team: ["/avatars/avatar7.png", "/avatars/avatar8.png"]
-        // },
-        // {
-        //     title: "Develop Landing Page",
-        //     subtitle: "Frontend Developer",
-        //     progress: 90,
-        //     daysLeft: 1,
-        //     team: ["/avatars/avatar9.png", "/avatars/avatar10.png"]
-        // },
-        // {
-        //     title: "Fix Website Bugs",
-        //     subtitle: "QA Engineer",
-        //     progress: 55,
-        //     daysLeft: 5,
-        //     team: ["/avatars/avatar11.png", "/avatars/avatar12.png"]
-        // }
     ]);
 
     const [showModal, setShowModal] = useState(false);
@@ -79,20 +49,22 @@ const Home = () => {
          */
         console.log("Clicked Project:", project);
         
-        // Clear the project cookie if not null. 
+        const projectId = project.id;
+        // 1. Clear the project cookie if not null. 
         // set the current clicked project to be the new project cookie. 
 
-        // selectedProject is the name of the cookie i defined in projectController.js
-        
-        const response = await axios.post(`http://localhost:5001/home/${project}`, project, {
+        // 2. selectedProject is the name of the cookie i defined in projectController.js
+        console.log(projectId);
+        const response = await axios.post(`http://localhost:5001/home/${projectId}`, project, {
             withCredentials: true
         });
-        
+
         if (response.status === 200) {
-            console.log("Project cookie set:", document.cookie);
-        }
-        else{
-            console.error("Failed to set project cookie");
+            console.log("Project cookie set");
+             // 3. redirect to project dashboard
+            navigate('/dashboard'); // Only redirect if request is successful
+        } else {
+            console.error("Error in handleProjectClick:", error);
         }
     };
 

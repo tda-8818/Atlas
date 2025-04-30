@@ -21,30 +21,44 @@ export const createProject = async (req, res) => {
         // grab the email of the user who created the project
         console.log("Authenticated user in createProject:", req.user);
 
+        // check if user exists
         if (!req.user)
         {
             console.error({message: "token user undefined"})
             return;
-        }
+        }  
 
+        // get userId
         const userCreator = req.user.email
-
         console.log("Project created by: ", userCreator);
         
-        const userId = await UserModel.findOne({email: userCreator});
-        console.log("MongoId of user is: ", userId._id);
+        // fetch user from DB
+        const user = await UserModel.findOne({email: userCreator});
 
+        if (!user) {
+            return res.status(400).json({message: "user not found in database."});
+        }
+
+        console.log("MongoId of user is:", user._id);
+
+        // create new project
         const projectData = new Project({
             title: title,
             description: subtitle,
         })
+        // insert the user who created the project as a member of that project
+        projectData.users.push(user._id);
 
-        projectData.users.push(userId);
-
+        // save project in db
         const savedProject = await projectData.save();
 
-        res.status(201).json(savedProject);
+        // add the project to that user's list of projects
+        user.projects.push(savedProject._id);
 
+        // save updated user document
+        await user.save();
+
+        res.status(201).json(savedProject);
 
     } catch (error) {
         console.error("Error creating project", error);
@@ -60,10 +74,12 @@ export const selectProject = async (req, res) => {
     */
     try {
         
-        const {projectId} = req.body;
+        const {id} = req.body;
         
+        console.log("recieved projectId:", id);
+
         // 1. Check if project is valid in DB
-        const existingProject = await Project.findById(projectId);
+        const existingProject = await Project.findById(id);
 
         // testing logs
         console.log("found project:", existingProject);
@@ -79,7 +95,7 @@ export const selectProject = async (req, res) => {
 
         // 2. generate token
         const token = jwt.sign(
-            { projectId },
+            { id },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
@@ -103,18 +119,43 @@ export const selectProject = async (req, res) => {
 
 };
 
-// export const deselectProject = async (req, res) => {
-//     /*
-//     Clears the project cookie 
-//     */
-//     try {
-//         // remove the cookie if the user selects another project
-//         res.clearCookie('selectedProject');
-//         res.status(200).json({ success: true, message: 'Project Deselected'});
+export const getUserProjects = async (req, res) => {
+    /*
+    Gets the user from the cookie and returns their projects 
+    */
+    try {
+        // receive user cookie
+        const userId = req.user.id;
 
-//     } catch (error) {
-//         res.status(500).json({ success: false, message: error.message});
-//     }
+        // get user from database
+        const user = await UserModel.findById(userId);
+        // get user's Projects
+        const projects = user.projects;
 
-// };
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message});
+    }
 
+};
+
+export const deleteProject = async (req,res) => {
+    try {
+        const { id } = req.params
+        
+        console.log('deleteProject has been executed');
+
+        console.log("recieved token: ", req.user);
+        const email = req.user.email;
+        console.log(email);
+
+        const projectToDelete = await Project.findByIdAndDelete(id);
+        
+        if (!projectToDelete) {
+            return res.status(404).json({ message: "Project not found"});
+        }
+        res.status(200).json({ message: "Project deleted successfully", task_to_delete})
+    } catch (error) {
+        console.error("Error in deleteProject: ", error);
+        res.status(500).json({ message: "Error in deleteProject"});
+    }
+}
