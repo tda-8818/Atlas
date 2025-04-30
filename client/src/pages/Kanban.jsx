@@ -606,7 +606,7 @@ const Kanban = () => {
                             onClick={() => setShowCardInput(columnIndex)}
                             className="mt-2 text-sm text-gray-500 hover:text-blue-600 w-full py-1 bg-[var(--background-secondary)] rounded"
                           >
-                            + Add Card
+                            + Add Task
                           </button>
                         )}
                       </div>
