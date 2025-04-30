@@ -101,17 +101,17 @@ const Home = () => {
         <div className="flex h-screen bg-[var(--background-primary)]">
             <Navbar />
             <div className="flex-grow p-10 ml-[240px] overflow-y-auto">
-                <h1 className="text-3xl font-bold mb-8 text-text">Projects</h1>
+                <h1 className="text-3xl font-bold mb-8 text-[var(--text)]">Projects</h1>
                 <div className="flex flex-wrap gap-5">
                     {projects.map((project, index) => (
                         <div key={index} className="bg-[var(--background)] rounded-2xl shadow-md w-[300px] min-h-[200px] p-5 flex flex-col justify-between text-text">
                             <div className="flex flex-col h-full justify-between">
                                 <div>
-                                    <h2 className="text-lg font-bold mb-1">{project.title}</h2>
+                                    <h2 className="text-lg font-bold mb-1 text-[var(--text)]">{project.title}</h2>
                                     <p className="text-sm text-[#8e92bc] mb-2">{project.subtitle}</p>
                                 </div>
                                 <div className="mb-2">
-                                    <div className="font-medium text-sm mb-1">Progress</div>
+                                    <div className="font-medium text-sm mb-1 text-[var(--text-muted)]">Progress</div>
                                     <div className="font-semibold text-[#5b5fc7] text-sm mb-1">{project.progress}%</div>
                                     <div className="h-[6px] bg-[#e4e6f2] rounded-full w-full">
                                         <div className="h-full rounded-full bg-[#5b5fc7]" style={{ width: `${project.progress}%` }}></div>

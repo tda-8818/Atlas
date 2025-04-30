@@ -24,7 +24,7 @@ const Gantt = () => {
           <ProjectHeader projectName="Gantt Chart" />
         </div>
         {/* Content Section */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-2">
           <div className="w-full h-full">
             <GanttComp tasks={data} />
           </div>

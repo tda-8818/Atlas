@@ -1,5 +1,8 @@
 @import "../index.css";
 
+.body{
+    font-family: var(--font-primary);
+}
 .fc-media-screen{
     height: 100%;
     width: 100%;
@@ -13,3 +16,21 @@
     cursor: pointer;
     background-color: var(--text-hover);
 }
+
+.fc-toolbar-title{
+    color: var(--text);
+}
+
+/* Change FullCalendar toolbar buttons to #5B5FC7 */
+.fc .fc-button {
+    background-color: #187cb4 !important;
+    border-color: #187cb4 !important;
+    color: white !important;
+    text-transform: capitalize;
+  }
+  
+  .fc .fc-button:hover {
+    background-color: #187cb4 !important; /* slightly darker on hover */
+    border-color: #187cb4 !important;
+  }
+  

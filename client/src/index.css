@@ -2,6 +2,7 @@
 @import "tailwindcss";
 
 :root {
+  --font-primary: 'Plus Jakarta Sans', sans-serif;
   --color-background-dark-primary: #080d17;
   --color-background-dark: #0F172A;
   --color-border-dark: #1E293B;
@@ -11,6 +12,8 @@
   --color-text-active-dark: #FFFFFF;
   --color-nav-hover-dark: #1E293B;
   
+  --color-text-muted-dark: #70757b;
+
   --color-background-light: #FFFFFF;
   
   /* Additional Colors */
@@ -27,6 +30,7 @@
   --background: var(--color-background-dark);
   --background-primary: var(--color-background-dark-primary);
   --text: var(--color-text-dark);
+  --text-muted: var(--color-text-muted-dark);
   --nav-text: var(--color-nav-text-dark);
   --nav-hover: var(--color-nav-hover-dark);
   --border-color: var(--color-border-dark);
@@ -64,7 +68,7 @@
 }
 
 body {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Plus Jakarta Sans";
   background-color: var(--background);
 }
 
