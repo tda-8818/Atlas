@@ -437,7 +437,11 @@ const Kanban = () => {
               <div 
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className="flex flex-row gap-4 overflow-x-auto pb-4"
+                className="flex flex-row overflow-x-auto pb-4"
+                style={{ 
+                  overflowX: 'auto',
+                  paddingBottom: '16px'
+                }}
               >
                 {columns.map((column, columnIndex) => (
                   <Draggable 
@@ -449,7 +453,13 @@ const Kanban = () => {
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className="kanban-column min-w-[300px] bg-[var(--background)] rounded-lg shadow p-3 flex flex-col"
+                        className="kanban-column bg-[var(--background)] rounded-lg shadow p-3 flex flex-col"
+                        style={{
+                          ...provided.draggableProps.style,
+                          width: "270px",
+                          minWidth: "270px",
+                          marginRight: "16px",
+                        }}
                       >
                         {/* Column Header */}
                         <div 
@@ -606,7 +616,10 @@ const Kanban = () => {
                 {provided.placeholder}
 
                 {/* Add Column UI */}
-                <div className="add-column min-w-[300px] bg-[var(--background)] rounded-lg shadow p-3">
+                <div className="add-column bg-[var(--background)] rounded-lg shadow p-3" style={{
+                  width: "270px",
+                  minWidth: "270px"
+                }}>
                   <h2 className="font-bold text-[var(--text)] text-sm uppercase mb-3 p-2 bg-[var(--background-secondary)] rounded-t">
                     Add Column
                   </h2>
@@ -693,10 +706,10 @@ const Kanban = () => {
                   {selectedCard.assignedTo && selectedCard.assignedTo.length > 0 && (
                     <button 
                       onClick={() => {
-                        const updated = [...projects];
+                        const updated = [...columns];
                         const { columnIndex, cardIndex } = selectedCard;
-                        updated[currentProjectIndex].columns[columnIndex].cards[cardIndex].assignedTo = [];
-                        setProjects(updated);
+                        updated[columnIndex].cards[cardIndex].assignedTo = [];
+                        setColumns(updated);
                         setSelectedCard({
                           ...selectedCard,
                           assignedTo: []
