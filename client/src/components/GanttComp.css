@@ -1,13 +1,88 @@
-.body{
-    background-color: var(--background);
-}
-.gantt_grid_data{
-    background: var(--background);
-}
-.gantt_data_area{
-    background: var(--background);
-}
-.gantt_cell{
-    background: var(--background);
-    color: var(--text);
-}
+/* GanttComp.css */
+
+/* General wrapper for Gantt */
+.gantt-wrapper {
+    position: relative;
+    margin: 0 auto;
+    padding: 0;
+  }
+  
+  /* Gantt container to fit within the page */
+  .gantt-container {
+    background-color: #f9fafb; /* Light gray background */
+    font-family: 'Inter', sans-serif;
+    font-size: 12px; /* Adjust font size */
+    color: #374151; /* Dark text */
+    padding: 0 10px;
+    margin-top: 50px; /* Add space for button */
+    height: calc(100vh - 70px); /* Adjust height to take up full screen, minus button space */
+    overflow: auto; /* Add scrollability if needed */
+  }
+  
+  /* Styling for Add Task button */
+  .add-task-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 8px 16px;
+    background-color: #4caf50; /* Green button */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .add-task-btn:hover {
+    background-color: #388e3c; /* Darker green on hover */
+  }
+  
+  /* Task bars */
+  .gantt_task_line {
+    background-color: #3b82f6; /* Original blue color */
+    border: none;
+    border-radius: 4px;
+    height: 30px; /* Increase task height */
+  }
+  
+  /* Progress bars */
+  .gantt_task_line .gantt_task_progress {
+    background-color: #60a5fa; /* Lighter blue color for progress */
+    border-radius: 4px;
+  }
+  
+  /* Grid cells and headers */
+  .gantt_grid_head_cell,
+  .gantt_task_cell {
+    background-color: #ffffff;
+    color: #374151;
+    border-color: #e5e7eb;
+  }
+  
+  /* Scale cells for timeline */
+  .gantt_scale_cell {
+    background-color: #ffffff;
+    color: #374151;
+    font-weight: 500;
+    font-size: 12px;
+    padding: 4px;
+  }
+  
+  /* Week number formatting */
+  .gantt_scale_cell .week {
+    font-size: 12px;
+    color: #0288d1;
+  }
+  
+  /* Tooltip styling */
+  .gantt_tooltip {
+    background-color: white;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 8px 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  

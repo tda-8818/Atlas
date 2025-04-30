@@ -1,26 +1,48 @@
-import React from 'react'
-import Navbar from '../components/Navbar'
-import StatBox from '../components/StatBox'
-import ProjectHeader from '../components/ProjectHeader'
-
+import React from 'react';
+import Navbar from '../components/Navbar';
+import StatBox from '../components/StatBox';
+import ProjectHeader from '../components/ProjectHeader';
 
 const Dashboard = () => {
-    return (
+  return (
     <>
-        <Navbar /> 
-        <div className="bg-[var(--background-primary)] inline-block ml-[15%] w-[85%] h-[100vh]">
-            <ProjectHeader title="Home" />
-            <div></div>
-            <div className='grid grid-cols-12 grid-row-4 gap-5 row-auto flex-row justify-between m-[35px] h-[75vh]'>
-                <div className='col-span-4 row-span-1'><StatBox  title="tasks completed" value="5"/></div>
-                <div className='col-span-4 row-span-1'><StatBox  title="tasks in progress" value="3"/></div>
-                <div className='col-span-4 row-span-1'><StatBox  title="tasks overdue" value="2"/></div>
-                <div className='col-span-6 row-span-2'><StatBox title="Your tasks"/></div>
-                <div className='col-span-6 row-span-2'><StatBox title="Team members" /></div>
-            </div>
-        </div>
-    </>
-    )
-}
+      <Navbar />
+      <div className="ml-[15%] w-[85%] min-h-screen bg-[var(--background-primary)]">
+        <ProjectHeader title="Home" />
 
-export default Dashboard
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 auto-rows-fr">
+          {/* Top Stats */}
+          <div className="col-span-12 xl:col-span-4">
+            <div className="h-full min-h-[20vh]">
+              <StatBox title="Tasks Completed" value="5" />
+            </div>
+          </div>
+          <div className="col-span-12 xl:col-span-4">
+            <div className="h-full min-h-[20vh]">
+              <StatBox title="Tasks In Progress" value="3" />
+            </div>
+          </div>
+          <div className="col-span-12 xl:col-span-4">
+            <div className="h-full min-h-[20vh]">
+              <StatBox title="Tasks Overdue" value="2" />
+            </div>
+          </div>
+
+          {/* Bottom Panels */}
+          <div className="col-span-12 xl:col-span-6">
+            <div className="h-full min-h-[35vh]">
+              <StatBox title="Your Tasks" />
+            </div>
+          </div>
+          <div className="col-span-12 xl:col-span-6">
+            <div className="h-full min-h-[35vh]">
+              <StatBox title="Team Members" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Dashboard;

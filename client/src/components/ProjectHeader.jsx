@@ -1,49 +1,62 @@
-import React from 'react'
+import React from 'react';
 import { RxDashboard, RxCalendar } from "react-icons/rx";
 import { LuChartGantt, LuMessageSquareMore, LuSquareKanban } from "react-icons/lu";
+import { useLocation, useNavigate } from 'react-router-dom';
+import UserAvatar from './UserAvatar';
 
+const navLinks = [
+  { label: 'Dashboard', icon: <RxDashboard />, href: '/Dashboard' },
+  { label: 'Kanban Board', icon: <LuSquareKanban />, href: '/Kanban' },
+  { label: 'Calendar', icon: <RxCalendar />, href: '/Calendar' },
+  { label: 'Gantt Chart', icon: <LuChartGantt />, href: '/Gantt' },
+  { label: 'Messages', icon: <LuMessageSquareMore />, href: '/Messages' }
+];
 
 const ProjectHeader = ({ projectName }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const getLinkClassName = (href) => {
+    const isActive = location.pathname === href;
+    return isActive
+      ? 'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[var(--nav-hover)] text-[var(--text-hover)] transition duration-200'
+      : 'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-[var(--nav-text)] hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] transition duration-200';
+  };
+
+  const currentTool = navLinks.find(link => location.pathname === link.href)?.label || '';
 
   return (
-    <>
-    <div className='bg-[var(--background)] border-b-[3px] border-[var(--border-color)] '>
-    <div className="relative pl-[20px]">
-      <h1 className="text-2xl font-bold">{projectName}</h1>
-      <p className="text-lg text-[var(--text)]">Project Name</p>
-    </div>
-    <div className="nav">
-        <ul className='flex mt-[3px] ml-[10px]  text-[16px]'>
-            <li><a href="/Dashboard">
-                <button className='px-[10px] rounded-[6%] bg-[var(--background)]  hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] text-[var(--nav-text)] cursor-pointer'>                          
-                    <RxDashboard className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
-                    Dashboard</button>
-                    </a>
-                    </li>
-            <li>
-                <a href="/Kanban"><button className='px-[10px] rounded-[6%] bg-[var(--background)]  hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] text-[var(--nav-text)] cursor-pointer'>
-                    <LuSquareKanban className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
-                    Kanban Board
-                    </button>
-                    </a>
-                    </li>
-            <li><a href="/Calendar">
-                <button className='px-[10px] rounded-[6%] bg-[var(--background)]  hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] text-[var(--nav-text)] cursor-pointer'>
-                <RxCalendar className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
+    <header className="bg-[var(--background)] border-b border-[var(--border-color)] shadow-sm">
+      <div className="px-6 py-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col min-w-0 flex-1">
+          <h1
+            className="text-[clamp(1rem,4vw,1.75rem)] font-bold text-[var(--text)] truncate"
+            title={projectName}
+          >
+            Porject Heading
+          </h1>
+          <p className="text-sm text-[var(--text-muted)]">{currentTool}</p>
+        </div>
 
-                    Calendar</button>
-                    </a>
-                    </li>
-            <li><a href="/Gantt"><button className='px-[10px] rounded-[6%] bg-[var(--background)]  hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] text-[var(--nav-text)] cursor-pointer'>
-                <LuChartGantt className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
-                Gantt Chart</button></a></li>
-            <li><a href="/Messages"><button className='px-[10px] rounded-[6%] bg-[var(--background)]  hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] text-[var(--nav-text)] cursor-pointer'>
-                <LuMessageSquareMore className='inline mr-[10px] mb-[4px] justify-center text-[25px]' />
-                Messages</button></a></li>
-        </ul>
-    </div>
-    </div>
-    </>
-  )
-}
-export default ProjectHeader
+        <div className="flex items-center gap-6 mt-2 md:mt-0 shrink-0">
+          <ul className="flex gap-2 flex-wrap items-center">
+            {navLinks.map(({ label, icon, href }) => (
+              <li key={label}>
+                <button
+                  onClick={() => navigate(href)}
+                  className={getLinkClassName(href)}
+                >
+                  <span className="text-xl">{icon}</span>
+                  <span>{label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <UserAvatar />
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default ProjectHeader;
