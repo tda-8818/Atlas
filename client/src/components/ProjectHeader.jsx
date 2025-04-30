@@ -4,6 +4,7 @@ import { LuChartGantt, LuMessageSquareMore, LuSquareKanban } from "react-icons/l
 import { useLocation, useNavigate } from 'react-router-dom';
 import UserAvatar from './UserAvatar';
 
+//stores navigation links and their corresponding icons
 const navLinks = [
   { label: 'Dashboard', icon: <RxDashboard />, href: '/Dashboard' },
   { label: 'Kanban Board', icon: <LuSquareKanban />, href: '/Kanban' },

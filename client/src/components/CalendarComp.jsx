@@ -17,10 +17,13 @@ const CalendarComp = () => {
   const [selectedEvent,setSelectedEvent] = useState(null);
   const [currentEvents, setCurrentEvents] = useState([]);
 
+  // handles date selection via click and opens modal when clicked
   const handleDateSelect = async (selectInfo) => {
     setSelectedDateInfo(selectInfo);
     setmodalStateAdd(true);
   };
+
+  // createss a new event using the form data from the modal
   const handleEventSubmission = async (formData) =>{
     const calendarApi = selectedDateInfo.view.calendar;
     calendarApi.unselect();
@@ -54,10 +57,15 @@ const CalendarComp = () => {
     setSelectedDateInfo(false);
 
   };
+
+  //handles when user clikcs on event in calendar to open modal
   const handleEventClick = async (selected) => {
     setSelectedEvent(selected.event);
     setmodalStateAdd(true);
   };
+
+  //handles when user chooses to delete an event in the modal
+  // deletes the event from the calendar and the server
   const handleEventDelete = async () => {
     if (!selectedEvent) return;
 
