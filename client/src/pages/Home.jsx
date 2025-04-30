@@ -11,35 +11,63 @@ const Home = () => {
 
     const navigate = useNavigate();
 
+    // homepage contents
+    const [projects, setProjects] = useState([
+        // STATIC PROJECT CARD: NOT RENDERED FROM DATABASE
+        // {
+        //     title: "Creating Mobile App Design",
+        //     description: "UI UX Design",
+        //     progress: 75,
+        //     daysLeft: 3,
+        //     team: ["/avatars/avatar1.png", "/avatars/avatar2.png"]
+        // },
+    ]);
+
     // Get current user's first name to display on homepage
     const [firstName, setFirstName] = useState('');
     const { data: currentUser, isLoading, isError } = useGetCurrentUserQuery();
 
     useEffect(() => {
-        if (currentUser?.user?.firstName) {
-            setFirstName(currentUser.user.firstName);
+        // Call this function to load projects from database
+        const getUserProjects = async () => {
+            try {
+                console.log("cast on load");
+                //console.log(currentUser.user._id);
+                //if (!currentUser?.user?._id) return;
+                
+                const response = await axios.get(`http://localhost:5001/home`, {
+                    withCredentials: true
+                });
+                console.log("project data:", response.data);
+
+                if (response.status === 200 && Array.isArray(response.data)) {               
+                    const projectJson = response.data.map((project) => ({
+                        id: project._id,
+                        title: project.title,
+                        description: project.description,
+                        progress: project.progress,
+                        daysLeft: project.daysLeft,
+                        team: ["/avatars/avatar1.png"],
+                    }));
+                    setProjects(projectJson);
+                    setFirstName(currentUser.user.firstName);
+                }
+            } catch (error) {
+                console.error("Error in useEffect in Home.jsx:", error);
+            }
         }
+        getUserProjects();
     }, [currentUser]);
 
     if (isLoading) return <div>Loading...</div>;
     if (isError) return <div>Error loading user data</div>;
 
-    // homepage contents
-    const [projects, setProjects] = useState([
-        // STATIC PROJECT CARD: NOT RENDERED FROM DATABASE
-        {
-            title: "Creating Mobile App Design",
-            subtitle: "UI UX Design",
-            progress: 75,
-            daysLeft: 3,
-            team: ["/avatars/avatar1.png", "/avatars/avatar2.png"]
-        },
-    ]);
+
 
     const [showModal, setShowModal] = useState(false);
     const [newProject, setNewProject] = useState({
         title: "",
-        subtitle: "",
+        description: "",
         deadline: ""
     });
 
@@ -78,7 +106,7 @@ const Home = () => {
     };
 
     const handleCreateProject = async () => {
-        if (!newProject.title || !newProject.subtitle || !newProject.deadline) {
+        if (!newProject.title || !newProject.description || !newProject.deadline) {
             alert("Please fill all fields!");
             return;
         }
@@ -92,7 +120,7 @@ const Home = () => {
 
         const projectData = {
             title: newProject.title,
-            subtitle: newProject.subtitle,
+            description: newProject.description,
             progress: 0,
             daysLeft,
             team: ["/avatars/avatar1.png"]
@@ -111,7 +139,7 @@ const Home = () => {
             }
             console.log("Recieved mongoID of project:", savedProject._id);
             setProjects((prev) => [...prev, createdProject]);
-            setNewProject({ title: "", subtitle: "", deadline: "" });
+            setNewProject({ title: "", description: "", deadline: "" });
             setShowModal(false);
         }
         else{
@@ -131,7 +159,7 @@ const Home = () => {
                         <div className="card" key={index} onClick={() => handleProjectClick(project)}> 
                             <div className="card-body">
                                 <h2 className="card-title">{project.title}</h2>
-                                <p className="card-subtitle">{project.subtitle}</p>
+                                <p className="card-description">{project.description}</p>
                                 <div className="progress-section">
                                     <div className="progress-text">Progress</div>
                                     <div className="progress-value">{project.progress}%</div>
@@ -185,10 +213,10 @@ const Home = () => {
                         />
                         <input
                             type="text"
-                            name="subtitle"
-                            value={newProject.subtitle}
+                            name="description"
+                            value={newProject.description}
                             onChange={handleInputChange}
-                            placeholder="Attending Person"
+                            placeholder="Description"
                         />
                         <input
                             type="date"

@@ -15,8 +15,8 @@ export const createProject = async (req, res) => {
     try {
         console.log("create project executed");
 
-        const {title, subtitle} = req.body;
-        console.log("Recieved Data:", req.body);
+        const {title, description, daysLeft} = req.body;
+        console.log("Received Data:", req.body);
 
         // grab the email of the user who created the project
         console.log("Authenticated user in createProject:", req.user);
@@ -24,7 +24,7 @@ export const createProject = async (req, res) => {
         // check if user exists
         if (!req.user)
         {
-            console.error({message: "token user undefined"})
+            console.error({message: "token user undefined"});
             return;
         }  
 
@@ -44,7 +44,8 @@ export const createProject = async (req, res) => {
         // create new project
         const projectData = new Project({
             title: title,
-            description: subtitle,
+            description: description,
+            daysLeft: daysLeft,
         })
         // insert the user who created the project as a member of that project
         projectData.users.push(user._id);
@@ -124,21 +125,41 @@ export const getUserProjects = async (req, res) => {
     Gets the user from the cookie and returns their projects 
     */
     try {
-        // receive user cookie
-        const userId = req.user.id;
 
+        console.log("getUserProjects Executed");
+        
+        // receive user cookie
+        const userCookie = req.user;
+
+        console.log("userId", userCookie);
+        
         // get user from database
-        const user = await UserModel.findById(userId);
+        if (!req.user) {
+            console.error({message: "token user undefined"});
+            return;
+        }
+
+        const user = await UserModel.findById(req.user._id).populate("projects");
+
         // get user's Projects
         const projects = user.projects;
+        console.log("user projects: ", projects);
+
+        res.status(200).json(projects);
 
     } catch (error) {
+        console.error("Error in getUserProjects:", error);
         res.status(500).json({ success: false, message: error.message});
     }
-
 };
 
 export const deleteProject = async (req,res) => {
+    /**Deletes a project
+     * After deletion, it should clear the project from any instance in
+     * other components such as the UserModel.
+     * 
+     * 
+     */
     try {
         const { id } = req.params
         

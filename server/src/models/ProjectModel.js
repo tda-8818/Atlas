@@ -9,7 +9,9 @@ const projectSchema = new mongoose.Schema({
     description: {type: String, required: true},
     project_admin_priveliges: [{type: mongoose.Schema.Types.ObjectId, ref:'user',  default: []}],
     users: [{type: mongoose.Schema.Types.ObjectId, ref:'user',  default: []}],
-    tasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}]
+    tasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
+    daysLeft: {type: Number },
+    progress: {type: Number, default: 0}
 }, {timestamps: true});
 
 // If a project is deleted from the database, also remove all related tasks within that project.
