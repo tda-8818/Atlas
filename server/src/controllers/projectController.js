@@ -153,6 +153,64 @@ export const getUserProjects = async (req, res) => {
     }
 };
 
+export const addUserToProject = async (req, res) => {
+    try {
+
+        // 1. receive user email
+        const { email } = req.body;
+
+        console.log(email);
+
+        // 2. fetch user from database
+        // May need to force toLowerCase() if not done on the front-end
+        const userToAdd = await UserModel.findOne({email});
+
+        console.log(userToAdd);
+
+        // 3. Check if user exists
+        if (!userToAdd) {
+            console.error({message: "Unable to add user to project. User not found"})
+            return res.status(404).json({message: "User not found when adding to project."});
+        }
+        
+        // 4. Get projectId from selectedProject token.
+        const selectedProject = req.cookies?.selectedProject;
+        console.log("Selected project from cookie:", selectedProject);
+
+        // 5. Check if projectId is valid
+        if (!selectedProject) {
+            console.error({message: "Error selected project not found"})
+            return res.status(404).json({message: "selectedProject token not found"});
+        }   
+
+        // 6. Fetch the project from the database
+        const project = await Project.findById(selectedProject);
+
+        // 6.5 Check if project is null
+        if (!project) {
+            return res.status(404).json({message: "Project not found"});
+        }
+
+        // 7. add the user to project's list of users and vice-versa
+        // Make sure to check that you're not adding duplicate copies of projects/users to each other.
+        if (!project.users.includes(userToAdd._id)){
+            project.users.push(userToAdd._id);
+        }
+        
+        if (!userToAdd.projects.includes(project._id)){
+            userToAdd.projects.push(project._id)
+        }
+
+        // 8. Save the project and user document
+        await project.save();
+        await userToAdd.save();
+
+        return res.status(200).json({message: "User added to project successfully"});
+    } catch (error) {
+        console.error("Error in addUserToProject in projectController.js:", error); 
+    }
+}
+
 export const deleteProject = async (req,res) => {
     /**Deletes a project
      * After deletion, it should clear the project from any instance in
