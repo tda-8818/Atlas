@@ -17,10 +17,13 @@ const CalendarComp = () => {
   const [selectedEvent,setSelectedEvent] = useState(null);
   const [currentEvents, setCurrentEvents] = useState([]);
 
+  const [actionName, setActionName] = useState(""); //used to determine which action to take in the modal (add/edit/delete)
+
   // handles date selection via click and opens modal when clicked
   const handleDateSelect = async (selectInfo) => {
     setSelectedDateInfo(selectInfo);
     setmodalStateAdd(true);
+    setActionName("Add a task"); // Set action name to "add" for the modal
   };
 
   // createss a new event using the form data from the modal
@@ -62,6 +65,7 @@ const CalendarComp = () => {
   const handleEventClick = async (selected) => {
     setSelectedEvent(selected.event);
     setmodalStateAdd(true);
+    setActionName("Edit or delete a task"); // Set action name to "edit" for the modal
   };
 
   //handles when user chooses to delete an event in the modal
@@ -109,7 +113,7 @@ const CalendarComp = () => {
           ]
         }
       />
-     <AddTaskPopup toggle={modalStateAdd} onSubmit={handleEventSubmission} onClose={()=>{setmodalStateAdd(!modalStateAdd); setSelectedDateInfo(null); setSelectedEvent(null);}} onDelete={handleEventDelete} event={selectedEvent}  />
+     <AddTaskPopup toggle={modalStateAdd} onSubmit={handleEventSubmission} onClose={()=>{setmodalStateAdd(!modalStateAdd); setSelectedDateInfo(null); setSelectedEvent(null);}} onDelete={handleEventDelete} event={selectedEvent} actionName={actionName} />
     {/* <ViewTaskModal toggle={modalStateView} action={()=>{setModalStateView(!modalStateView); setSelectedEvent(null);}} onSubmit={handleEventDelete} /> */}
 
     </>

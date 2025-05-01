@@ -4,7 +4,7 @@ import { Fragment, useState, useEffect } from 'react'
 import DeleteTaskPopup from './DeleteTaskPopup'
 
 function AddTaskPopup(props) {
-  const { toggle, onSubmit, onClose, onDelete, event } = props  //inputs from parent component
+  const { toggle, onSubmit, onClose, onDelete, event, actionName} = props  //inputs from parent component
   const [childModalState, setChildModalState] = useState(false) //controls the state of the child modal (open/closed)
   const [title, setTitle] = useState('')  //stores input value for title upon submit
   const [description, setDescription] = useState('')  //stores input value for description upon submit
@@ -74,7 +74,7 @@ function AddTaskPopup(props) {
               >
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
                   <Fieldset className="space-y-6">
-                    <Legend className="text-xl font-semibold text-gray-800">Add a New Task</Legend>
+                    <Legend className="text-xl font-semibold text-gray-800">{actionName}</Legend>
 
                     <Field>
                       <Label className="block text-sm font-medium text-gray-700">Title</Label>
