@@ -10,7 +10,7 @@ const taskSchema = new mongoose.Schema(
        assignedTo: [{type: mongoose.Schema.Types.ObjectId, ref: 'user'}],
        dueDate: {type: Date},
        startDate: {type: Date},
-       favourite_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
+       subtasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
     }, {timestamps: true}
 );
 
