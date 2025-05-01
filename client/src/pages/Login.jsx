@@ -22,10 +22,16 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       setError(null); // Reset errors on submit
-      console.log("Login attempt:", data);
+
+      const loginData = {
+        ...data,
+        email: data.email.toLowerCase()
+      };
+
+      console.log("Login attempt:", loginData);
 
       // 1. Make login request
-      const result = await login(data).unwrap();
+      const result = await login(loginData).unwrap();
       console.log("Login response:", result);
 
       // 2. Verify cookie was set
