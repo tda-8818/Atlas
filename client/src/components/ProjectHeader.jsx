@@ -20,34 +20,34 @@ const ProjectHeader = ({ projectName }) => {
   const getLinkClassName = (href) => {
     const isActive = location.pathname === href;
     return isActive
-      ? 'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[var(--nav-hover)] text-[var(--text-hover)] transition duration-200'
-      : 'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-[var(--nav-text)] hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] transition duration-200';
+      ? 'flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--nav-hover)] text-[var(--text-hover)] transition duration-200 cursor-pointer'
+      : 'flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg text-[var(--nav-text)] hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)] transition duration-200 cursor-pointer';
   };
 
   const currentTool = navLinks.find(link => location.pathname === link.href)?.label || '';
 
   return (
     <header className="bg-[var(--background)] border-b border-[var(--border-color)] shadow-sm">
-      <div className="px-6 py-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="px-4 py-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col min-w-0 flex-1">
           <h1
-            className="text-[clamp(1rem,4vw,1.75rem)] font-bold text-[var(--text)] truncate"
+            className="font-bold text-[var(--text)] text-sm truncate"
             title={projectName}
           >
-            Porject Heading
+            Project Heading
           </h1>
-          <p className="text-sm text-[var(--text-muted)]">{currentTool}</p>
+      
         </div>
 
-        <div className="flex items-center gap-6 mt-2 md:mt-0 shrink-0">
-          <ul className="flex gap-2 flex-wrap items-center">
+        <div className="flex items-center gap-4 mt-1 md:mt-0 shrink-0">
+          <ul className="flex gap-1 flex-wrap items-center">
             {navLinks.map(({ label, icon, href }) => (
               <li key={label}>
                 <button
                   onClick={() => navigate(href)}
                   className={getLinkClassName(href)}
                 >
-                  <span className="text-xl">{icon}</span>
+                  <span>{icon}</span>
                   <span>{label}</span>
                 </button>
               </li>
@@ -59,5 +59,7 @@ const ProjectHeader = ({ projectName }) => {
     </header>
   );
 };
+
+
 
 export default ProjectHeader;
