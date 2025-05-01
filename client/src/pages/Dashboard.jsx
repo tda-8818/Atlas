@@ -4,6 +4,20 @@ import StatBox from '../components/StatBox';
 import ProjectHeader from '../components/ProjectHeader';
 
 const Dashboard = () => {
+  // Dummy data for "Your Tasks"
+  const tasks = [
+    { id: 1, title: "Task 1", status: "Completed", dueDate: "2025-05-01" },
+    { id: 2, title: "Task 2", status: "In Progress", dueDate: "2025-05-05" },
+    { id: 3, title: "Task 3", status: "Overdue", dueDate: "2025-04-28" },
+  ];
+
+  // Dummy data for "Team Members"
+  const teamMembers = [
+    { id: 1, name: "John Doe", role: "Project Manager" },
+    { id: 2, name: "Jane Smith", role: "Developer" },
+    { id: 3, name: "Alice Johnson", role: "Designer" },
+  ];
+
   return (
     <>
       <Navbar />
@@ -12,18 +26,18 @@ const Dashboard = () => {
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 auto-rows-fr">
           {/* Top Stats */}
-          <div className="col-span-12 xl:col-span-4">
-            <div className="h-full min-h-[20vh]">
+          <div className="col-span-12 xl:col-span-4 flex ">
+            <div className="h-full w-full flex items-center justify-center">
               <StatBox title="Tasks Completed" value="5" />
             </div>
           </div>
-          <div className="col-span-12 xl:col-span-4">
-            <div className="h-full min-h-[20vh]">
+          <div className="col-span-12 xl:col-span-4 flex items-center justify-center">
+            <div className="h-full w-full flex items-center justify-center">
               <StatBox title="Tasks In Progress" value="3" />
             </div>
           </div>
-          <div className="col-span-12 xl:col-span-4">
-            <div className="h-full min-h-[20vh]">
+          <div className="col-span-12 xl:col-span-4 flex items-center justify-center">
+            <div className="h-full w-full flex items-center justify-center">
               <StatBox title="Tasks Overdue" value="2" />
             </div>
           </div>
@@ -31,12 +45,49 @@ const Dashboard = () => {
           {/* Bottom Panels */}
           <div className="col-span-12 xl:col-span-6">
             <div className="h-full min-h-[35vh]">
-              <StatBox title="Your Tasks" />
+              <StatBox title="Your Tasks">
+                <ul className="text-xs space-y-1">
+                  {tasks.map(task => (
+                    <li
+                      key={task.id}
+                      className={`
+          flex items-center justify-between 
+          p-1 rounded 
+          whitespace-nowrap overflow-hidden 
+          ${task.status === 'Completed'
+                          ? 'bg-green-100'
+                          : task.status === 'In Progress'
+                            ? 'bg-yellow-100'
+                            : 'bg-red-100'}
+        `}
+                    >
+                      {/* Title will ellipsize if too long */}
+                      <span className="truncate">{task.title}</span>
+
+                      {/* Status + due date in smaller text */}
+                      <span className="ml-2 text-[var(--text-muted)]">
+                        {task.status} • {task.dueDate}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </StatBox>
+
+
             </div>
           </div>
+
           <div className="col-span-12 xl:col-span-6">
             <div className="h-full min-h-[35vh]">
-              <StatBox title="Team Members" />
+              <StatBox title="Team Members">
+                <ul className="space-y-1 text-xs">
+                  {teamMembers.map(member => (
+                    <li key={member.id} className="p-2 rounded-md bg-[var(--background)] justify-between flex items-center">
+                      <strong>{member.name}</strong> {member.role}
+                    </li>
+                  ))}
+                </ul>
+              </StatBox>
             </div>
           </div>
         </div>
