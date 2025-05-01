@@ -2,7 +2,7 @@ import { gantt } from 'dhtmlx-gantt';
 import React, { Component } from 'react';
 import 'dhtmlx-gantt/codebase/dhtmlxgantt.css';
 import axios from 'axios';
-import "./GanttComp.css"; // Assuming you have a CSS file for GanttComp
+import "./GanttComp.css";
 
 export default class GanttComp extends Component {
   componentDidMount() {
@@ -16,13 +16,12 @@ export default class GanttComp extends Component {
             duration: task.duration,
             progress: task.progress,
           };
-          
+
           const response = await axios.post("http://localhost:5001/Gantt", newTask);
-          if (response.data){
+          if (response.data) {
             const savedTask = response.data;
             gantt.changeTaskId(newTask.id, savedTask._id);
           }
-
         } catch (error) {
           console.error("Error creating task:", error);
         }
@@ -30,72 +29,69 @@ export default class GanttComp extends Component {
       this.eventAttached = true;
     }
 
-    // Configure Gantt chart for a professional look
-    gantt.config.date_format = '%d-%m-%Y %H:%i:%s'; // Keep your date format
+    // --- Modern dynamic timeline configuration ---
+    const today = new Date();
+    gantt.config.start_date = new Date(today.getFullYear() - 1, today.getMonth(), 1);
+    gantt.config.end_date = new Date(today.getFullYear() + 1, today.getMonth() + 1, 0);
 
-    // Set the timeline range to fit a larger view
-    gantt.config.start_date = new Date(2021, 0, 1);  // Example: Start from Jan 1, 2021
-    gantt.config.end_date = new Date(2023, 11, 31);  // Example: End on Dec 31, 2023
-
-    // Adjusting the scale to view a larger timeline (months and weeks)
-    gantt.config.scale_unit = "month"; // Use months for broader view
-    gantt.config.date_scale = "%b %Y"; // Use abbreviated month name with year (e.g., Jan 2021)
-
-    // Subscales to show weeks within the months
-    gantt.config.subscales = [
-      { unit: "week", step: 1, template: function(date) { 
-        return `Week ${gantt.date.date_to_str("%W")(date)}`;  // Display week number as 'Week 1', 'Week 2', etc.
-      }} // Show week number within each month
+    // --- Modern scale configuration ---
+    gantt.config.scales = [
+      { unit: "month", step: 1, format: "%M %Y" }, // e.g., Jan 2024
+      {
+        unit: "week", step: 1,
+        format: date => gantt.date.date_to_str("%d")(date) // e.g., 01 Jan
+      }
     ];
 
-    // Zoom settings: Allow zoom-in and zoom-out
-    gantt.config.zoom = {
-      levels: [
-        {
-          name: "month",
-          scale_unit: "month",
-          date_scale: "%b %Y", // Abbreviated month and year
-          subscales: [
-            { unit: "week", step: 1, template: function(date) { 
-              return `Week ${gantt.date.date_to_str("%W")(date)}`;  // Display week number as 'Week 1', 'Week 2', etc.
-            }}
-          ]
-        },
-        {
-          name: "week",
-          scale_unit: "week",
-          date_scale: "%d %M", // Show day and month for week view
-          subscales: []
-        }
-      ]
-    };
+    // --- Professional styling ---
+    gantt.config.task_height = 30;
+    gantt.config.grid_width = 300;
+    gantt.config.date_format = '%d-%m-%Y %H:%i:%s';
 
-    // Styling adjustments for professional look
-    gantt.config.task_height = 30; // Make tasks taller for better readability
-    gantt.config.grid_width = 300;  // Adjust grid width for better column visibility
     gantt.config.columns = [
-      { name: "text", label: "Task", width: "*", tree: true }, // Task name column
-      { name: "start_date", label: "Start Date", align: "center" }, // Start Date column
-      { name: "duration", label: "Duration", align: "center" }, // Duration column
-      { name: "progress", label: "Progress", align: "center" }, // Progress column
+      { name: "text", label: "Task", width: "*", tree: true, resize: true },
+      { name: "duration", label: "Days", align: "center", resize: true },
+      { name: "assigned", label: "Assigned", align: "center", resize: true },
+      {
+        name: "add",
+        label: "",
+        width: 40,
+        align: "center",
+        resize: false,
+        template: () => `<button class="gantt-add-btn" title="Add Task">+</button>`
+      }
     ];
 
-    // Customize grid lines for a cleaner, modern look
+    // Add button click handler
+    gantt.attachEvent("onGridClick", (taskId, column) => {
+      if (column === "add") {
+        const today = new Date();
+        gantt.showLightbox({
+          id: null,
+          start_date: today,
+          duration: 1,
+          parent: taskId,
+          text: ""
+        });
+        return false;
+      }
+      return true;
+    });
+
+    // --- Visual customizations ---
     gantt.config.grid_lines = {
       "top": { color: "#e5e7eb", style: "solid", width: 1 },
       "bottom": { color: "#e5e7eb", style: "solid", width: 1 },
     };
 
-    // Set the task bar color for a more modern look
-    gantt.config.taskbar_background = "#4caf50"; // Green task bar
-    gantt.config.taskbar_color = "#ffffff"; // White text for task bars
-    gantt.config.task_progress_color = "#81c784"; // Lighter green for progress
-    gantt.config.task_text_color = "#ffffff"; // White text on tasks
+    gantt.config.taskbar_background = "#4caf50";
+    gantt.config.taskbar_color = "#ffffff";
+    gantt.config.task_progress_color = "#81c784";
+    gantt.config.task_text_color = "#ffffff";
+    gantt.config.link_line_color = "#0288d1";
 
-    // Set dependency line color to improve clarity
-    gantt.config.link_line_color = "#0288d1"; // Blue color for dependency lines
 
-    // Initialize Gantt chart
+    // --- Initialize Gantt ---
     gantt.init(this.ganttContainer);
     gantt.parse(this.props.tasks);
   }

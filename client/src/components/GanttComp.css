@@ -1,91 +1,150 @@
+@import "../index.css";
 /* GanttComp.css - Customized with #0288d1 as primary color */
 
 :root {
-    --gantt-primary-color: #0288d1;
-  }
-  
-  .gantt-wrapper {
-    position: relative;
-    margin: 0 auto;
-    padding: 0;
-  }
-  
-  .gantt-container {
-    background-color: #f9fafb;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    color: #1f2937;
-    padding: 0 10px;
-    margin-top: 50px;
-    height: calc(100vh - 70px);
-    overflow: auto;
-  }
-  
-  .add-task-btn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    padding: 8px 16px;
-    background-color: var(--gantt-primary-color);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease;
-  }
-  
-  .add-task-btn:hover {
-    background-color: #0277bd; /* slightly darker for hover */
-  }
-  
-  /* Task styling */
-  .gantt_task_line {
-    background-color: var(--gantt-primary-color);
-    border: none;
-    border-radius: 6px;
-    height: 24px;
-    color: #ffffff;
-  }
-  
-  .gantt_task_line .gantt_task_progress {
-    background-color: #4fc3f7; /* lighter blue for progress */
-    border-radius: 6px;
-  }
-  
-  /* Grid and timeline headers */
-  .gantt_grid_head_cell,
-  .gantt_task_scale .gantt_scale_cell {
-    background-color: #f3f4f6;
-    color: #1f2937;
-    font-weight: 500;
-    font-size: 14px;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  .gantt_row.odd {
-    background-color: #f9fafb;
-  }
-  
-  /* Week number styling */
-  .gantt_scale_cell .week {
-    font-size: 13px;
-    color: var(--gantt-primary-color);
-  }
-  
-  /* Tooltip styling */
-  .gantt_tooltip {
-    background-color: white;
-    color: #111827;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    padding: 8px 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* High-priority tasks */
-  .high-priority-task {
-    background-color: #ef4444 !important;
-    color: #ffffff !important;
-  }
-  
+  --gantt-primary-color: #0288d1;
+}
+
+.gantt-wrapper {
+  position: relative;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.gantt-container {
+  background-color: #f9fafb;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; /* Reduced from 14px */
+  color: #1f2937;
+  padding: 0 10px;
+  margin-top: 50px;
+  height: calc(100vh - 70px);
+  overflow: auto;
+}
+
+.add-task-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 6px 12px;
+  background-color: var(--gantt-primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px; /* Reduced from 14px */
+  transition: background-color 0.3s ease;
+}
+
+.add-task-btn:hover {
+  background-color: #0277bd;
+}
+
+/* Task styling */
+.gantt_task_line {
+  background-color: var(--gantt-primary-color);
+  border: none;
+  border-radius: 6px;
+  height: 20px; /* Adjusted height for smaller font */
+  color: #ffffff;
+}
+
+.gantt_task_line .gantt_task_progress {
+  background-color: #4fc3f7;
+  border-radius: 6px;
+}
+
+/* Grid and timeline headers */
+.gantt_grid_head_cell,
+.gantt_task_scale .gantt_scale_cell {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  font-weight: 500;
+  font-size: 11px; /* Reduced from 14px */
+  border-bottom: 1px solid #e5e7eb;
+  justify-content: space-between;
+}
+
+.gantt_row.odd {
+  background-color: #f9fafb;
+}
+
+/* Week number styling */
+.gantt_scale_cell .week {
+  font-size: 10.5px;
+  color: var(--gantt-primary-color);
+}
+
+/* Tooltip styling */
+.gantt_tooltip {
+  background-color: white;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* High-priority tasks */
+.high-priority-task {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.gantt-task-line {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+.gantt_row {
+  height: 32px;
+}
+
+.gantt_grid_head_cell,
+.gantt_task_scale .gantt_scale_cell {
+  font-size: 11px;
+}
+
+.gantt_grid_data .gantt_cell,
+.gantt_task_row .gantt_task_cell {
+  padding: 4px 6px;
+}
+
+/* Add these to your existing CSS file */
+
+/* Ensure the Gantt container supports scrolling */
+.gantt-wrapper {
+  position: relative;
+  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* Allow both horizontal and vertical scrolling */
+}
+
+/* If you want to add custom scrollbar styles */
+.gantt-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.gantt-container::-webkit-scrollbar-thumb {
+  background-color: #0288d1;
+  border-radius: 4px;
+}
+
+.gantt-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.gantt_tree_content{
+  font-size: x-small;
+  padding: 0 0 0 0;
+}
+/* .gantt_grid_head_cell {
+  background-color: #187cb4;
+} */
+  /* gantt_grid_head_add gantt_last_cell  */
+
+

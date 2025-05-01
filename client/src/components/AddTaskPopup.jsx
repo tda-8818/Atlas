@@ -4,10 +4,10 @@ import { Fragment, useState, useEffect } from 'react'
 import DeleteTaskPopup from './DeleteTaskPopup'
 
 function AddTaskPopup(props) {
-  const { toggle, onSubmit, onClose, onDelete, event } = props
-  const [childModalState, setChildModalState] = useState(false)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
+  const { toggle, onSubmit, onClose, onDelete, event } = props  //inputs from parent component
+  const [childModalState, setChildModalState] = useState(false) //controls the state of the child modal (open/closed)
+  const [title, setTitle] = useState('')  //stores input value for title upon submit
+  const [description, setDescription] = useState('')  //stores input value for description upon submit
 
   // Populate form when editing
   useEffect(() => {
@@ -20,25 +20,34 @@ function AddTaskPopup(props) {
     }
   }, [event])
 
+  //handles submit action when user decides to add a task
+  //uses parent fucntion onSubmit to pass data back to parent component
   const handleConfirm = () => {
     onSubmit({ title, description })
     setTitle('')
     setDescription('')
   }
 
+  //function used to open child modal when user chooses to delete a task
   const openChildModal = () => {
     setChildModalState(!childModalState)
   }
 
+  //function used to handle the delete action when user confirms they want to delete a task
+  //uses parent function onDelete to pass data back to parent component
   const handleChildConfirm = () => {
     onDelete()
     setChildModalState(false)
     onClose()
   }
 
+  //uses HeadlessUI Modal dialog but replaced dialog with fieldset and legend to make it more accessible
+  //dialog used to allow closing the modal by clicking outside of it
+  //uses transition to animate the opening and closing of the modal
+  //fieldset allow user to input information for adding and editiing tasks
   return (
     <>
-      <Transition appear show={toggle} as={Fragment}>
+      <Transition appear show={toggle} as={Fragment}> 
         <Dialog as="div" className="relative z-10" onClose={onClose}>
           <Transition.Child
             as={Fragment}
