@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import "tailwindcss";
 
 :root {
-  --font-primary: 'Plus Jakarta Sans', sans-serif;
   --color-background-dark-primary: #080d17;
   --color-background-dark: #0F172A;
   --color-border-dark: #1E293B;
@@ -68,8 +68,9 @@
 }
 
 body {
-  font-family: "Plus Jakarta Sans";
+  font-family: "Plus Jakarta Sans", sans-serif;
   background-color: var(--background);
+
 }
 
 a {
@@ -144,3 +145,13 @@ a:hover {
   font-weight: 700;
   color: var(--primary-color);
 }
+
+/* Optional: hide scrollbars */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
