@@ -2,7 +2,7 @@ import { gantt } from 'dhtmlx-gantt';
 import React, { Component } from 'react';
 import 'dhtmlx-gantt/codebase/dhtmlxgantt.css';
 import axios from 'axios';
-import "./GanttComp.css";
+import "./css/GanttComp.css";
 
 export default class GanttComp extends Component {
   componentDidMount() {

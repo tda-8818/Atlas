@@ -5,7 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import AddTaskPopup from "./AddTaskPopup";
 import ViewTaskModal from "./ViewTaskModal";
-import "./CalendarComp.css"
+import "./css/CalendarComp.css"
 import axios from "axios";
 
 
