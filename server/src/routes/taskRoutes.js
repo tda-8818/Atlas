@@ -1,12 +1,20 @@
 import express from 'express';
 import { getTask, createTask, editTask, deleteTask, createEvent } from "../controllers/taskController.js";
+import authMiddleware from '../middleware/authMiddleware.js';
+import rateLimit from 'express-rate-limit';
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // Limit each IP to 20 requests per window
+  message: 'Too many attempts, please try again later'
+});
 
 const router = express.Router();
 
 router.get('/calendar', getTask);
 
 //router.post('/', createEvent);
-router.post('/', createTask);
+router.post('/', authMiddleware, createTask);
 
 /*
 a route parameter like /:id means the URL will contain a dynamic segment — a value that can change — 
