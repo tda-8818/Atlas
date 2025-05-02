@@ -1,10 +1,10 @@
-import { Field, Fieldset, Input, Label, Legend, Textarea } from '@headlessui/react'
+import { Field, Fieldset, Input, Label, Legend, Textarea, Select } from '@headlessui/react'
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment, useState, useEffect } from 'react'
 import DeleteTaskPopup from './DeleteTaskPopup'
 
 function AddTaskPopup(props) {
-  const { toggle, onSubmit, onClose, onDelete, event, actionName} = props  //inputs from parent component
+  const { toggle, onSubmit, onClose, onDelete, event, teamMembers, actionName } = props  //inputs from parent component
   const [childModalState, setChildModalState] = useState(false) //controls the state of the child modal (open/closed)
   const [title, setTitle] = useState('')  //stores input value for title upon submit
   const [description, setDescription] = useState('')  //stores input value for description upon submit
@@ -47,7 +47,7 @@ function AddTaskPopup(props) {
   //fieldset allow user to input information for adding and editiing tasks
   return (
     <>
-      <Transition appear show={toggle} as={Fragment}> 
+      <Transition appear show={toggle} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={onClose}>
           <Transition.Child
             as={Fragment}
@@ -87,6 +87,15 @@ function AddTaskPopup(props) {
                     </Field>
 
                     <Field>
+                      <Label className="block text-sm font-medium text-gray-700">Priority</Label>
+                      <Select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 focus:border-blue-500 focus:ring focus:ring-blue-200" name="Priority">
+                        <option>High</option>
+                        <option>Medium</option>
+                        <option>Low</option>
+                      </Select>
+                    </Field>
+
+                    <Field>
                       <Label className="block text-sm font-medium text-gray-700">Description</Label>
                       <Textarea
                         rows={4}
@@ -96,7 +105,16 @@ function AddTaskPopup(props) {
                         onChange={(e) => setDescription(e.target.value)}
                       />
                     </Field>
-
+                    <Field>
+                      <Label className="block text-sm font-medium text-gray-700">Assign a Member</Label>
+                      <Select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 focus:border-blue-500 focus:ring focus:ring-blue-200" name="Assign Member">
+                        {teamMembers.map((teamMembers) => (
+                          <option key={teamMembers.id} value={teamMembers.id}>
+                            {teamMembers.name}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
                     <div className="flex justify-between gap-2 pt-2">
                       <button
                         onClick={handleConfirm}

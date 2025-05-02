@@ -10,6 +10,10 @@ import axios from "axios";
 
 
 const CalendarComp = () => {
+const members = [
+  { id:"123456", name: "John Doe", image: "/avatars/avatar1.png" }
+]
+
   const [modalStateAdd, setmodalStateAdd] = useState(false);
   const [modalStateView, setModalStateView] = useState(false);
 
@@ -113,7 +117,7 @@ const CalendarComp = () => {
           ]
         }
       />
-     <AddTaskPopup toggle={modalStateAdd} onSubmit={handleEventSubmission} onClose={()=>{setmodalStateAdd(!modalStateAdd); setSelectedDateInfo(null); setSelectedEvent(null);}} onDelete={handleEventDelete} event={selectedEvent} actionName={actionName} />
+     <AddTaskPopup toggle={modalStateAdd} onSubmit={handleEventSubmission} onClose={()=>{setmodalStateAdd(!modalStateAdd); setSelectedDateInfo(null); setSelectedEvent(null);}} onDelete={handleEventDelete} event={selectedEvent} teamMembers={members} actionName={actionName} />
     {/* <ViewTaskModal toggle={modalStateView} action={()=>{setModalStateView(!modalStateView); setSelectedEvent(null);}} onSubmit={handleEventDelete} /> */}
 
     </>
