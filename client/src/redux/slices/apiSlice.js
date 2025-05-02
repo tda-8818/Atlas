@@ -76,6 +76,7 @@ export const {
     useAddTaskMutation,
     useUpdateTaskMutation,
     useDeleteTaskMutation,
+    useGetProjectsQuery,
 
 } = apiSlice;
 
