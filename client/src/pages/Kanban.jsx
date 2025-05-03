@@ -98,10 +98,7 @@ const Kanban = () => {
   const getEmergencyColor = (level) => {
     switch (level) {
       case "overdue": return "bg-red-500 text-white";
-      case "high": return "bg-orange-500 text-white";
-      case "medium": return "bg-yellow-500 text-black";
-      case "low": return "bg-green-500 text-white";
-      default: return "bg-gray-500 text-white";
+      default: return "";
     }
   };
 
@@ -626,7 +623,7 @@ const Kanban = () => {
                                           
                                           {/* Due Date with emergency level */}
                                           {card.dueDate && (
-                                            <div className={`text-xs mt-1 px-1 rounded ${getEmergencyColor(getEmergencyLevel(card.dueDate))}`}>
+                                            <div className={`text-xs mt-1 px-1 rounded ${getEmergencyLevel(card.dueDate) === 'overdue' ? 'bg-red-500 text-white' : ''}`}>
                                               {formatDate(card.dueDate)}
                                             </div>
                                           )}
@@ -735,10 +732,8 @@ const Kanban = () => {
                     className="border rounded px-2 py-1 text-sm"
                   />
                   {selectedCard.dueDate && (
-                    <div className={`ml-2 text-xs px-2 py-1 rounded ${getEmergencyColor(getEmergencyLevel(selectedCard.dueDate))}`}>
-                      {getEmergencyLevel(selectedCard.dueDate) === 'overdue' ? 'Overdue' : 
-                       getEmergencyLevel(selectedCard.dueDate) === 'high' ? 'Due soon' : 
-                       getEmergencyLevel(selectedCard.dueDate) === 'medium' ? 'Approaching' : 'On track'}
+                    <div className={`ml-2 text-xs px-2 py-1 rounded ${getEmergencyLevel(selectedCard.dueDate) === 'overdue' ? 'bg-red-500 text-white' : ''}`}>
+                      {formatDate(selectedCard.dueDate)}
                     </div>
                   )}
                   {selectedCard.dueDate && (
