@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTask, createTask, editTask, deleteTask, createEvent } from "../controllers/taskController.js";
+import { getTask, createTask, editTask, deleteTask, createEvent, updateTask } from "../controllers/taskController.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 import rateLimit from 'express-rate-limit';
 
@@ -34,4 +34,5 @@ router.delete('/:id', deleteTask);
 
 router.put('/:id', editTask);
 
+router.put('/:id', updateTask);
 export default router;

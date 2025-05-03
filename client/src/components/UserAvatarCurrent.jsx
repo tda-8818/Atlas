@@ -9,7 +9,7 @@ const getInitials = (firstName = '', lastName = '') => {
   return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
 };
 
-const UserAvatarCurrent = () => {
+const UserAvatar = () => {
   const navigate = useNavigate();
   const [logout, { isLoading }] = useLogoutMutation();
   const { data: currentUser } = useGetCurrentUserQuery();

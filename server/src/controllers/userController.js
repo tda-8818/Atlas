@@ -42,7 +42,11 @@ export const login = async (req, res) => {
     );
 
     // 4. Set cookie
-    res.cookie('token', token, cookieOptions);
+    res.cookie('token', token, {
+      httpOnly: true,   // Helps prevent XSS
+      secure: true,     // Use in production with HTTPS
+      sameSite: 'none', // Often needed when front-end is on a different domain
+    });
 
     // 5. Send response (excluding password)
     res.json({ 

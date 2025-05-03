@@ -11,16 +11,19 @@ import projectRoutes from './routes/projectRoutes.js';
 import mongoose from 'mongoose'; // Mongoose used for connecting to MongoDB
 import dotenv from 'dotenv'; 
 import cookieParser from 'cookie-parser';
-import WebSocket from 'ws'; // WebSocket for real-time communication
+import WebSocketService from './middleware/websocketService.js'; // WebSocket service for real-time communication
 import http from 'http'; // HTTP module for creating a server
 
 dotenv.config(); // Load environment variables from .env file
 
 // Create an Express server
 const app = express();
-const port = process.env.PORT || 5001;
+//const port = process.env.PORT || 5001;
+const server = http.createServer(app); // Create an HTTP server using the Express app
+const wss = new WebSocketService(server); // Initialize WebSocket service with the HTTP server
+app.locals.wss = wss; // Make available to routes
 
-// Middleware set up:
+// Middleware set up: - used for parsing incoming requests
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
@@ -29,6 +32,10 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     exposedHeaders: ['set-cookie']
 })); 
+app.use((req, res, next) => {
+    req.ws = wss; // Attach WebSocket service to the request object
+    next();
+  });
 
 //app.use(json()); // parse incoming JSON requests
 
@@ -44,16 +51,11 @@ mongoose.connect(mongoURI)
 
 
 // Import routes
-
 app.use('/api/users', userRoutes);
 app.use('/settings', userRoutes);
-
 app.use('/home', projectRoutes);
-
 app.use("/calendar", taskRoutes);  // Now all "/calendar" requests go to calendarRoutes
 app.use('/gantt', taskRoutes);
-
-
 
 
 
@@ -63,7 +65,9 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something broke!');
   });
 
-// Start the Express server
-app.listen(port, () => {
-    console.log(`Server is running on port: ${port}`);
-});
+
+// Start the server
+server.listen(process.env.PORT, () => {
+    console.log(`Server running with WebSocket on port ${process.env.PORT}`);
+  });
+  
