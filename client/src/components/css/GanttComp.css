@@ -147,4 +147,30 @@
 } */
   /* gantt_grid_head_add gantt_last_cell  */
 
+  .dark .gantt-container,
+.dark .gantt_task_bg,
+.dark .gantt_grid_data,
+.dark .gantt_task_data,
+.dark .gantt_data_area,
+.dark .gantt_task_line,
+.dark .gantt_row,
+.dark .gantt_task_row,
+.dark .gantt_grid_row,
+.dark .gantt_task_cell,
+.dark .gantt_cell,
+.dark .gantt_scale_cell,
+.dark .gantt_grid_head,
+.dark .gantt_grid_head_cell,
+.dark .gantt_task_scale,
+.dark .gantt_task_scale .gantt_scale_cell {
+  background-color: var(--background) !important;
+  color: var(--text) !important;
+  border-color: var(--border-color) !important;
+}
+
+.gantt_layout_cell .gantt_hor_scroll{
+  background-color: var(--background) !important;
+}
+
+
 

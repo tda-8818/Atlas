@@ -19,6 +19,8 @@ const UserAvatar = () => {
 
   return (
     <Menu as="div" className="relative">
+
+      {/* User avatar display */}
       <MenuButton
         className="
           w-8 h-8 flex items-center justify-center
@@ -36,6 +38,8 @@ const UserAvatar = () => {
           <LuUser className="w-4 h-4 text-[var(--text)]" />
         )}
       </MenuButton>
+
+        {/* popup for when user avatar is clicked */}
 
       <Transition
         as={Fragment}

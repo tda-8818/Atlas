@@ -10,6 +10,7 @@ const Dashboard = () => {
     { id: 2, title: "Task 2", status: "In Progress", dueDate: "2025-05-05" },
     { id: 3, title: "Task 3", status: "Overdue", dueDate: "2025-04-28" },
   ];
+  //function for fetching tasks in a project here
 
   // Dummy data for "Team Members"
   const teamMembers = [
@@ -17,7 +18,7 @@ const Dashboard = () => {
     { id: 2, name: "Jane Smith", role: "Developer" },
     { id: 3, name: "Alice Johnson", role: "Designer" },
   ];
-
+  //function for fetching users in a project here
   return (
     <>
       <Navbar />
@@ -25,7 +26,7 @@ const Dashboard = () => {
         <ProjectHeader title="Home" />
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 auto-rows-fr">
-          {/* Top Stats */}
+          {/* Top Stats (tasks complete, overdue and in progress) */}
           <div className="col-span-12 xl:col-span-4 flex ">
             <div className="h-full w-full flex items-center justify-center">
               <StatBox title="Tasks Completed" value="5" />
@@ -42,7 +43,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Bottom Panels */}
+          {/* Bottom Panels (project task list and team members) */}
+          {/* Tasks list */}
           <div className="col-span-12 xl:col-span-6">
             <div className="h-full min-h-[35vh]">
               <StatBox title="Your Tasks">
@@ -54,15 +56,20 @@ const Dashboard = () => {
           flex items-center justify-between 
           p-1 rounded 
           whitespace-nowrap overflow-hidden 
-          ${task.status === 'Completed'
+          bg-[var(--background-primary)]
+        `}
+                    >
+                      {/* ${task.status === 'Completed'
                           ? 'bg-green-100'
                           : task.status === 'In Progress'
                             ? 'bg-yellow-100'
-                            : 'bg-red-100'}
-        `}
-                    >
+                            : 'bg-red-100'} 
+                            
+                            incase we do want color on tasks
+                            */}
+
                       {/* Title will ellipsize if too long */}
-                      <span className="truncate">{task.title}</span>
+                      <strong className="truncate text-[var(--text)]">{task.title}</strong>
 
                       {/* Status + due date in smaller text */}
                       <span className="ml-2 text-[var(--text-muted)]">
@@ -76,14 +83,14 @@ const Dashboard = () => {
 
             </div>
           </div>
-
+          {/* members list */}
           <div className="col-span-12 xl:col-span-6">
             <div className="h-full min-h-[35vh]">
               <StatBox title="Team Members">
                 <ul className="space-y-1 text-xs">
                   {teamMembers.map(member => (
-                    <li key={member.id} className="p-2 rounded-md bg-[var(--background)] justify-between flex items-center">
-                      <strong>{member.name}</strong> {member.role}
+                    <li key={member.id} className="p-2 rounded-md bg-[var(--background-primary)] justify-between flex items-center text-[var(--text)]">
+                      <strong>{member.name}</strong> <p className='text-[var(--text-muted)]'>{member.role}</p>
                     </li>
                   ))}
                 </ul>

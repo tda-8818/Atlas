@@ -56,7 +56,7 @@
 
 /* Day cell base styling */
 .fc .fc-daygrid-day:not(.fc-day-today){
-  background-color: white !important;
+  background-color: var(--background) !important;
 }
 
 /* Day number (e.g., 1, 2, 3) */
@@ -103,7 +103,7 @@
 
 .fc .fc-daygrid-day-number,
 .fc .fc-daygrid-event {
-  font-size: 0.75rem;
+  font-size: 0.6rem;
 }
 
 /* Hide event times to save space */

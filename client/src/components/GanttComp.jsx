@@ -6,6 +6,7 @@ import "./css/GanttComp.css";
 
 export default class GanttComp extends Component {
   componentDidMount() {
+    //adding task to database
     if (!this.eventAttached) {
       gantt.attachEvent("onAfterTaskAdd", async (id, task) => {
         try {
@@ -29,17 +30,17 @@ export default class GanttComp extends Component {
       this.eventAttached = true;
     }
 
-    // --- Modern dynamic timeline configuration ---
+    // --- Modern dynamic timeline configuration --- (-1 year +1 year of current date)
     const today = new Date();
     gantt.config.start_date = new Date(today.getFullYear() - 1, today.getMonth(), 1);
     gantt.config.end_date = new Date(today.getFullYear() + 1, today.getMonth() + 1, 0);
 
-    // --- Modern scale configuration ---
+    // --- Modern scale configuration --- (display month of year in one row and days in another row)
     gantt.config.scales = [
       { unit: "month", step: 1, format: "%M %Y" }, // e.g., Jan 2024
       {
         unit: "week", step: 1,
-        format: date => gantt.date.date_to_str("%d")(date) // e.g., 01 Jan
+        format: date => gantt.date.date_to_str("%d")(date) // e.g., 01
       }
     ];
 
@@ -48,6 +49,7 @@ export default class GanttComp extends Component {
     gantt.config.grid_width = 300;
     gantt.config.date_format = '%d-%m-%Y %H:%i:%s';
 
+    //column names
     gantt.config.columns = [
       { name: "text", label: "Task", width: "*", tree: true, resize: true },
       { name: "duration", label: "Days", align: "center", resize: true },

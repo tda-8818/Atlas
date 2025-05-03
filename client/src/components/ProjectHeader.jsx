@@ -36,6 +36,7 @@ const ProjectHeader = () => {
   //   if (id) fetchProject();
   // }, [id]);
 
+  //links for navigation
   const navLinks = [
     { label: 'Dashboard', icon: <RxDashboard />, href: `/project/${id}/dashboard` },
     { label: 'Kanban Board', icon: <LuSquareKanban />, href: `/project/${id}/kanban` },
@@ -43,6 +44,7 @@ const ProjectHeader = () => {
     { label: 'Gantt Chart', icon: <LuChartGantt />, href: `/project/${id}/gantt` },
   ];
 
+  //finding currect active page and apply hover effect
   const getLinkClassName = (href) => {
     const isActive = location.pathname === href;
     return isActive
@@ -53,6 +55,7 @@ const ProjectHeader = () => {
   return (
     <header className="bg-[var(--background)] border-b border-[var(--border-color)] shadow-sm">
       <div className="px-4 py-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        {/* Project title section */}
         <div className="flex flex-col min-w-0 flex-1">
           <h1
             className="font-bold text-[var(--text)] text-[1.2rem] truncate"
@@ -61,7 +64,7 @@ const ProjectHeader = () => {
             {project?.title || 'Project Name'}
           </h1>
         </div>
-
+        {/* Page link navigation section */}
         <div className="flex items-center gap-4 mt-1 md:mt-0 shrink-0">
           <ul className="flex gap-1 flex-wrap items-center">
             {navLinks.map(({ label, icon, href }) => (
@@ -76,6 +79,8 @@ const ProjectHeader = () => {
               </li>
             ))}
           </ul>
+
+          {/* User avatar */}
           <UserAvatar />
         </div>
       </div>

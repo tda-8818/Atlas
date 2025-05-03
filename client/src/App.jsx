@@ -16,7 +16,15 @@ import { useGetCurrentUserQuery } from './redux/slices/apiSlice.js';
 // The main App component that defines the routes for the application
 function App() {
   const { data: user, isLoading, isError } = useGetCurrentUserQuery();
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "light";
+  });
+  
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme); // apply theme to <html>
+    localStorage.setItem("theme", theme); // persist
+  }, [theme]);
+  
 
   useEffect(() => {
     if (!isLoading && !isError && user) {
