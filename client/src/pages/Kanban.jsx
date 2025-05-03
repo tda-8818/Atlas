@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import ProjectHeader from "../components/ProjectHeader";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import DeleteTaskPopup from '../components/DeleteTaskPopup';
+import AddTaskPopup from '../components/AddTaskPopup-1';
 
 // Sample team members data 
 const teamMembers = [
@@ -47,12 +48,9 @@ const Kanban = () => {
   const [columns, setColumns] = useState(defaultColumns);
   const [showCardInput, setShowCardInput] = useState(null);
   const [newColumnName, setNewColumnName] = useState("");
-  const [newCardTitle, setNewCardTitle] = useState("");
-  const [newCardTag, setNewCardTag] = useState("");
   const [selectedCard, setSelectedCard] = useState(null);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [newDueDate, setNewDueDate] = useState("");
 
   // Helper function to generate IDs
   const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -107,22 +105,18 @@ const Kanban = () => {
     setNewColumnName("");
   };
 
-  const addCard = (columnIndex) => {
-    if (!newCardTitle.trim()) return;
+  const addCard = (columnIndex, cardData) => {
     const updated = [...columns];
     updated[columnIndex].cards.push({
       id: generateId("card"),
-      title: newCardTitle,
-      tag: newCardTag,
-      dueDate: newDueDate || null,
-      assignedTo: [], // Empty array for multiple assignments
-      description: "",
-      subtasks: []
+      title: cardData.title,
+      tag: cardData.tag,
+      dueDate: cardData.dueDate || null,
+      assignedTo: cardData.assignedTo || [], // Empty array for multiple assignments
+      description: cardData.description || "",
+      subtasks: cardData.subtasks || []
     });
     setColumns(updated);
-    setNewCardTitle("");
-    setNewCardTag("");
-    setNewDueDate("");
     setShowCardInput(null);
   };
 
@@ -567,40 +561,10 @@ const Kanban = () => {
 
                         {/* Add Card UI */}
                         {showCardInput === columnIndex ? (
-                          <div className="mt-2 p-2 bg-[var(--background-secondary)] rounded">
-                            <input
-                              value={newCardTitle}
-                              onChange={(e) => setNewCardTitle(e.target.value)}
-                              placeholder="Card title"
-                              className="border px-2 py-1 rounded w-full text-sm mb-1 bg-white text-gray-800"
-                            />
-                            <input
-                              value={newCardTag}
-                              onChange={(e) => setNewCardTag(e.target.value)}
-                              placeholder="Card tag (optional)"
-                              className="border px-2 py-1 rounded w-full text-sm mb-1 bg-white text-gray-800"
-                            />
-                            <input
-                              type="date"
-                              value={newDueDate}
-                              onChange={(e) => setNewDueDate(e.target.value)}
-                              className="border px-2 py-1 rounded w-full text-sm mb-2 bg-white text-gray-800"
-                            />
-                            <div className="flex justify-end">
-                              <button 
-                                onClick={() => addCard(columnIndex)} 
-                                className="text-sm text-blue-600 hover:underline mr-2"
-                              >
-                                Add
-                              </button>
-                              <button 
-                                onClick={() => setShowCardInput(null)} 
-                                className="text-sm text-gray-500"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
+                          <AddTaskPopup 
+                            onAdd={(cardData) => addCard(columnIndex, cardData)} 
+                            onCancel={() => setShowCardInput(null)} 
+                          />
                         ) : (
                           <button
                             onClick={() => setShowCardInput(columnIndex)}
