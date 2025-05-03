@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { current } from "@reduxjs/toolkit";
 
 const Settings = ({ setTheme }) => {
   const navigate = useNavigate();
@@ -9,6 +11,7 @@ const Settings = ({ setTheme }) => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profileImage, setProfileImage] = useState(null);
+  const [currentPassword, setCurrentPassword] = useState("");
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -21,12 +24,31 @@ const Settings = ({ setTheme }) => {
     alert("Profile updated!");
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-    alert("Password updated successfully!");
+
+    try {
+      const response = await axios.put(
+        "http://localhost:5001/settings",
+        {
+          currentPassword,
+          confirmPassword,
+        },
+        {
+          withCredentials:true,
+        }
+      );
+
+      alert("Password updated successfully!");
+
+    } catch (error) {
+      console.error("Password update error:", error);
+      alert("Failed to update password.");
+
+    }
   };
 
   return (
@@ -128,10 +150,23 @@ const Settings = ({ setTheme }) => {
 
       <hr className="h-px bg-gray-200 my-8" />
 
+
       {/* Password */}
       <div className="mb-12">
         <h2 className="text-xl text-[var(--text)] font-semibold mb-6">Change Password</h2>
         <div>
+          <div className="flex flex-col flex-1 mb-6">
+            <label className="text-[0.9rem] text-gray-500 mb-2">
+              Current Password
+            </label>
+            <input
+              type="password"
+              placeholder="Enter current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="bg-[var(--background-primary)] text-[var(--text)] p-3 rounded-lg text-base border-0"
+            />
+          </div>
           <div className="flex gap-4 mb-6 flex-wrap">
             <div className="flex flex-col flex-1">
               <label className="text-[0.9rem] text-gray-500 mb-2">
@@ -168,6 +203,7 @@ const Settings = ({ setTheme }) => {
           </div>
         </div>
       </div>
+
 
       <hr className="h-px bg-[var(--border-color)] my-8" />
 

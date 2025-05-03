@@ -7,6 +7,7 @@ import express, {json} from 'express'; // Express.js used for creating the serve
 import cors from 'cors'; // CORS is a Connect/Express middleware for handling cross-origin requests.
 import userRoutes from './routes/userRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
+import projectRoutes from './routes/projectRoutes.js';
 import mongoose from 'mongoose'; // Mongoose used for connecting to MongoDB
 import dotenv from 'dotenv'; 
 import cookieParser from 'cookie-parser';
@@ -41,10 +42,15 @@ mongoose.connect(mongoURI)
 
 // Import routes
 app.use('/api/users', userRoutes);
+
 // Routes
 app.use("/calendar", taskRoutes);  // Now all "/calendar" requests go to calendarRoutes
 
 app.use('/gantt', taskRoutes);
+
+app.use('/settings', userRoutes);
+app.use('/home', projectRoutes);
+
 // Global error handler
 app.use((err, req, res, next) => {
     console.error(err.stack);

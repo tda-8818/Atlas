@@ -5,12 +5,13 @@ import Task from "./TaskModel.js";
 
 
 const projectSchema = new mongoose.Schema({
-    id: {type: Number, required: true },
     title: {type: String, required: true},
     description: {type: String, required: true},
     project_admin_priveliges: [{type: mongoose.Schema.Types.ObjectId, ref:'user',  default: []}],
     users: [{type: mongoose.Schema.Types.ObjectId, ref:'user',  default: []}],
-    tasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}]
+    tasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
+    daysLeft: {type: Number },
+    progress: {type: Number, default: 0}
 }, {timestamps: true});
 
 // If a project is deleted from the database, also remove all related tasks within that project.

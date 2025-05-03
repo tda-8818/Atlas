@@ -1,5 +1,6 @@
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useLoginMutation, useGetCurrentUserQuery } from '../redux/slices/apiSlice';
 import logo from '../assets/logo.png';
 import Textbox from '../components/Textbox';
@@ -13,25 +14,35 @@ const Login = () => {
   } = useForm();
 
   const navigate = useNavigate();
-  const [login, { isLoading, error }] = useLoginMutation();
-  const { refetch } = useGetCurrentUserQuery(); // Add this
+  const [login, { isLoading }] = useLoginMutation();
+  const [error, setError] = useState(null); // Proper error state
+  //const { refetch } = useGetCurrentUserQuery(); // Add this
 
 
   const onSubmit = async (data) => {
     try {
-      console.log("login data:", data)
-      // 2. Make login request
-      await login(data).unwrap();
-      
-      // 3. Verify cookie was set
+      setError(null); // Reset errors on submit
+
+      const loginData = {
+        ...data,
+        email: data.email.toLowerCase()
+      };
+
+      console.log("Login attempt:", loginData);
+
+      // 1. Make login request
+      const result = await login(loginData).unwrap();
+      console.log("Login response:", result);
+
+      // 2. Verify cookie was set
       console.log('Document cookies:', document.cookie);
-      
-      // 4. Force refresh to ensure auth state updates
-      window.location.href = '/home';
-      
+
+      // 3. Redirect to home
+      navigate('/home');
+
     } catch (err) {
       console.error('Login failed:', err);
-      setError(err.data?.message || 'Login failed');
+      setError(err.data?.message || 'Invalid email or password'); // User-friendly error
     }
   };
 
@@ -97,15 +108,24 @@ const Login = () => {
                 label={isLoading ? 'Logging in...' : 'Login'}
                 disabled={isLoading}
                 className='w-full h-10 bg-blue-700 text-white rounded-full'
-              />
+              >Login</Button>
 
               {error && (
                 <div className="text-red-500 text-center mt-2">
                   {error.data?.message || 'Login failed'}
                 </div>
               )}
+
+              <div className="text-center mt-4 text-sm text-gray-600">
+                Don't have an account?{' '}
+                <Link
+                  to="/signup"
+                  className="text-blue-600 hover:underline font-medium"
+                >Sign Up</Link>
+              </div>
             </div>
           </form>
+
         </div>
       </div>
     </div>

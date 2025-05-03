@@ -1,4 +1,6 @@
+import Project from '../models/ProjectModel.js';
 import Task from '../models/TaskModel.js';
+import { selectProject } from './projectController.js';
 
 export const getTask = async (req, res) => {
     try {
@@ -31,19 +33,53 @@ export const createEvent = async (req, res) => {
 
 export const createTask = async (req, res) => {
     try {
+        /**Creating a task 
+         * PLEASE -> Refer to Task schema blueprint to make sure data is consistent
+         * throughout the app. Make sure all datapoints are named exactly like the 
+         * property defined in TaskSchema to avoid confusion.
+         * 
+         * Creating a task should save it into the appropriate project.  
+         */
+        
+        // 1. Recieve HTML request data
         const { title, description, start, end } = req.body;
         console.log("created tasks has been executed:");
         console.log(title, start, end);
-        // other data points required.
-        // Not sure if the current HTML request sends any other information other than the title and the date.
+
+        // 2. Grab cookie which contains the projectId
+        const selectedProject = req.cookies?.selectedProject;
+        console.log("Selected project from cookie in createTask.js: ", selectedProject);
+
+        // 3. Fetch project document object from database
+        const project = await Project.findById(selectedProject);
+
+        // 4. Check if project is valid
+        if (!project){
+            return res.status(404).json({message: "Project not found createTask.js"});
+        }
+
+        // 5. Create Task object
+        // Refer to TaskSchema data points required.
+        // Ensure the HTML request sends information which is congruent with the TaskSchema.
         const newTask = new Task({
+            projectId: project,
             title,
             description,
             start_date:start,
             due_date:end
            
         })
-        const savedTask = await newTask.save();
+
+        // 6. Save task document in database
+        const savedTask = await newTask.save(); // savedTask is the JUST oid for the task object.
+
+        // 7. Append the task to the project. This stores the task in a project.tasks array
+        project.tasks.push(savedTask);
+        // 8. Save the project document
+        await project.save()
+
+
+        // 9. Send the oid for the task back to the frontend.
         res.status(201).json(savedTask);
     } catch (error) {
         console.error("Error creating task:", error);
@@ -52,11 +88,40 @@ export const createTask = async (req, res) => {
 };
 
 export const editTask = async (req, res) => {
+    const { id } = req.params;
+    const {
+        title,
+        description,
+        status,
+        priority,
+        assignedTo,
+        dueDate,
+        startDate
+    } = req.body;
+
     try {
-        const {taskId, title, description,
-        startDate, due_date} = req.body;
+        const updatedTask = await Task.findByIdAndUpdate(
+            id,
+            {
+                title,
+                description,
+                status,
+                priority,
+                assignedTo,
+                dueDate,
+                startDate
+            },
+            { new: true } 
+        );
+
+        if (!updatedTask) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        res.status(200).json(updatedTask);
     } catch (error) {
-        
+        console.error("Error updating task:", error);
+        res.status(500).json({ message: "Error updating task", error });
     }
 };
 

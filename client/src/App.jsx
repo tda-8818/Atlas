@@ -42,7 +42,7 @@ function App() {
         <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/home" replace />} />
 
         {/* Protected routes */}
-        <Route path="/" element={user ? <Outlet /> : <Navigate to="/login" replace />}>
+        <Route path="/" element={user ? <Outlet /> : <Navigate to="/signup" replace />}>
           <Route index element={<Navigate to="/home" replace />} />
           <Route path="home" element={<Home />} />
           <Route path="settings" element={<Settings setTheme={setTheme} />} />

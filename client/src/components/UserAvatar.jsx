@@ -14,7 +14,17 @@ const UserAvatar = () => {
   const { data: currentUser } = useGetCurrentUserQuery();
 
   const handleLogout = async () => {
-    // ...same as before
+    try {
+      await logout().unwrap();
+      // Force full page reload to clear all state
+      window.localStorage.clear(); 
+      window.location.href = '/login';
+    } catch (err) {
+      console.error('Failed to logout:', err);
+      // Fallback: Manual cookie clear if API fails
+      document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      navigate('/login');
+    }
   };
 
   return (
