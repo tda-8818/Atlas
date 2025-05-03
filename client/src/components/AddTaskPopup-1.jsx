@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 
 /**
  * AddTaskPopup Component
- * A reusable component for adding new tasks/cards to the Kanban board.
+ * A reusable component for adding or editing tasks/cards to the Kanban board.
  * 
  * @param {Object} props
- * @param {Function} props.onAdd - Callback function when task is added. Receives task data object.
+ * @param {Function} props.onAdd - Callback function when task is added/updated. Receives task data object.
  * @param {Function} props.onCancel - Callback function when adding is cancelled.
  * @param {Object} props.initialData - Optional initial data for the task (for editing existing tasks).
+ * @param {boolean} props.isEditing - Optional flag to indicate if we're editing an existing task.
  * @returns {JSX.Element}
  */
-const AddTaskPopup = ({ onAdd, onCancel, initialData = {} }) => {
+const AddTaskPopup = ({ onAdd, onCancel, initialData = {}, isEditing = false }) => {
   // State for task properties
   const [title, setTitle] = useState(initialData.title || '');
   const [tag, setTag] = useState(initialData.tag || '');
@@ -135,7 +136,7 @@ const AddTaskPopup = ({ onAdd, onCancel, initialData = {} }) => {
             className="text-sm text-blue-600 hover:underline mr-2"
             disabled={!title.trim()}
           >
-            Add
+            {isEditing ? 'Update' : 'Add'}
           </button>
           <button 
             type="button"

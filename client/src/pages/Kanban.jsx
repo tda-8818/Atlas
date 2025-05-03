@@ -17,7 +17,7 @@ const teamMembers = [
 const defaultColumns = [
   {
     id: "column-1",
-    title: "To Do",
+    title: "Tasks",
     cards: [
       { 
         id: "card-1", 
@@ -31,16 +31,6 @@ const defaultColumns = [
         ] 
       }
     ]
-  },
-  {
-    id: "column-2",
-    title: "In Progress",
-    cards: []
-  },
-  {
-    id: "column-3",
-    title: "Done",
-    cards: []
   }
 ];
 
@@ -51,9 +41,43 @@ const Kanban = () => {
   const [selectedCard, setSelectedCard] = useState(null);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
+  
+  // Add states for column editing
+  const [editingColumnIndex, setEditingColumnIndex] = useState(null);
+  const [editColumnName, setEditColumnName] = useState("");
 
   // Helper function to generate IDs
   const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+  // Column editing functions
+  const startEditingColumnName = (columnIndex) => {
+    if (columnIndex >= 0 && columnIndex < columns.length) {
+      setEditingColumnIndex(columnIndex);
+      setEditColumnName(columns[columnIndex].title);
+    }
+  };
+
+  const saveColumnName = () => {
+    if (editingColumnIndex !== null && editColumnName && editColumnName.trim()) {
+      const updated = [...columns];
+      updated[editingColumnIndex].title = editColumnName.trim();
+      setColumns(updated);
+      cancelEditColumnName();
+    }
+  };
+
+  const cancelEditColumnName = () => {
+    setEditingColumnIndex(null);
+    setEditColumnName("");
+  };
+
+  const handleColumnNameKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      saveColumnName();
+    } else if (e.key === 'Escape') {
+      cancelEditColumnName();
+    }
+  };
 
   // Get the emergency level based on due date
   const getEmergencyLevel = (dueDate) => {
@@ -106,6 +130,8 @@ const Kanban = () => {
   };
 
   const addCard = (columnIndex, cardData) => {
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    
     const updated = [...columns];
     updated[columnIndex].cards.push({
       id: generateId("card"),
@@ -121,6 +147,8 @@ const Kanban = () => {
   };
 
   const confirmDeleteColumn = (columnIndex) => {
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    
     setConfirmDelete({
       type: 'column',
       index: columnIndex
@@ -132,6 +160,8 @@ const Kanban = () => {
     if (columns.length <= 1) return; // Prevent deleting if it's the only column
     
     const columnIndex = confirmDelete.index;
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    
     const updated = [...columns];
     updated.splice(columnIndex, 1);
     setColumns(updated);
@@ -142,6 +172,10 @@ const Kanban = () => {
     if (e && e.stopPropagation) {
       e.stopPropagation();
     }
+    
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
+    
     const updated = [...columns];
     updated[columnIndex].cards.splice(cardIndex, 1);
     setColumns(updated);
@@ -150,12 +184,33 @@ const Kanban = () => {
     setSelectedCard(null);
     setConfirmDelete(null);
   };
+  
+  const handleUpdateCardTitle = (title) => {
+    if (!selectedCard) return;
+    
+    const { columnIndex, cardIndex } = selectedCard;
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
+    
+    const updated = [...columns];
+    updated[columnIndex].cards[cardIndex].title = title;
+    setColumns(updated);
+    
+    // Update the selected card to reflect changes
+    setSelectedCard({
+      ...selectedCard,
+      title
+    });
+  };
 
   const addSubtask = () => {
     if (!newSubtaskTitle.trim() || !selectedCard) return;
     
-    const updated = [...columns];
     const { columnIndex, cardIndex } = selectedCard;
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
+    
+    const updated = [...columns];
     
     // Create a new subtask object
     const newSubtask = {
@@ -186,9 +241,11 @@ const Kanban = () => {
   const toggleSubtask = (subtaskIndex) => {
     if (!selectedCard) return;
   
-    const updated = [...columns];
     const { columnIndex, cardIndex } = selectedCard;
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
   
+    const updated = [...columns];
     const subtasks = updated[columnIndex].cards[cardIndex].subtasks;
     if (subtaskIndex >= 0 && subtaskIndex < subtasks.length) {
       subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
@@ -209,8 +266,14 @@ const Kanban = () => {
   const deleteSubtask = (subtaskIndex) => {
     if (!selectedCard) return;
     
-    const updated = [...columns];
     const { columnIndex, cardIndex } = selectedCard;
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
+    
+    const updated = [...columns];
+    
+    const subtasks = updated[columnIndex].cards[cardIndex].subtasks;
+    if (subtaskIndex < 0 || subtaskIndex >= subtasks.length) return;
     
     updated[columnIndex].cards[cardIndex].subtasks.splice(subtaskIndex, 1);
     setColumns(updated);
@@ -228,9 +291,11 @@ const Kanban = () => {
   const handleUpdateCardDescription = (description) => {
     if (!selectedCard) return;
     
-    const updated = [...columns];
     const { columnIndex, cardIndex } = selectedCard;
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
     
+    const updated = [...columns];
     updated[columnIndex].cards[cardIndex].description = description;
     setColumns(updated);
     
@@ -244,9 +309,11 @@ const Kanban = () => {
   const handleUpdateDueDate = (dueDate) => {
     if (!selectedCard) return;
     
-    const updated = [...columns];
     const { columnIndex, cardIndex } = selectedCard;
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
     
+    const updated = [...columns];
     updated[columnIndex].cards[cardIndex].dueDate = dueDate;
     setColumns(updated);
     
@@ -261,8 +328,11 @@ const Kanban = () => {
   const toggleUserAssignment = (userId) => {
     if (!selectedCard) return;
     
-    const updated = [...columns];
     const { columnIndex, cardIndex } = selectedCard;
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
+    
+    const updated = [...columns];
     
     const currentAssignees = updated[columnIndex].cards[cardIndex].assignedTo || [];
     
@@ -308,6 +378,8 @@ const Kanban = () => {
         col => col.id === source.droppableId
       );
       
+      if (columnIndex < 0) return;
+      
       const column = columnsCopy[columnIndex];
       const cards = Array.from(column.cards);
       const [removed] = cards.splice(source.index, 1);
@@ -323,6 +395,8 @@ const Kanban = () => {
       const destColumnIndex = columnsCopy.findIndex(
         col => col.id === destination.droppableId
       );
+      
+      if (sourceColumnIndex < 0 || destColumnIndex < 0) return;
       
       const sourceColumn = columnsCopy[sourceColumnIndex];
       const destColumn = columnsCopy[destColumnIndex];
@@ -341,6 +415,9 @@ const Kanban = () => {
   };
 
   const openCardDetails = (columnIndex, cardIndex) => {
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
+    
     const card = columns[columnIndex].cards[cardIndex];
     setSelectedCard({
       ...card,
@@ -405,6 +482,8 @@ const Kanban = () => {
 
   // Generate a color based on a string (name)
   const stringToColor = (str) => {
+    if (!str) return '#000000';
+    
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -460,18 +539,37 @@ const Kanban = () => {
                           {...provided.dragHandleProps}
                           className="flex justify-between items-center mb-3 p-2 bg-[var(--background-secondary)] rounded-t"
                         >
-                          <h2 className="font-bold text-[var(--text)] text-sm uppercase">
-                            {column.title} ({column.cards.length})
-                          </h2>
-                          <button 
-                            onClick={() => confirmDeleteColumn(columnIndex)} 
-                            className="text-gray-400 hover:text-red-500 transition-colors"
-                            disabled={columns.length <= 1}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                            </svg>
-                          </button>
+                          {editingColumnIndex === columnIndex ? (
+                            <div className="flex-1">
+                              <input
+                                value={editColumnName}
+                                onChange={(e) => setEditColumnName(e.target.value)}
+                                className="border rounded px-2 py-1 text-sm w-full bg-white text-gray-800"
+                                autoFocus
+                                onBlur={saveColumnName}
+                                onKeyDown={handleColumnNameKeyDown}
+                              />
+                            </div>
+                          ) : (
+                            <h2 
+                              className="font-bold text-[var(--text)] text-sm uppercase cursor-pointer hover:text-blue-600"
+                              onDoubleClick={() => startEditingColumnName(columnIndex)}
+                            >
+                              {column.title} ({column.cards.length})
+                            </h2>
+                          )}
+                          
+                          {editingColumnIndex !== columnIndex && (
+                            <button 
+                              onClick={() => confirmDeleteColumn(columnIndex)} 
+                              className="text-gray-400 hover:text-red-500 transition-colors"
+                              disabled={columns.length <= 1}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                              </svg>
+                            </button>
+                          )}
                         </div>
 
                         {/* Cards Container */}
@@ -610,8 +708,13 @@ const Kanban = () => {
           <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
             <div className="bg-white rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto">
               <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h2 className="text-xl font-bold mb-1">{selectedCard.title}</h2>
+                <div className="w-full mr-2">
+                  <input
+                    type="text"
+                    value={selectedCard.title}
+                    onChange={(e) => handleUpdateCardTitle(e.target.value)}
+                    className="text-xl font-bold mb-1 w-full border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none p-1"
+                  />
                   <p className="text-sm text-gray-500">in list {selectedCard.colTitle}</p>
                 </div>
                 {selectedCard.tag && (
