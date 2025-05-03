@@ -11,6 +11,8 @@ import projectRoutes from './routes/projectRoutes.js';
 import mongoose from 'mongoose'; // Mongoose used for connecting to MongoDB
 import dotenv from 'dotenv'; 
 import cookieParser from 'cookie-parser';
+import WebSocket from 'ws'; // WebSocket for real-time communication
+import http from 'http'; // HTTP module for creating a server
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -27,6 +29,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     exposedHeaders: ['set-cookie']
 })); 
+
 //app.use(json()); // parse incoming JSON requests
 
 const mongoURI = process.env.MONGO_URI; // MongoDB connection URI
@@ -41,15 +44,17 @@ mongoose.connect(mongoURI)
 
 
 // Import routes
+
 app.use('/api/users', userRoutes);
+app.use('/settings', userRoutes);
 
-// Routes
+app.use('/home', projectRoutes);
+
 app.use("/calendar", taskRoutes);  // Now all "/calendar" requests go to calendarRoutes
-
 app.use('/gantt', taskRoutes);
 
-app.use('/settings', userRoutes);
-app.use('/home', projectRoutes);
+
+
 
 
 // Global error handler

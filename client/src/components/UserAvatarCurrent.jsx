@@ -3,12 +3,13 @@ import { Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LuSettings, LuUser, LuCircleArrowOutUpLeft } from 'react-icons/lu';
 import { useLogoutMutation, useGetCurrentUserQuery } from '../redux/slices/apiSlice';
+import { getInitials } from '../utils/userUtils';
 
 const getInitials = (firstName = '', lastName = '') => {
   return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
 };
 
-const UserAvatar = () => {
+const UserAvatarCurrent = () => {
   const navigate = useNavigate();
   const [logout, { isLoading }] = useLogoutMutation();
   const { data: currentUser } = useGetCurrentUserQuery();
