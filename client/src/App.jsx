@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import Presignup from "./pages/Presignup";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -40,7 +41,7 @@ function App() {
         {/* Public routes */}
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/home" replace />} />
         <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/home" replace />} />
-
+        <Route path="/Presignup" element={<Presignup />} />
         {/* Protected routes */}
         <Route path="/" element={user ? <Outlet /> : <Navigate to="/signup" replace />}>
           <Route index element={<Navigate to="/home" replace />} />
@@ -58,6 +59,7 @@ function App() {
           <Route path="kanban" element={<Kanban />} />
           <Route path="calendar" element={<Calendar />} />
           <Route path="gantt" element={<Gantt />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
 
         {/* Catch-all route */}
