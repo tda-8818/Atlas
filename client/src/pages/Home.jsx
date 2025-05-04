@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import { useGetCurrentUserQuery } from '../redux/slices/apiSlice';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import UserAvatar from "../components/UserAvatar";
 
 const Home = () => {
 
@@ -149,7 +150,11 @@ const Home = () => {
         <div className="flex h-screen bg-[var(--background-primary)]">
             <Navbar />
             <div className="flex-grow p-10 ml-[240px] overflow-y-auto">
-                <h1 className="text-3xl font-bold mb-8 text-[var(--text)]">Projects</h1>
+            <div className="flex justify-between items-center mb-8 pr-5">
+  <h1 className="text-3xl font-bold text-[var(--text)]">Projects</h1>
+  <UserAvatar />
+</div>
+
                 <div className="flex flex-wrap gap-5">
                     {projects.map((project, index) => (
                         <div
