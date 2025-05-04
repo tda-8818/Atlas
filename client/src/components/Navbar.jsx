@@ -71,13 +71,13 @@ const Navbar = () => {
 
       {/* Project List */}
       {!collapsed && (
-        <h2 className="px-4 pb-2 pt-4 text-sm font-extrabold text-[1rem] text-[var(--text)]">Your Projects</h2>
+        <h2 className="px-4 pb-2 pt-4 text-sm font-bold text-[1rem] text-[var(--text)]">Your Projects</h2>
       )}
       <ul className="flex-1 px-2 space-y-2 overflow-y-auto">
         {projects.map((project) => (
           <li key={project.id} className="w-full">
             <button
-              onClick={() => navigate(`/home/project/${project.id}/dashboard`)}
+              onClick={() => navigate(`/project/${project.id}/dashboard`)}
               className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg
                 bg-[var(--background)] text-[var(--nav-text)]
                 hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)]

@@ -16,10 +16,10 @@ const ProjectHeader = ({ project }) => {
   const { title, _id } = project;
 
   const navLinks = [
-    { label: 'Dashboard', icon: <RxDashboard />, href: `/home/project/${_id}/dashboard` },
-    { label: 'Kanban Board', icon: <LuSquareKanban />, href: `/home/project/${_id}/kanban` },
-    { label: 'Calendar', icon: <RxCalendar />, href: `/home/project/${_id}/calendar` },
-    { label: 'Gantt Chart', icon: <LuChartGantt />, href: `/home/project/${_id}/gantt` },
+    { label: 'Dashboard', icon: <RxDashboard />, href: `/project/${_id}/dashboard` },
+    { label: 'Kanban Board', icon: <LuSquareKanban />, href: `/project/${_id}/kanban` },
+    { label: 'Calendar', icon: <RxCalendar />, href: `/project/${_id}/calendar` },
+    { label: 'Gantt Chart', icon: <LuChartGantt />, href: `/project/${_id}/gantt` },
   ];
 
   const getLinkClassName = (href) => {
