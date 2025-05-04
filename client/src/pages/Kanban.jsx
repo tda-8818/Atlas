@@ -14,6 +14,12 @@ const teamMembers = [
   { id: "user-5", name: "Michael Brown", avatar: "https://i.pravatar.cc/150?img=5", initials: "MB" },
 ];
 
+// Define priority levels
+const priorityLevels = ['none', '!', '!!', '!!!'];
+
+// Define sample tags (no longer used for dropdown, but kept for reference/initial data)
+const sampleTags = ['Design', 'Development', 'Marketing', 'Research', 'Bug'];
+
 const defaultColumns = [
   {
     id: "column-1",
@@ -22,14 +28,15 @@ const defaultColumns = [
       {
         id: "card-1",
         title: "Example Task",
-        tag: "Design",
+        tag: "Design", // Initial tag
         dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(), // 7 days from now
         assignedTo: ["user-1"], // Changed to array for multiple assignments
         description: "This is an example task description.",
         subtasks: [
-          { id: "subtask-1", title: "Research component libraries", completed: false },
-          { id: "subtask-2", title: "Sketch initial UI", completed: true },
-        ]
+          { id: "subtask-1", title: "Research component libraries", completed: false, priority: '!' }, // Changed importance to priority
+          { id: "subtask-2", title: "Sketch initial UI", completed: true, priority: '!!' }, // Changed importance to priority
+        ],
+        priority: '!!' // Changed importance to priority
       }
     ]
   }
@@ -52,7 +59,6 @@ const Kanban = () => {
   const [searchMember, setSearchMember] = useState("");
 
   // State for controlling collapsed sections in the card modal
-  // Set initial state to false so they are hidden by default
   const [showDescription, setShowDescription] = useState(false);
   const [showSubtasks, setShowSubtasks] = useState(false);
 
@@ -148,11 +154,12 @@ const Kanban = () => {
     updated[columnIndex].cards.push({
       id: generateId("card"),
       title: cardData.title,
-      tag: cardData.tag,
+      tag: cardData.tag || null, // Add default tag
       dueDate: cardData.dueDate || null,
       assignedTo: cardData.assignedTo || [], // Empty array for multiple assignments
       description: cardData.description || "",
-      subtasks: cardData.subtasks || []
+      subtasks: cardData.subtasks || [],
+      priority: cardData.priority || 'none' // Add default priority
     });
     setColumns(updated);
     setShowCardInput(null);
@@ -215,6 +222,44 @@ const Kanban = () => {
     });
   };
 
+  // Function to update card priority
+  const handleUpdateCardPriority = (priority) => {
+    if (!selectedCard) return;
+
+    const { columnIndex, cardIndex } = selectedCard;
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
+
+    const updated = [...columns];
+    updated[columnIndex].cards[cardIndex].priority = priority;
+    setColumns(updated);
+
+    setSelectedCard({
+      ...selectedCard,
+      priority
+    });
+  };
+
+   // Function to update card tag
+   const handleUpdateCardTag = (tag) => {
+    if (!selectedCard) return;
+
+    const { columnIndex, cardIndex } = selectedCard;
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
+
+    const updated = [...columns];
+    // Set tag to null if the input is empty, otherwise use the value
+    updated[columnIndex].cards[cardIndex].tag = tag.trim() === '' ? null : tag.trim();
+    setColumns(updated);
+
+    setSelectedCard({
+      ...selectedCard,
+      tag: tag.trim() === '' ? null : tag.trim()
+    });
+  };
+
+
   const addSubtask = () => {
     if (!newSubtaskTitle.trim() || !selectedCard) return;
 
@@ -224,11 +269,12 @@ const Kanban = () => {
 
     const updated = [...columns];
 
-    // Create a new subtask object
+    // Create a new subtask object with default priority
     const newSubtask = {
       id: generateId("subtask"),
       title: newSubtaskTitle,
-      completed: false
+      completed: false,
+      priority: 'none' // Default priority for new subtasks
     };
 
     // Add it to the data
@@ -258,7 +304,8 @@ const Kanban = () => {
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
 
     const updated = [...columns];
-    const subtasks = updated[columnIndex].cards[cardIndex].subtasks;
+    // Ensure subtasks is an array before accessing it
+    const subtasks = updated[columnIndex].cards[cardIndex].subtasks || [];
     if (subtaskIndex >= 0 && subtaskIndex < subtasks.length) {
       subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
     }
@@ -270,7 +317,36 @@ const Kanban = () => {
     const updatedCard = updated[columnIndex].cards[cardIndex];
     setSelectedCard({
       ...selectedCard,
-      subtasks: [...updatedCard.subtasks]
+      subtasks: [...updatedCard.subtasks] // Create a new array
+    });
+  };
+
+  // Function to update subtask priority
+  const handleUpdateSubtaskPriority = (subtaskIndex, priority) => {
+    if (!selectedCard) return;
+
+    const { columnIndex, cardIndex } = selectedCard;
+    if (columnIndex < 0 || columnIndex >= columns.length) return;
+    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
+
+    const updated = [...columns];
+    // Ensure subtasks is an array before accessing it
+    const subtasks = updated[columnIndex].cards[cardIndex].subtasks || [];
+
+    if (subtaskIndex >= 0 && subtaskIndex < subtasks.length) {
+      subtasks[subtaskIndex].priority = priority;
+    }
+
+    setColumns(updated);
+
+    // Update the selected card state
+    const updatedSubtasks = [...(selectedCard.subtasks || [])]; // Create a new array, handle null
+    if (subtaskIndex >= 0 && subtaskIndex < updatedSubtasks.length) {
+      updatedSubtasks[subtaskIndex].priority = priority;
+    }
+    setSelectedCard({
+      ...selectedCard,
+      subtasks: updatedSubtasks
     });
   };
 
@@ -284,14 +360,15 @@ const Kanban = () => {
 
     const updated = [...columns];
 
-    const subtasks = updated[columnIndex].cards[cardIndex].subtasks;
+    // Ensure subtasks is an array before accessing it
+    const subtasks = updated[columnIndex].cards[cardIndex].subtasks || [];
     if (subtaskIndex < 0 || subtaskIndex >= subtasks.length) return;
 
     updated[columnIndex].cards[cardIndex].subtasks.splice(subtaskIndex, 1);
     setColumns(updated);
 
     // Update the selected card to reflect changes
-    const updatedSubtasks = [...selectedCard.subtasks];
+    const updatedSubtasks = [...(selectedCard.subtasks || [])]; // Create a new array, handle null
     updatedSubtasks.splice(subtaskIndex, 1);
 
     setSelectedCard({
@@ -384,6 +461,41 @@ const Kanban = () => {
       return;
     }
 
+     // If we're dragging subtasks
+     if (type === "subtask" && selectedCard) {
+        // Ensure the destination droppableId matches the source droppableId for subtasks
+        // and that the destination is within the same card's subtask list
+        if (source.droppableId !== destination.droppableId) return;
+
+        const { columnIndex, cardIndex } = selectedCard;
+        // Double-check that the selectedCard still matches the context of the drag
+        // This might be overly cautious, but helps prevent issues if state is out of sync
+        if (columnsCopy[columnIndex]?.cards[cardIndex]?.id !== selectedCard.id) {
+           console.error("State mismatch during subtask drag");
+           return;
+        }
+
+
+        const updatedCard = { ...columnsCopy[columnIndex].cards[cardIndex] };
+        const subtasks = Array.from(updatedCard.subtasks || []); // Ensure it's an array
+
+        const [removed] = subtasks.splice(source.index, 1);
+        subtasks.splice(destination.index, 0, removed);
+
+        updatedCard.subtasks = subtasks;
+        columnsCopy[columnIndex].cards[cardIndex] = updatedCard;
+
+        setColumns(columnsCopy);
+        // Update the selected card state to reflect the new subtask order
+        // Create a new array for the subtasks to ensure React detects the change
+        setSelectedCard({
+           ...selectedCard,
+           subtasks: [...subtasks]
+        });
+        return;
+     }
+
+
     // If the destination is the same as the source (same column)
     if (source.droppableId === destination.droppableId) {
       const columnIndex = columnsCopy.findIndex(
@@ -435,12 +547,13 @@ const Kanban = () => {
       ...card,
       columnIndex,
       cardIndex,
-      colTitle: columns[columnIndex].title
+      colTitle: columns[columnIndex].title,
+      subtasks: card.subtasks || [] // Ensure subtasks is an array when opening modal
     });
 
     // Set initial state of collapsed sections to false (hidden)
     setShowDescription(false);
-    setShowSubtasks(false);
+    setShowSubtasks(false); // Keep subtasks collapsed by default
   };
 
   // Toggle section visibility functions
@@ -528,7 +641,7 @@ const Kanban = () => {
         <ProjectHeader title="Kanban Board" />
       </div>
       <div className="p-4 font-sans ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
-        {/* Kanban Board */}
+        {/* Kanban Board (Main DragDropContext) */}
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="all-columns" direction="horizontal" type="column">
             {(provided) => (
@@ -630,7 +743,15 @@ const Kanban = () => {
                                               {card.tag}
                                             </div>
                                           )}
-                                          <div className="text-sm font-medium">{card.title}</div>
+                                          <div className="text-sm font-medium flex items-center">
+                                            {card.title}
+                                            {/* Display Priority on the card */}
+                                            {card.priority && card.priority !== 'none' && (
+                                              <span className="ml-1 text-xs font-bold text-gray-600">
+                                                {card.priority}
+                                              </span>
+                                            )}
+                                          </div>
                                         </div>
                                       </div>
 
@@ -743,24 +864,45 @@ const Kanban = () => {
         {selectedCard && (
           <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
             <div className="bg-white rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto">
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-full mr-2">
-                  <input
-                    type="text"
-                    value={selectedCard.title}
-                    onChange={(e) => handleUpdateCardTitle(e.target.value)}
-                    className="text-xl font-bold mb-1 w-full border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none p-1"
-                  />
+              {/* Title and Tag/Priority */}
+              <div className="mb-4">
+                 <div className="flex items-center mb-1">
+                    <input
+                      type="text"
+                      value={selectedCard.title}
+                      onChange={(e) => handleUpdateCardTitle(e.target.value)}
+                      className="text-xl font-bold flex-grow border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none p-1 mr-2"
+                    />
+                    {/* Tag and Priority on the same line */}
+                    <div className="flex items-center gap-2">
+                        {/* Tag Input (Editable) */}
+                        <input
+                           type="text"
+                           value={selectedCard.tag || ''} // Use empty string for null tag
+                           onChange={(e) => handleUpdateCardTag(e.target.value)}
+                           placeholder="Add tag" // Placeholder for empty tag
+                           className="text-xs border rounded px-1 py-0.5 w-20 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500" // Added focus styles
+                        />
+
+                        {/* Priority dropdown for the main card */}
+                        <select
+                           value={selectedCard.priority || 'none'}
+                           onChange={(e) => handleUpdateCardPriority(e.target.value)}
+                           className="text-xs border rounded px-1 py-0.5 text-gray-700"
+                        >
+                           {priorityLevels.map(level => (
+                              <option key={level} value={level}>
+                                 {level === 'none' ? 'Priority' : level}
+                               </option>
+                           ))}
+                        </select>
+                    </div>
+                 </div>
                   <p className="text-sm text-gray-500">in list {selectedCard.colTitle}</p>
-                </div>
-                {selectedCard.tag && (
-                  <div className="text-xs bg-blue-200 text-blue-800 rounded px-2 py-1">
-                    {selectedCard.tag}
-                  </div>
-                )}
               </div>
 
-              {/* Rearranged: Due Date on left, Assignment on right */}
+
+              {/* Due Date and Assignment */}
               <div className="mb-4 flex items-start justify-between">
                 <div className="w-1/2">
                   <h3 className="text-sm font-semibold mb-2">Due Date</h3>
@@ -894,65 +1036,101 @@ const Kanban = () => {
                    <button
                     onClick={toggleSubtasksSection}
                     className="text-gray-500 hover:text-gray-700 text-xs"
-                  >
+                   >
                     {showSubtasks ? 'Collapse' : 'Expand'}
                    </button>
                  </div>
 
+                {/* Conditional rendering for subtasks */}
                 {showSubtasks && (
-                  <> {/* Use a fragment to group multiple elements */}
-                    <div className="space-y-2 mb-3">
-                      {selectedCard.subtasks?.map((subtask, index) => (
-                        <div key={subtask.id} className="flex items-center bg-gray-50 p-2 rounded group">
-                          {/* Improved checkbox button with better visibility for the checkmark */}
-                          <button
-                            onClick={() => toggleSubtask(index)}
-                            className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
-                            style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
-                          >
-                            {subtask.completed && (
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </button>
+                   <DragDropContext onDragEnd={onDragEnd}>
+                      <Droppable droppableId={`subtasks-${selectedCard.id}`} type="subtask">
+                         {(provided) => (
+                            <div
+                               {...provided.droppableProps}
+                               ref={provided.innerRef}
+                               className="space-y-2 mb-3"
+                            >
+                              {/* Ensure selectedCard.subtasks is an array before mapping */}
+                              {(selectedCard.subtasks || []).map((subtask, index) => (
+                                <Draggable key={subtask.id} draggableId={subtask.id} index={index}>
+                                  {(provided, snapshot) => (
+                                     <div
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps} // Use drag handle props here
+                                        className={`flex items-center bg-gray-50 p-2 rounded group cursor-grab ${snapshot.isDragging ? 'shadow-md bg-gray-100' : ''}`}
+                                     >
+                                       {/* Improved checkbox button with better visibility for the checkmark */}
+                                       <button
+                                         onClick={() => toggleSubtask(index)}
+                                         className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
+                                         style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
+                                       >
+                                         {subtask.completed && (
+                                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
+                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                           </svg>
+                                         )}
+                                       </button>
 
-                          <span
-                            onClick={() => toggleSubtask(index)}
-                            className={`text-sm flex-1 cursor-pointer ${subtask.completed ? "line-through text-gray-400" : ""}`}
-                          >
-                            {subtask.title}
-                          </span>
+                                       <span
+                                         onClick={() => toggleSubtask(index)}
+                                         className={`text-sm flex-1 cursor-pointer mr-1 ${subtask.completed ? "line-through text-gray-400" : ""}`}
+                                       >
+                                         {subtask.title}
+                                       </span>
 
-                          <button
-                            onClick={() => deleteSubtask(index)}
-                            className="text-gray-400 hover:text-red-500 text-xs"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                                        {/* Priority dropdown for each subtask */}
+                                        <select
+                                           value={subtask.priority || 'none'}
+                                           onChange={(e) => handleUpdateSubtaskPriority(index, e.target.value)}
+                                           className="text-xs border rounded px-1 py-0.5 text-gray-700"
+                                        >
+                                           {priorityLevels.map(level => (
+                                              <option key={level} value={level}>
+                                                 {level === 'none' ? 'Prio' : level}
+                                              </option>
+                                           ))}
+                                        </select>
 
-                    <div className="flex items-center">
-                      <input
-                        value={newSubtaskTitle}
-                        onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                        placeholder="Add a subtask..."
-                        className="flex-1 border rounded px-2 py-1 text-sm"
-                      />
-                      <button
-                        onClick={addSubtask}
-                        className="ml-2 bg-blue-100 border border-blue-300 px-3 py-1 rounded text-blue-700 hover:bg-blue-200 text-sm"
-                        disabled={!newSubtaskTitle.trim()}
-                      >
-                        Add
-                      </button>
-                    </div>
-                  </>
+
+                                      <button
+                                        onClick={() => deleteSubtask(index)}
+                                        className="ml-2 text-gray-400 hover:text-red-500 text-xs"
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                 )}
+                               </Draggable>
+                             ))}
+                             {provided.placeholder}
+                           </div>
+                         )}
+                      </Droppable>
+                   </DragDropContext>
                 )}
+                 {/* Input for adding new subtask */}
+                 {showSubtasks && (
+                   <div className="flex items-center mt-3"> {/* Added mt-3 for spacing below the list */}
+                     <input
+                       value={newSubtaskTitle}
+                       onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                       placeholder="Add a subtask..."
+                       className="flex-1 border rounded px-2 py-1 text-sm"
+                     />
+                     <button
+                       onClick={addSubtask}
+                       className="ml-2 bg-blue-100 border border-blue-300 px-3 py-1 rounded text-blue-700 hover:bg-blue-200 text-sm"
+                       disabled={!newSubtaskTitle.trim()}
+                     >
+                       Add
+                     </button>
+                   </div>
+                 )}
               </div>
 
               {/* Footer Buttons */}
