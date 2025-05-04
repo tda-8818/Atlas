@@ -9,10 +9,7 @@ import "./css/CalendarComp.css"
 import axios from "axios";
 
 
-const CalendarComp = () => {
-  const members = [
-    { id: "123456", name: "John Doe", image: "/avatars/avatar1.png" }
-  ]
+const CalendarComp = ({ project }) => {
 
   const [modalStateAdd, setmodalStateAdd] = useState(false);
   const [modalStateView, setModalStateView] = useState(false);
@@ -25,17 +22,20 @@ const CalendarComp = () => {
 
   //fetches tasks from database 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await axios.get("http://localhost:5001/calendar"); // Adjust if needed
-        setCurrentEvents(response.data); // set events into FullCalendar
-      } catch (error) {
-        console.error("Error fetching calendar tasks:", error);
-      }
-    };
+    if (!project || !project.tasks) return;
 
-    fetchTasks();
-  }, []);
+    const transformedTasks = project.tasks.map(task => ({
+      id: task._id || task.id,
+      title: task.title,
+      start: task.start,
+      end: task.end,
+      allDay: task.allDay || false,
+      description: task.description
+    }));
+
+    setCurrentEvents(transformedTasks);
+  }, [project]);
+
 
   // handles date selection via click and opens modal when clicked
   const handleDateSelect = async (selectInfo) => {
@@ -60,7 +60,10 @@ const CalendarComp = () => {
     };
     try {
       // Optionally save the new event to a server.
-      const response = await axios.post("http://localhost:5001/Calendar", newEvent);
+      //ROUTING ISSUE EXISTS
+      const response = await axios.post(`http://localhost:5001/calendar`, newEvent, {
+        withCredentials: true
+      });
       if (response.data) {
         const savedTask = response.data;
         console.log("Task created:", savedTask);
@@ -118,13 +121,11 @@ const CalendarComp = () => {
         selectMirror={true}
         dayMaxEvents={true}
         weekends={true}
-        // initialEvents={INITIAL_EVENTS} // alternatively, use the `events` setting to fetch from a feed
         select={handleDateSelect}
-        // eventContent={renderEventContent} // custom render function
         eventClick={handleEventClick}
-        eventsSet={(events) => setCurrentEvents(events)} // called after events are initialized/added/changed/removed
-        initialEvents={(events) => setCurrentEvents(events)}
+        events={currentEvents}
       />
+
       <AddTaskPopup toggle={modalStateAdd} onSubmit={handleEventSubmission} onClose={() => { setmodalStateAdd(!modalStateAdd); setSelectedDateInfo(null); setSelectedEvent(null); }} onDelete={handleEventDelete} event={selectedEvent} teamMembers={members} actionName={actionName} />
       {/* <ViewTaskModal toggle={modalStateView} action={()=>{setModalStateView(!modalStateView); setSelectedEvent(null);}} onSubmit={handleEventDelete} /> */}
 

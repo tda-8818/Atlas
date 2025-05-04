@@ -3,25 +3,44 @@ import Navbar from '../components/Navbar';
 import StatBox from '../components/StatBox';
 import ProjectHeader from '../components/ProjectHeader';
 import { useOutletContext } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const Dashboard = () => {
-  // Dummy data for "Your Tasks"
-  const tasks = [
-    { id: 1, title: "Task 1", status: "Completed", dueDate: "2025-05-01" },
-    { id: 2, title: "Task 2", status: "In Progress", dueDate: "2025-05-05" },
-    { id: 3, title: "Task 3", status: "Overdue", dueDate: "2025-04-28" },
-  ];
-  //function for fetching tasks in a project here
+  const { currentProject } = useOutletContext();
 
-  // Dummy data for "Team Members"
-  const teamMembers = [
-    { id: 1, name: "John Doe", role: "Project Manager" },
-    { id: 2, name: "Jane Smith", role: "Developer" },
-    { id: 3, name: "Alice Johnson", role: "Designer" },
-  ];
-  //function for fetching users in a project here
+  const [tasks, setTasks] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [loadingTasks, setLoadingTasks] = useState(true);
+  const [loadingMembers, setLoadingMembers] = useState(true);
 
-const { currentProject } = useOutletContext();
+  // Fetch project tasks
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!currentProject?._id) return;
+
+      try {
+        const [taskRes, memberRes] = await Promise.all([
+          //FIX ROUTING TO MAKE DASHBOARD WORK
+          axios.get(`/api/tasks?projectId=${currentProject._id}`),
+          axios.get(`/api/projects/${currentProject._id}/members`)
+        ]);
+
+        setTasks(taskRes.data);
+        setTeamMembers(memberRes.data);
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoadingTasks(false);
+        setLoadingMembers(false);
+      }
+    };
+
+    fetchData();
+  }, [currentProject]);
+  const completedCount = currentProject.tasks.filter(task => task.status?.toLowerCase() === 'completed').length;
+  const inProgressCount = currentProject.tasks.filter(task => task.status?.toLowerCase() === 'in progress').length;
+  const overdueCount = currentProject.tasks.filter(task => new Date(task.dueDate) < new Date() && task.status?.toLowerCase() !== 'completed').length;
 
   return (
     <>
@@ -33,17 +52,17 @@ const { currentProject } = useOutletContext();
           {/* Top Stats (tasks complete, overdue and in progress) */}
           <div className="col-span-12 xl:col-span-4 flex ">
             <div className="h-full w-full flex items-center justify-center">
-              <StatBox title="Tasks Completed" value="5" />
+              <StatBox title="Tasks Completed" value={completedCount} />
             </div>
           </div>
           <div className="col-span-12 xl:col-span-4 flex items-center justify-center">
             <div className="h-full w-full flex items-center justify-center">
-              <StatBox title="Tasks In Progress" value="3" />
+              <StatBox title="Tasks In Progress" value={inProgressCount} />
             </div>
           </div>
           <div className="col-span-12 xl:col-span-4 flex items-center justify-center">
             <div className="h-full w-full flex items-center justify-center">
-              <StatBox title="Tasks Overdue" value="2" />
+              <StatBox title="Tasks Overdue" value={overdueCount} />
             </div>
           </div>
 
@@ -94,7 +113,7 @@ const { currentProject } = useOutletContext();
                 <ul className="space-y-1 text-xs">
                   {teamMembers.map(member => (
                     <li key={member.id} className="p-2 rounded-md bg-[var(--background-primary)] justify-between flex items-center text-[var(--text)]">
-                      <strong>{member.name}</strong> <p className='text-[var(--text-muted)]'>{member.role}</p>
+                      <strong>{member.firstName} {member.lastName}</strong> <p className='text-[var(--text-muted)]'>{member.role}</p>
                     </li>
                   ))}
                 </ul>

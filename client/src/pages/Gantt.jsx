@@ -2,8 +2,10 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import GanttComp from '../components/GanttComp';
 import ProjectHeader from '../components/ProjectHeader';
+import { useOutletContext } from 'react-router-dom';
 
 const Gantt = () => {
+  const { currentProject } = useOutletContext();
   const data = {
     data: [
       { id: 1, text: 'Project #1', start_date: '01-04-2025', duration: 18, progress: 0.4 },
@@ -21,7 +23,7 @@ const Gantt = () => {
       <main className="ml-[15%] w-[85%] flex flex-col bg-[var(--background-primary)]">
         {/* Header Section */}
         <div className="flex-none">
-          <ProjectHeader projectName="Gantt Chart" />
+          <ProjectHeader project={currentProject} />
         </div>
         {/* Content Section */}
         <div className="flex-1 p-2">

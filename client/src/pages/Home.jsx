@@ -71,6 +71,7 @@ const Home = () => {
         }
     };
 
+    //handles delete project when user chooses to delete
     const handleDeleteProject = async (e, projectId) => {
         e.stopPropagation(); // prevent triggering navigation
 
@@ -92,7 +93,7 @@ const Home = () => {
         }
     };
 
-
+    //handles opening modal whne user clicks Add proejct
     const handleAddProjectClick = () => setShowModal(true);
 
     const handleInputChange = (e) => {
@@ -100,6 +101,8 @@ const Home = () => {
         setNewProject((prev) => ({ ...prev, [name]: value }));
     };
 
+
+    //function for creating a project one user completes modal inputs
     const handleCreateProject = async () => {
         if (!newProject.title || !newProject.description || !newProject.deadline) {
             alert("Please fill all fields!");
