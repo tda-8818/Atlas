@@ -1,7 +1,7 @@
 /**
  * index.js is the entry point of the server. It is the file that is run when you start the server.
  * - It is responsible for creating the server, connecting to the database, and defining the routes.
- * - Handles API endpoints for user login and signup.
+ * - It also sets up middleware for parsing requests and handling CORS.
  */
 import express, {json} from 'express'; // Express.js used for creating the server
 import cors from 'cors'; // CORS is a Connect/Express middleware for handling cross-origin requests.
@@ -23,7 +23,7 @@ const server = http.createServer(app); // Create an HTTP server using the Expres
 const wss = new WebSocketService(server); // Initialize WebSocket service with the HTTP server
 app.locals.wss = wss; // Make available to routes
 
-// Middleware set up: - used for parsing incoming requests
+// Express Middleware set up: allows cookies to flow between client and server
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
@@ -33,7 +33,8 @@ app.use(cors({
     exposedHeaders: ['set-cookie']
 })); 
 app.use((req, res, next) => {
-    req.ws = wss; // Attach WebSocket service to the request object
+    // Attach WebSocket service to the request object to make it accessible in routes and controllers
+    req.ws = wss; 
     next();
   });
 
