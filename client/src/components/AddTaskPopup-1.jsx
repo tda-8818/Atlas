@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // Sample team members data (you might want to fetch this from a shared source later)
 const teamMembers = [
@@ -67,15 +67,15 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
   const [dueDate, setDueDate] = useState('');
   const [assignedTo, setAssignedTo] = useState([]);
   const [description, setDescription] = useState('');
-  const [subtasks, setSubtasks] = useState([]); // Subtasks will be added within the modal
-  const [priority, setPriority] = useState('none'); // Default priority
+  const [subtasks, setSubtasks] = useState([]);
+  const [priority, setPriority] = useState('none');
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
 
-  // State for member search within the popup
   const [showMemberSearch, setShowMemberSearch] = useState(false);
   const [searchMember, setSearchMember] = useState("");
 
-  // Reset state when the modal is shown
+  const modalRef = useRef(null);
+
   useEffect(() => {
     if (show) {
       setTitle('');
@@ -88,10 +88,22 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
       setNewSubtaskTitle('');
       setShowMemberSearch(false);
       setSearchMember('');
-    }
-  }, [show]);
 
-  if (!show) return null; // Render nothing if show prop is false
+      const handleClickOutside = (event) => {
+        if (modalRef.current && !modalRef.current.contains(event.target)) {
+          onCancel();
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [show, onCancel]);
+
+  if (!show) return null;
 
   const handleAddTask = () => {
     if (!title.trim()) {
@@ -100,18 +112,17 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
     }
 
     const newTask = {
-      id: generateId("card"), // Generate ID here
+      id: generateId("card"),
       title: title.trim(),
-      tag: tag.trim() === '' ? null : tag.trim(), // Set to null if empty
-      dueDate: dueDate || null, // Set to null if empty
+      tag: tag.trim() === '' ? null : tag.trim(),
+      dueDate: dueDate || null,
       assignedTo: assignedTo,
       description: description.trim(),
-      subtasks: subtasks, // Include collected subtasks
+      subtasks: subtasks,
       priority: priority
     };
 
-    onAddTask(newTask); // Call the parent's handler with the new task data
-    // Parent component will handle closing the modal and resetting state
+    onAddTask(newTask);
   };
 
   const addSubtask = () => {
@@ -121,7 +132,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
       id: generateId("subtask"),
       title: newSubtaskTitle.trim(),
       completed: false,
-      priority: 'none' // Default priority for new subtasks in the popup
+      priority: 'none'
     };
 
     setSubtasks([...subtasks, newSubtask]);
@@ -157,10 +168,17 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
     return teamMembers.find(member => member.id === userId);
   };
 
+  const handleTitleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTask();
+    }
+  };
+
 
   return (
     <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
-      <div className="bg-white rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto">
+      <div ref={modalRef} className="bg-white rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto">
         <h2 className="text-xl font-bold mb-4">Add New Task</h2>
 
         {/* Task Title */}
@@ -174,6 +192,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
             placeholder="e.g., Design landing page"
             className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             required
+            onKeyDown={handleTitleKeyDown}
           />
         </div>
 
@@ -220,10 +239,9 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
         </div>
 
         {/* Assigned To */}
-        <div className="mb-4 relative"> {/* Added relative for absolute positioning of member search */}
+        <div className="mb-4 relative">
           <h3 className="text-sm font-semibold mb-2">Assigned To (Optional)</h3>
           <div className="flex items-center flex-wrap gap-2">
-            {/* Display assigned members */}
             {assignedTo.map(userId => (
               <div key={userId} className="flex items-center bg-gray-50 rounded-full border border-gray-200 p-1">
                 <Avatar user={getTeamMember(userId)} />
@@ -238,7 +256,6 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
               </div>
             ))}
 
-            {/* Add member button */}
             <div
               className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300"
               onClick={() => setShowMemberSearch(!showMemberSearch)}
@@ -248,9 +265,8 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
               </svg>
             </div>
 
-            {/* Member search panel */}
             {showMemberSearch && (
-              <div className="absolute top-full mt-2 bg-white shadow-lg rounded p-2 border w-full max-w-xs">
+              <div className="absolute top-full mt-2 bg-white shadow-lg rounded p-2 border w-full max-w-xs z-10">
                 <div className="mb-2">
                   <input
                     type="text"
@@ -265,7 +281,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
                   {teamMembers
                     .filter(member =>
                       member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
-                      !assignedTo.includes(member.id) // Filter out already assigned members
+                      !assignedTo.includes(member.id)
                     )
                     .map(member => (
                       <div
@@ -273,8 +289,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
                         className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded cursor-pointer"
                         onClick={() => {
                           toggleUserAssignment(member.id);
-                          setSearchMember(""); // Clear search after selection
-                          // setShowMemberSearch(false); // Keep open for multiple selections
+                          setSearchMember("");
                         }}
                       >
                         <Avatar user={member} size="small" />
@@ -288,7 +303,6 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
                         <div className="text-center text-sm text-gray-500">No members found</div>
                      )}
                 </div>
-                 {/* Close search button */}
                  <div className="mt-2 text-right">
                     <button
                         onClick={() => { setShowMemberSearch(false); setSearchMember(''); }}
@@ -318,7 +332,6 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
         {/* Subtasks Section */}
         <div className="mb-4">
            <h3 className="text-sm font-semibold mb-2">Subtasks (Optional)</h3>
-           {/* Subtask List */}
            {subtasks.length > 0 && (
               <div className="space-y-2 mb-3">
                  {subtasks.map((subtask) => (
@@ -337,8 +350,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
                        <span className={`text-sm flex-1 mr-2 ${subtask.completed ? "line-through text-gray-400" : ""}`}>
                          {subtask.title}
                        </span>
-                        {/* Priority dropdown for each subtask */}
-                       <select
+                        <select
                            value={subtask.priority || 'none'}
                            onChange={(e) => handleUpdateSubtaskPriority(subtask.id, e.target.value)}
                            className="text-xs border rounded px-1 py-0.5 text-gray-700"
@@ -362,7 +374,6 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
               </div>
            )}
 
-           {/* Add New Subtask Input */}
            <div className="flex items-center">
               <input
                  type="text"
@@ -387,14 +398,14 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
         <div className="flex justify-end gap-2 mt-6">
           <button
             onClick={onCancel}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+            className="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm"
           >
             Cancel
           </button>
           <button
             onClick={handleAddTask}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!title.trim()} // Disable if title is empty
+            disabled={!title.trim()}
           >
             Add Task
           </button>

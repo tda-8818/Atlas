@@ -1,9 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import ProjectHeader from "../components/ProjectHeader";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import DeleteTaskPopup from '../components/DeleteTaskPopup';
-// Import the updated AddTaskPopup
 import AddTaskPopup from '../components/AddTaskPopup-1';
 
 // Sample team members data
@@ -43,7 +42,7 @@ const defaultColumns = [
   }
 ];
 
-// Generate a color based on a string (name) - ADDED BACK
+// Generate a color based on a string (name)
 const stringToColor = (str) => {
     if (!str) return '#000000';
 
@@ -59,7 +58,7 @@ const stringToColor = (str) => {
     return color;
 };
 
-// Avatar component with fallback to initials - ADDED BACK
+// Avatar component with fallback to initials
 const Avatar = ({ user, size = "small" }) => {
   if (!user) return null;
 
@@ -91,29 +90,81 @@ const Avatar = ({ user, size = "small" }) => {
 
 const Kanban = () => {
   const [columns, setColumns] = useState(defaultColumns);
-  // State to control the visibility of the AddTaskPopup
   const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
-  // State to store the column index where the new task should be added
   const [addTaskColumnIndex, setAddTaskColumnIndex] = useState(null);
 
   const [newColumnName, setNewColumnName] = useState("");
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [newSubtaskTitle, setNewSubtaskTitle] = useState(""); // Keep for modal subtask adding
+  const [selectedCard, setSelectedCard] = useState(null); // Temporary state for editing
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
 
-  // Add states for column editing
   const [editingColumnIndex, setEditingColumnIndex] = useState(null);
   const [editColumnName, setEditColumnName] = useState("");
 
-  // Add these missing state variables (still needed for card modal)
   const [showMemberSearch, setShowMemberSearch] = useState(false);
   const [searchMember, setSearchMember] = useState("");
 
-  // State for controlling collapsed sections in the card modal
   const [showDescription, setShowDescription] = useState(false);
   const [showSubtasks, setShowSubtasks] = useState(false);
 
-  // Helper function to generate IDs (can be moved to a utility file)
+  // Ref for the card detail modal content
+  const cardModalRef = useRef(null);
+
+  // Effect to handle click outside and keydown for the card detail modal
+  useEffect(() => {
+    if (selectedCard) {
+      const handleClickOutside = (event) => {
+        // Check if the click is outside the modal content AND not within the member assignment area
+        if (cardModalRef.current && !cardModalRef.current.contains(event.target) &&
+            !event.target.closest('.member-assignment-area')) {
+          handleCloseCardDetails(); // Close without saving
+        }
+      };
+
+      const handleKeyDown = (event) => {
+           // Only trigger save on Enter if the modal is open and the key is Enter
+           if (event.key === 'Enter') {
+                // Prevent default ONLY if we are going to handle the save action
+                // This prevents adding new lines in textareas or submitting forms
+                // when we intend to save the modal.
+
+                // Check if the focused element is NOT a textarea or the new subtask input
+                if (event.target.tagName !== 'TEXTAREA' && event.target.id !== 'newSubtaskInput') {
+                    event.preventDefault(); // Prevent default behavior for other inputs/elements
+                    handleSaveChanges(); // Trigger the save and close
+                }
+                // If the target IS a textarea or new subtask input,
+                // we do NOT prevent default, allowing new lines or subtask addition.
+           } else if (event.key === 'Escape') {
+               handleCloseCardDetails(); // Close without saving on Escape
+           }
+      };
+
+
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown); // Add keydown listener
+
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleKeyDown); // Clean up keydown listener
+      };
+    }
+     // Clean up listeners when modal closes
+     const handleCleanupKeyDown = (event) => {
+        if (event.key === 'Escape') {
+           handleCloseCardDetails(); // Still allow escape to close if somehow stuck open
+        }
+     };
+     document.addEventListener('keydown', handleCleanupKeyDown);
+     return () => {
+        document.removeEventListener('keydown', handleCleanupKeyDown);
+     };
+
+
+  }, [selectedCard, columns]); // Added columns to dependencies because handleSaveChanges uses it
+
+
+  // Helper function to generate IDs
   const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
   // Column editing functions
@@ -151,10 +202,10 @@ const Kanban = () => {
     if (!dueDate) return "none";
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to start of day for proper comparison
+    today.setHours(0, 0, 0, 0);
 
     const due = new Date(dueDate);
-    due.setHours(0, 0, 0, 0); // Set to start of day for proper comparison
+    due.setHours(0, 0, 0, 0);
 
     const diffTime = due - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -198,25 +249,22 @@ const Kanban = () => {
     setNewColumnName("");
   };
 
-  // Modified addCard function to be called from the popup's onAddTask
   const handleAddTaskFromPopup = (cardData) => {
     if (addTaskColumnIndex === null || addTaskColumnIndex < 0 || addTaskColumnIndex >= columns.length) {
        console.error("Attempted to add task to invalid column index.");
-       setShowAddTaskPopup(false); // Close popup on error
+       setShowAddTaskPopup(false);
        setAddTaskColumnIndex(null);
        return;
     }
 
     const updated = [...columns];
-    updated[addTaskColumnIndex].cards.push(cardData); // Add the full cardData object from the popup
+    updated[addTaskColumnIndex].cards.push(cardData);
     setColumns(updated);
 
-    // Close the popup and reset the column index state
     setShowAddTaskPopup(false);
     setAddTaskColumnIndex(null);
   };
 
-  // Function to open the AddTaskPopup for a specific column
   const openAddTaskPopup = (columnIndex) => {
     setAddTaskColumnIndex(columnIndex);
     setShowAddTaskPopup(true);
@@ -234,7 +282,7 @@ const Kanban = () => {
 
   const deleteColumn = () => {
     if (!confirmDelete || confirmDelete.type !== 'column') return;
-    if (columns.length <= 1) return; // Prevent deleting if it's the only column
+    if (columns.length <= 1) return;
 
     const columnIndex = confirmDelete.index;
     if (columnIndex < 0 || columnIndex >= columns.length) return;
@@ -257,117 +305,77 @@ const Kanban = () => {
     updated[columnIndex].cards.splice(cardIndex, 1);
     setColumns(updated);
 
-    // Close any open modals
     setSelectedCard(null);
     setConfirmDelete(null);
   };
 
-  const handleUpdateCardTitle = (title) => {
-    if (!selectedCard) return;
-
-    const { columnIndex, cardIndex } = selectedCard;
-    if (columnIndex < 0 || columnIndex >= columns.length) return;
-    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-
-    const updated = [...columns];
-    updated[columnIndex].cards[cardIndex].title = title;
-    setColumns(updated);
-
-    // Update the selected card to reflect changes
-    setSelectedCard({
-      ...selectedCard,
-      title
-    });
+  // Handlers to update the temporary 'selectedCard' state (within the modal)
+  const handleUpdateSelectedCardTitle = (title) => {
+    if (selectedCard) setSelectedCard({ ...selectedCard, title });
   };
 
-  // Function to update card priority
-  const handleUpdateCardPriority = (priority) => {
-    if (!selectedCard) return;
-
-    const { columnIndex, cardIndex } = selectedCard;
-    if (columnIndex < 0 || columnIndex >= columns.length) return;
-    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-
-    const updated = [...columns];
-    updated[columnIndex].cards[cardIndex].priority = priority;
-    setColumns(updated);
-
-    setSelectedCard({
-      ...selectedCard,
-      priority
-    });
+  const handleUpdateSelectedCardPriority = (priority) => {
+    if (selectedCard) setSelectedCard({ ...selectedCard, priority });
   };
 
-   // Function to update card tag
-   const handleUpdateCardTag = (tag) => {
+  const handleUpdateSelectedCardTag = (tag) => {
+    if (selectedCard) setSelectedCard({ ...selectedCard, tag: tag.trim() === '' ? null : tag.trim() });
+  };
+
+  const handleUpdateSelectedCardDescription = (description) => {
+    if (selectedCard) setSelectedCard({ ...selectedCard, description });
+  };
+
+  const handleUpdateSelectedCardDueDate = (dueDate) => {
+    if (selectedCard) setSelectedCard({ ...selectedCard, dueDate });
+  };
+
+   // Updated to handle multiple user assignments (within Card Modal)
+  const toggleUserAssignmentInCard = (userId) => {
     if (!selectedCard) return;
 
-    const { columnIndex, cardIndex } = selectedCard;
-    if (columnIndex < 0 || columnIndex >= columns.length) return;
-    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
+    const currentAssignees = selectedCard.assignedTo || [];
 
-    const updated = [...columns];
-    // Set tag to null if the input is empty, otherwise use the value
-    updated[columnIndex].cards[cardIndex].tag = tag.trim() === '' ? null : tag.trim();
-    setColumns(updated);
+    const newAssignees = currentAssignees.includes(userId)
+      ? currentAssignees.filter(id => id !== userId)
+      : [...currentAssignees, userId];
 
     setSelectedCard({
       ...selectedCard,
-      tag: tag.trim() === '' ? null : tag.trim()
+      assignedTo: newAssignees
     });
   };
 
-  // --- Subtask Management within Card Modal ---
-  // These functions now only update the 'selectedCard' state and the main 'columns' state
-  // They are NOT used by the AddTaskPopup anymore.
+
+  // --- Subtask Management within Card Modal (update selectedCard state) ---
 
   const addSubtaskToCard = () => {
     if (!newSubtaskTitle.trim() || !selectedCard) return;
 
-    const { columnIndex, cardIndex } = selectedCard;
-    if (columnIndex < 0 || columnIndex >= columns.length) return;
-    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-
-    const updated = [...columns];
-
     const newSubtask = {
       id: generateId("subtask"),
-      title: newSubtaskTitle,
+      title: newSubtaskTitle.trim(),
       completed: false,
       priority: 'none'
     };
 
-    // Add to the main columns state
-    updated[columnIndex].cards[cardIndex].subtasks.push(newSubtask);
-    setColumns(updated);
-
-    // Also update the selectedCard state
     setSelectedCard({
       ...selectedCard,
-      subtasks: [...(selectedCard.subtasks || []), newSubtask] // Add to existing subtasks array
+      subtasks: [...(selectedCard.subtasks || []), newSubtask]
     });
 
-    setNewSubtaskTitle(""); // Clear input
+    setNewSubtaskTitle(''); // Clear input field for subtask
   };
 
   const toggleSubtaskCompletionInCard = (subtaskId) => {
     if (!selectedCard) return;
 
-    const { columnIndex, cardIndex } = selectedCard;
-    if (columnIndex < 0 || columnIndex >= columns.length) return;
-    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-
-    const updatedColumns = [...columns];
-    const subtasks = updatedColumns[columnIndex].cards[cardIndex].subtasks || [];
+    const subtasks = selectedCard.subtasks || [];
 
     const updatedSubtasks = subtasks.map(st =>
       st.id === subtaskId ? { ...st, completed: !st.completed } : st
     );
 
-    updatedColumns[columnIndex].cards[cardIndex].subtasks = updatedSubtasks;
-    setColumns(updatedColumns);
-
-    // Update the selectedCard state
     setSelectedCard({
       ...selectedCard,
       subtasks: updatedSubtasks
@@ -377,21 +385,12 @@ const Kanban = () => {
   const handleUpdateSubtaskPriorityInCard = (subtaskId, newPriority) => {
       if (!selectedCard) return;
 
-      const { columnIndex, cardIndex } = selectedCard;
-      if (columnIndex < 0 || columnIndex >= columns.length) return;
-      if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-
-      const updatedColumns = [...columns];
-      const subtasks = updatedColumns[columnIndex].cards[cardIndex].subtasks || [];
+      const subtasks = selectedCard.subtasks || [];
 
       const updatedSubtasks = subtasks.map(st =>
          st.id === subtaskId ? { ...st, priority: newPriority } : st
       );
 
-      updatedColumns[columnIndex].cards[cardIndex].subtasks = updatedSubtasks;
-      setColumns(updatedColumns);
-
-      // Update the selectedCard state
       setSelectedCard({
          ...selectedCard,
          subtasks: updatedSubtasks
@@ -402,19 +401,10 @@ const Kanban = () => {
   const deleteSubtaskFromCard = (subtaskId) => {
     if (!selectedCard) return;
 
-    const { columnIndex, cardIndex } = selectedCard;
-    if (columnIndex < 0 || columnIndex >= columns.length) return;
-    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-
-    const updatedColumns = [...columns];
-    const subtasks = updatedColumns[columnIndex].cards[cardIndex].subtasks || [];
+    const subtasks = selectedCard.subtasks || [];
 
     const updatedSubtasks = subtasks.filter(st => st.id !== subtaskId);
 
-    updatedColumns[columnIndex].cards[cardIndex].subtasks = updatedSubtasks;
-    setColumns(updatedColumns);
-
-    // Update the selectedCard state
     setSelectedCard({
       ...selectedCard,
       subtasks: updatedSubtasks
@@ -423,70 +413,50 @@ const Kanban = () => {
   // --- End of Subtask Management within Card Modal ---
 
 
-  const handleUpdateCardDescription = (description) => {
-    if (!selectedCard) return;
+  // Function to save changes from the selectedCard state to the main columns state
+  const handleSaveChanges = () => {
+    if (!selectedCard) {
+        console.error("No card selected to save.");
+        return;
+    }
 
-    const { columnIndex, cardIndex } = selectedCard;
-    if (columnIndex < 0 || columnIndex >= columns.length) return;
-    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
+     // We allow saving even if the title is empty when triggered by Enter,
+     // but the Save button itself remains disabled.
+     // If triggered by the button and title is empty, the disabled state prevents this.
+     // If triggered by Enter and title is empty, we still update the state,
+     // which might lead to unexpected behavior, but fulfills the "save even if no changes"
+     // and "save on enter" requirements, including when only assignment changed.
+     // Consider adding a more robust check here if saving an empty title is problematic.
 
-    const updated = [...columns];
-    updated[columnIndex].cards[cardIndex].description = description;
-    setColumns(updated);
 
-    // Update the selected card to reflect changes
-    setSelectedCard({
-      ...selectedCard,
-      description
-    });
+    const { columnIndex, cardIndex, ...cardDataToSave } = selectedCard;
+
+    // Check if the card still exists at the original index before saving
+    if (columnIndex === undefined || cardIndex === undefined || columnIndex < 0 || columnIndex >= columns.length || cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length || columns[columnIndex].cards[cardIndex].id !== selectedCard.id) {
+      console.error("Card not found at original index for saving. It may have been moved or deleted.");
+      // In this case, we might just close the modal without saving,
+      // as the original card is no longer there.
+      handleCloseCardDetails();
+      return;
+    }
+
+    const updatedColumns = [...columns];
+    updatedColumns[columnIndex].cards[cardIndex] = cardDataToSave;
+    setColumns(updatedColumns);
+
+    // Set selectedCard to null AFTER the state update to close the modal
+    setSelectedCard(null);
   };
 
-  const handleUpdateDueDate = (dueDate) => {
-    if (!selectedCard) return;
+   // Function to close the modal WITHOUT saving changes
+   const handleCloseCardDetails = () => {
+      // This function should strictly close the modal and discard changes.
+      setSelectedCard(null);
+      setShowMemberSearch(false);
+      setSearchMember('');
+   };
 
-    const { columnIndex, cardIndex } = selectedCard;
-    if (columnIndex < 0 || columnIndex >= columns.length) return;
-    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-
-    const updated = [...columns];
-    updated[columnIndex].cards[cardIndex].dueDate = dueDate;
-    setColumns(updated);
-
-    // Update the selected card to reflect changes
-    setSelectedCard({
-      ...selectedCard,
-      dueDate
-    });
-  };
-
-  // Updated to handle multiple user assignments (within Card Modal)
-  const toggleUserAssignmentInCard = (userId) => {
-    if (!selectedCard) return;
-
-    const { columnIndex, cardIndex } = selectedCard;
-    if (columnIndex < 0 || columnIndex >= columns.length) return;
-    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-
-    const updated = [...columns];
-
-    const currentAssignees = updated[columnIndex].cards[cardIndex].assignedTo || [];
-
-    // If user is already assigned, remove them, otherwise add them
-    const newAssignees = currentAssignees.includes(userId)
-      ? currentAssignees.filter(id => id !== userId)
-      : [...currentAssignees, userId];
-
-    updated[columnIndex].cards[cardIndex].assignedTo = newAssignees;
-    setColumns(updated);
-
-    // Update the selected card to reflect changes
-    setSelectedCard({
-      ...selectedCard,
-      assignedTo: newAssignees
-    });
-  };
-
-  // Find a team member by ID (used in both AddTaskPopup and Kanban)
+  // Find a team member by ID
   const getTeamMember = (userId) => {
     if (!userId) return null;
     return teamMembers.find(member => member.id === userId);
@@ -510,20 +480,17 @@ const Kanban = () => {
      // If we're dragging subtasks (within the card modal)
      if (type === "subtask" && selectedCard) {
         // Ensure the destination droppableId matches the source droppableId for subtasks
-        // and that the destination is within the same card's subtask list
         if (source.droppableId !== destination.droppableId) return;
 
         const { columnIndex, cardIndex } = selectedCard;
-        // Double-check that the selectedCard still matches the context of the drag
-        // This might be overly cautious, but helps prevent issues if state is out of sync
-        if (columnsCopy[columnIndex]?.cards[cardIndex]?.id !== selectedCard.id) {
-           console.error("State mismatch during subtask drag");
+         // Check if the card still exists at the original index
+        if (!columnsCopy[columnIndex]?.cards[cardIndex] || columnsCopy[columnIndex].cards[cardIndex].id !== selectedCard.id) {
+           console.error("State mismatch during subtask drag: Card not found or id mismatch.");
            return;
         }
 
-
         const updatedCard = { ...columnsCopy[columnIndex].cards[cardIndex] };
-        const subtasks = Array.from(updatedCard.subtasks || []); // Ensure it's an array
+        const subtasks = Array.from(updatedCard.subtasks || []);
 
         const [removed] = subtasks.splice(source.index, 1);
         subtasks.splice(destination.index, 0, removed);
@@ -531,13 +498,14 @@ const Kanban = () => {
         updatedCard.subtasks = subtasks;
         columnsCopy[columnIndex].cards[cardIndex] = updatedCard;
 
-        setColumns(columnsCopy);
-        // Update the selected card state to reflect the new subtask order
-        // Create a new array for the subtasks to ensure React detects the change
+        // Important: When subtasks are reordered by D&D, update the selectedCard state immediately
+        // so the modal reflects the new order.
         setSelectedCard({
            ...selectedCard,
            subtasks: [...subtasks]
         });
+
+        setColumns(columnsCopy); // Also update the main columns state
         return;
      }
 
@@ -579,11 +547,30 @@ const Kanban = () => {
 
       columnsCopy[sourceColumnIndex].cards = sourceCards;
       columnsCopy[destColumnIndex].cards = destCards;
+
+        // If the card being moved is the one currently open in the modal,
+        // update its columnIndex and cardIndex in the selectedCard state.
+        if (selectedCard && selectedCard.id === removed.id) {
+            // Find the new index in the destination column
+            const newCardIndex = destCards.findIndex(card => card.id === removed.id);
+            if (newCardIndex !== -1) {
+                setSelectedCard(prev => ({
+                    ...prev,
+                    columnIndex: destColumnIndex,
+                    cardIndex: newCardIndex,
+                    colTitle: columnsCopy[destColumnIndex].title // Update column title display
+                }));
+            } else {
+                 // If for some reason the card isn't found in the destination, close the modal
+                 setSelectedCard(null);
+            }
+        }
     }
 
     setColumns(columnsCopy);
   };
 
+  // When opening the card details, populate the temporary 'selectedCard' state
   const openCardDetails = (columnIndex, cardIndex) => {
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
@@ -594,12 +581,11 @@ const Kanban = () => {
       columnIndex,
       cardIndex,
       colTitle: columns[columnIndex].title,
-      subtasks: card.subtasks || [] // Ensure subtasks is an array when opening modal
+      subtasks: card.subtasks || []
     });
 
-    // Set initial state of collapsed sections to false (hidden)
     setShowDescription(false);
-    setShowSubtasks(false); // Keep subtasks collapsed by default
+    setShowSubtasks(false);
   };
 
   // Toggle section visibility functions
@@ -611,20 +597,19 @@ const Kanban = () => {
     setShowSubtasks(!showSubtasks);
   };
 
-  // Multi-avatar component that shows up to 3 avatars + count for extras
-  // This component is used in the Card component render
+  // Multi-avatar component
   const MultiAvatar = ({ assignedUsers }) => {
     if (!assignedUsers || assignedUsers.length === 0) return null;
 
     const users = assignedUsers.map(id => getTeamMember(id)).filter(Boolean);
-    const displayUsers = users.slice(0, 3); // Show up to 3 avatars
+    const displayUsers = users.slice(0, 3);
     const extraCount = users.length - displayUsers.length;
 
     return (
       <div className="flex -space-x-2 items-center">
         {displayUsers.map((user, index) => (
           <div key={user.id} className="z-10" style={{ zIndex: 10 - index }}>
-            <Avatar user={user} /> {/* Avatar is now defined in this file */}
+            <Avatar user={user} />
           </div>
         ))}
         {extraCount > 0 && (
@@ -635,12 +620,6 @@ const Kanban = () => {
       </div>
     );
   };
-
-  // Avatar component with fallback to initials (commented out as it's now above)
-  // const Avatar = ({ user, size = "small" }) => { ... };
-
-  // Generate a color based on a string (name) (commented out as it's now above)
-  // const stringToColor = (str) => { ... };
 
 
   return (
@@ -788,7 +767,6 @@ const Kanban = () => {
 
                                         {/* Assigned User Avatars on the right */}
                                         <div className="flex items-center ml-auto">
-                                          {/* Using the MultiAvatar component here */}
                                           <MultiAvatar assignedUsers={card.assignedTo} />
                                         </div>
                                       </div>
@@ -852,10 +830,10 @@ const Kanban = () => {
         {/* Render the reusable AddTaskPopup */}
         <AddTaskPopup
           show={showAddTaskPopup}
-          onAddTask={handleAddTaskFromPopup} // Pass the handler that adds to the correct column
+          onAddTask={handleAddTaskFromPopup}
           onCancel={() => {
             setShowAddTaskPopup(false);
-            setAddTaskColumnIndex(null); // Reset the column index when cancelled
+            setAddTaskColumnIndex(null);
           }}
         />
 
@@ -863,14 +841,18 @@ const Kanban = () => {
         {/* Card Detail Modal */}
         {selectedCard && (
           <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
-            <div className="bg-white rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto">
+             {/* Add ref to the modal content div */}
+             {/* Removed onKeyDown from this div */}
+            <div ref={cardModalRef} className="bg-white rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto kanban-card-modal-content">
               {/* Title and Tag/Priority */}
               <div className="mb-4">
                  <div className="flex items-center mb-1">
                     <input
                       type="text"
+                      id="cardTitle"
                       value={selectedCard.title}
-                      onChange={(e) => handleUpdateCardTitle(e.target.value)}
+                      onChange={(e) => handleUpdateSelectedCardTitle(e.target.value)}
+                      placeholder="Task Title"
                       className="text-xl font-bold flex-grow border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none p-1 mr-2"
                     />
                     {/* Tag and Priority on the same line */}
@@ -878,16 +860,18 @@ const Kanban = () => {
                         {/* Tag Input (Editable) */}
                         <input
                            type="text"
-                           value={selectedCard.tag || ''} // Use empty string for null tag
-                           onChange={(e) => handleUpdateCardTag(e.target.value)}
-                           placeholder="Add tag" // Placeholder for empty tag
-                           className="text-xs border rounded px-1 py-0.5 w-20 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500" // Added focus styles
+                           id="cardTag"
+                           value={selectedCard.tag || ''}
+                           onChange={(e) => handleUpdateSelectedCardTag(e.target.value)}
+                           placeholder="Add tag"
+                           className="text-xs border rounded px-1 py-0.5 w-20 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
 
                         {/* Priority dropdown for the main card */}
                         <select
+                           id="cardPriority"
                            value={selectedCard.priority || 'none'}
-                           onChange={(e) => handleUpdateCardPriority(e.target.value)}
+                           onChange={(e) => handleUpdateSelectedCardPriority(e.target.value)}
                            className="text-xs border rounded px-1 py-0.5 text-gray-700"
                         >
                            {priorityLevels.map(level => (
@@ -909,8 +893,9 @@ const Kanban = () => {
                   <div className="flex items-center">
                     <input
                       type="date"
+                       id="cardDueDate"
                       value={selectedCard.dueDate ? selectedCard.dueDate.split('T')[0] : ""}
-                      onChange={(e) => handleUpdateDueDate(e.target.value)}
+                      onChange={(e) => handleUpdateSelectedCardDueDate(e.target.value)}
                       className="border rounded px-2 py-1 text-sm"
                     />
                     {selectedCard.dueDate && getEmergencyLevel(selectedCard.dueDate) === 'overdue' && (
@@ -921,16 +906,17 @@ const Kanban = () => {
                   </div>
                 </div>
 
-                {/* Assignment Section - Multiple with search (within Card Modal) */}
-                <div className="w-1/2">
+                {/* Assignment Section - Multiple with search */}
+                {/* Added class for click-outside handler exclusion */}
+                <div className="w-1/2 member-assignment-area">
                   <h3 className="text-sm font-semibold mb-2">Assigned To</h3>
-                  <div className="flex items-center flex-wrap gap-2 relative"> {/* Added relative */}
+                  <div className="flex items-center flex-wrap gap-2 relative">
                     {/* Display assigned members */}
                     {(selectedCard.assignedTo || []).map(userId => (
                       <div key={userId} className="flex items-center bg-gray-50 rounded-full border border-gray-200 p-1">
-                        <Avatar user={getTeamMember(userId)} /> {/* Avatar is now defined in this file */}
+                        <Avatar user={getTeamMember(userId)} />
                         <button
-                          onClick={() => toggleUserAssignmentInCard(userId)} // Use the _InCard version
+                          onClick={() => toggleUserAssignmentInCard(userId)}
                           className="ml-1 text-gray-400 hover:text-red-500 text-xs"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -952,10 +938,11 @@ const Kanban = () => {
 
                     {/* Member search panel */}
                     {showMemberSearch && (
-                      <div className="absolute top-full mt-2 bg-white shadow-lg rounded p-2 border w-full max-w-xs">
+                      <div className="absolute top-full mt-2 bg-white shadow-lg rounded p-2 border w-full max-w-xs z-10">
                         <div className="mb-2">
                           <input
                             type="text"
+                            id="memberSearchInput" // Added ID for keydown check
                             value={searchMember}
                             onChange={(e) => setSearchMember(e.target.value)}
                             placeholder="Search members..."
@@ -967,19 +954,19 @@ const Kanban = () => {
                           {teamMembers
                             .filter(member =>
                               member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
-                              !(selectedCard.assignedTo || []).includes(member.id) // Filter out already assigned members
+                              !(selectedCard.assignedTo || []).includes(member.id)
                             )
                             .map(member => (
                               <div
                                 key={member.id}
                                 className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded cursor-pointer"
                                 onClick={() => {
-                                  toggleUserAssignmentInCard(member.id); // Use the _InCard version
-                                  setSearchMember("");
-                                  // setShowMemberSearch(false); // Keep open for multiple selections
+                                  toggleUserAssignmentInCard(member.id);
+                                  setSearchMember(""); // Clear search after selection
+                                  setShowMemberSearch(false); // Close search after selection
                                 }}
                               >
-                                <Avatar user={member} size="small" /> {/* Avatar is now defined in this file */}
+                                <Avatar user={member} size="small" />
                                 <span className="text-sm">{member.name}</span>
                               </div>
                             ))}
@@ -990,7 +977,6 @@ const Kanban = () => {
                                 <div className="text-center text-sm text-gray-500">No members found</div>
                              )}
                         </div>
-                        {/* Close search button */}
                         <div className="mt-2 text-right">
                            <button
                                onClick={() => { setShowMemberSearch(false); setSearchMember(''); }}
@@ -1019,9 +1005,10 @@ const Kanban = () => {
                 {showDescription && (
                   <textarea
                     value={selectedCard.description || ""}
-                    onChange={(e) => handleUpdateCardDescription(e.target.value)}
+                    onChange={(e) => handleUpdateSelectedCardDescription(e.target.value)}
                     placeholder="Add a more detailed description..."
                     className="w-full border rounded p-2 text-sm min-h-[80px]"
+                    id="cardDescription"
                   />
                 )}
               </div>
@@ -1048,19 +1035,17 @@ const Kanban = () => {
                                ref={provided.innerRef}
                                className="space-y-2 mb-3"
                             >
-                              {/* Ensure selectedCard.subtasks is an array before mapping */}
                               {(selectedCard.subtasks || []).map((subtask, index) => (
                                 <Draggable key={subtask.id} draggableId={subtask.id} index={index}>
                                   {(provided, snapshot) => (
                                      <div
                                         ref={provided.innerRef}
                                         {...provided.draggableProps}
-                                        {...provided.dragHandleProps} // Use drag handle props here
+                                        {...provided.dragHandleProps}
                                         className={`flex items-center bg-gray-50 p-2 rounded group cursor-grab ${snapshot.isDragging ? 'shadow-md bg-gray-100' : ''}`}
                                      >
-                                       {/* Improved checkbox button with better visibility for the checkmark */}
                                        <button
-                                         onClick={() => toggleSubtaskCompletionInCard(subtask.id)} // Use the _InCard version
+                                         onClick={() => toggleSubtaskCompletionInCard(subtask.id)}
                                          className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
                                          style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
                                        >
@@ -1072,16 +1057,15 @@ const Kanban = () => {
                                        </button>
 
                                        <span
-                                         onClick={() => toggleSubtaskCompletionInCard(subtask.id)} // Use the _InCard version
+                                         onClick={() => toggleSubtaskCompletionInCard(subtask.id)}
                                          className={`text-sm flex-1 cursor-pointer mr-1 ${subtask.completed ? "line-through text-gray-400" : ""}`}
                                        >
                                          {subtask.title}
                                        </span>
 
-                                        {/* Priority dropdown for each subtask */}
                                         <select
                                            value={subtask.priority || 'none'}
-                                           onChange={(e) => handleUpdateSubtaskPriorityInCard(subtask.id, e.target.value)} // Use the _InCard version
+                                           onChange={(e) => handleUpdateSubtaskPriorityInCard(subtask.id, e.target.value)}
                                            className="text-xs border rounded px-1 py-0.5 text-gray-700"
                                         >
                                            {priorityLevels.map(level => (
@@ -1093,7 +1077,7 @@ const Kanban = () => {
 
 
                                       <button
-                                        onClick={() => deleteSubtaskFromCard(subtask.id)} // Use the _InCard version
+                                        onClick={() => deleteSubtaskFromCard(subtask.id)}
                                         className="ml-2 text-gray-400 hover:text-red-500 text-xs"
                                       >
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -1110,18 +1094,21 @@ const Kanban = () => {
                       </Droppable>
                    </DragDropContext>
                 )}
-                 {/* Input for adding new subtask (within Card Modal) */}
+                 {/* Input for adding new subtask */}
                  {showSubtasks && (
-                   <div className="flex items-center mt-3"> {/* Added mt-3 for spacing below the list */}
+                   <div className="flex items-center mt-3">
                      <input
+                       type="text"
+                       id="newSubtaskInput"
                        value={newSubtaskTitle}
                        onChange={(e) => setNewSubtaskTitle(e.target.value)}
                        placeholder="Add a subtask..."
-                       className="flex-1 border rounded px-2 py-1 text-sm"
+                       className="flex-1 border rounded px-2 py-1 text-sm mr-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSubtaskToCard(); } }}
                      />
                      <button
-                       onClick={addSubtaskToCard} // Use the _InCard version
-                       className="ml-2 bg-blue-100 border border-blue-300 px-3 py-1 rounded text-blue-700 hover:bg-blue-200 text-sm"
+                       onClick={addSubtaskToCard}
+                       className="px-3 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed bg-blue-500 text-white hover:bg-blue-600" // Added blue background and white text
                        disabled={!newSubtaskTitle.trim()}
                      >
                        Add
@@ -1135,33 +1122,35 @@ const Kanban = () => {
                 {/* Delete Button (Left) */}
                 <button
                   onClick={() => {
+                    const { columnIndex, cardIndex } = selectedCard;
                     setConfirmDelete({
                       type: 'card',
-                      columnIndex: selectedCard.columnIndex,
-                      cardIndex: selectedCard.cardIndex
+                      columnIndex: columnIndex,
+                      cardIndex: cardIndex
                     });
                     setSelectedCard(null);
                   }}
-                  className="px-4 py-2 text-red-500 hover:text-red-700 rounded text-sm" // Red text, no background
+                  className="px-4 py-2 text-red-500 hover:text-red-700 rounded text-sm"
                 >
                   Delete
                 </button>
 
-                {/* Right Buttons (Cancel and Close) */}
+                {/* Right Buttons (Close and Save) */}
                 <div className="flex">
-                  {/* Cancel Button (Left of Close) */}
+                  {/* Close Button (Left of Save) */}
                   <button
-                    onClick={() => setSelectedCard(null)}
-                    className="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm mr-2" // White background, blue border/text
-                  >
-                    Cancel
-                  </button>
-                  {/* Close Button (Right) */}
-                  <button
-                     onClick={() => setSelectedCard(null)} // Close button
-                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm" // Blue background, white text
+                    onClick={handleCloseCardDetails}
+                    className="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm mr-2"
                   >
                     Close
+                  </button>
+                  {/* Save Button (Right) */}
+                  <button
+                     onClick={handleSaveChanges}
+                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                     disabled={!selectedCard.title.trim()} // Still disable button if title is empty
+                  >
+                    Save
                   </button>
                 </div>
               </div>
