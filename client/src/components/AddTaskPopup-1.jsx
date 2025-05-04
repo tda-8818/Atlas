@@ -21,7 +21,7 @@ const AddTaskPopup = ({ onAdd, onCancel, initialData = {}, isEditing = false }) 
   const [subtasks, setSubtasks] = useState(initialData.subtasks || []);
   
   // Optional additional fields that can be toggled
-  const [showAdditionalFields, setShowAdditionalFields] = useState(false);
+  const [showDescription, setShowDescription] = useState(!!initialData.description);
   
   /**
    * Handles form submission
@@ -62,10 +62,10 @@ const AddTaskPopup = ({ onAdd, onCancel, initialData = {}, isEditing = false }) 
   };
   
   /**
-   * Toggles the display of additional task fields
+   * Toggles the display of description field
    */
-  const toggleAdditionalFields = () => {
-    setShowAdditionalFields(!showAdditionalFields);
+  const toggleDescription = () => {
+    setShowDescription(!showDescription);
   };
   
   return (
@@ -76,53 +76,56 @@ const AddTaskPopup = ({ onAdd, onCancel, initialData = {}, isEditing = false }) 
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Task title *"
-          className="border px-2 py-1 rounded w-full text-sm mb-1 bg-white text-gray-800"
+          className="border px-2 py-1 rounded w-full text-sm mb-2 bg-white text-gray-800"
           required
+          autoFocus
         />
         
-        <input
-          value={tag}
-          onChange={(e) => setTag(e.target.value)}
-          placeholder="Tag (e.g., Design, Development)"
-          className="border px-2 py-1 rounded w-full text-sm mb-1 bg-white text-gray-800"
-        />
-        
-        {/* Due Date */}
-        <div className="mb-1">
-          <input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="border px-2 py-1 rounded w-full text-sm bg-white text-gray-800"
-            placeholder="Due date"
-          />
+        <div className="flex mb-2">
+          {/* Due Date */}
+          <div className="w-1/2 mr-2">
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="border px-2 py-1 rounded w-full text-sm bg-white text-gray-800"
+              placeholder="Due date"
+            />
+          </div>
+          
+          {/* Tag */}
+          <div className="w-1/2">
+            <input
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              placeholder="Tag (optional)"
+              className="border px-2 py-1 rounded w-full text-sm bg-white text-gray-800"
+            />
+          </div>
         </div>
         
-        {/* Additional Fields Toggle */}
-        {!showAdditionalFields && (
+        {/* Description Toggle */}
+        {!showDescription ? (
           <button
             type="button"
-            onClick={toggleAdditionalFields}
-            className="text-xs text-blue-600 hover:underline mb-2 mt-1"
+            onClick={toggleDescription}
+            className="text-xs text-blue-600 hover:underline mb-2"
           >
             + Add description
           </button>
-        )}
-        
-        {/* Additional Fields */}
-        {showAdditionalFields && (
-          <div className="mt-1 mb-2">
+        ) : (
+          <div className="mb-2">
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Description"
-              className="border px-2 py-1 rounded w-full text-sm mb-1 bg-white text-gray-800 min-h-[60px]"
+              className="border px-2 py-1 rounded w-full text-sm bg-white text-gray-800 min-h-[60px]"
             />
             
             <button
               type="button"
-              onClick={toggleAdditionalFields}
-              className="text-xs text-blue-600 hover:underline"
+              onClick={toggleDescription}
+              className="text-xs text-blue-600 hover:underline mt-1"
             >
               - Hide description
             </button>
@@ -133,7 +136,7 @@ const AddTaskPopup = ({ onAdd, onCancel, initialData = {}, isEditing = false }) 
         <div className="flex justify-end">
           <button 
             type="submit"
-            className="text-sm text-blue-600 hover:underline mr-2"
+            className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded mr-2 border border-blue-300"
             disabled={!title.trim()}
           >
             {isEditing ? 'Update' : 'Add'}
@@ -141,7 +144,7 @@ const AddTaskPopup = ({ onAdd, onCancel, initialData = {}, isEditing = false }) 
           <button 
             type="button"
             onClick={onCancel} 
-            className="text-sm text-gray-500"
+            className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded border border-gray-300"
           >
             Cancel
           </button>

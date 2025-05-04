@@ -45,6 +45,14 @@ const Kanban = () => {
   // Add states for column editing
   const [editingColumnIndex, setEditingColumnIndex] = useState(null);
   const [editColumnName, setEditColumnName] = useState("");
+  
+  // Add these missing state variables
+  const [showMemberSearch, setShowMemberSearch] = useState(false);
+  const [searchMember, setSearchMember] = useState("");
+  
+  // Additional state for controlling collapsed sections
+  const [showDescription, setShowDescription] = useState(false);
+  const [showSubtasks, setShowSubtasks] = useState(false);
 
   // Helper function to generate IDs
   const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -84,11 +92,16 @@ const Kanban = () => {
     if (!dueDate) return "none";
     
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day for proper comparison
+    
     const due = new Date(dueDate);
+    due.setHours(0, 0, 0, 0); // Set to start of day for proper comparison
+    
     const diffTime = due - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays < 0) return "overdue";
+    if (diffDays === 0) return "today";
     if (diffDays <= 2) return "high";
     if (diffDays <= 5) return "medium";
     return "low";
@@ -422,6 +435,10 @@ const Kanban = () => {
       cardIndex,
       colTitle: columns[columnIndex].title
     });
+    
+    // Reset collapsed sections state when opening a new card
+    setShowDescription(false);
+    setShowSubtasks(false);
   };
 
   // Multi-avatar component that shows up to 3 avatars + count for extras
@@ -613,28 +630,38 @@ const Kanban = () => {
                                         </div>
                                       )}
                                       
-                                      <div className="flex justify-between items-end mt-auto pt-2">
-                                        <div className="flex flex-col">
-                                          {card.subtasks && card.subtasks.length > 0 && (
+                                      <div className="flex justify-between items-center mt-auto pt-2">
+                                        {/* Due Date on the left */}
+                                        {card.dueDate && (
+                                          <div className="flex items-center">
                                             <div className="text-xs text-gray-500">
-                                              {card.subtasks.filter(st => st.completed).length}/{card.subtasks.length} subtasks
-                                            </div>
-                                          )}
-                                          
-                                          {/* Due Date with emergency level */}
-                                          {card.dueDate && (
-                                            <div className={`text-xs mt-1 px-1 rounded ${getEmergencyLevel(card.dueDate) === 'overdue' ? 'bg-red-500 text-white' : ''}`}>
                                               {formatDate(card.dueDate)}
+                                            </div>
+                                            {getEmergencyLevel(card.dueDate) === 'overdue' && (
+                                              <div className="ml-1 text-xs px-1 py-0.5 rounded bg-red-500 text-white">
+                                                overdue
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+                                        
+                                        {/* Assigned User Avatars on the right */}
+                                        <div className="flex items-center ml-auto">
+                                          {card.assignedTo && card.assignedTo.length > 0 && (
+                                            <div className="flex -space-x-2">
+                                              {card.assignedTo.slice(0, 3).map((userId, index) => (
+                                                <div key={userId} className="z-10" style={{ zIndex: 10 - index }}>
+                                                  <Avatar user={getTeamMember(userId)} />
+                                                </div>
+                                              ))}
+                                              {card.assignedTo.length > 3 && (
+                                                <div className="z-0 flex items-center justify-center w-6 h-6 text-xs bg-gray-200 rounded-full border-2 border-white">
+                                                  +{card.assignedTo.length - 3}
+                                                </div>
+                                              )}
                                             </div>
                                           )}
                                         </div>
-                                        
-                                        {/* Assigned Users Avatars at bottom right */}
-                                        {card.assignedTo && card.assignedTo.length > 0 && (
-                                          <div className="ml-auto">
-                                            <MultiAvatar assignedUsers={card.assignedTo} />
-                                          </div>
-                                        )}
                                       </div>
                                       
                                       <button
@@ -721,67 +748,109 @@ const Kanban = () => {
                 )}
               </div>
               
-              {/* Due Date Section */}
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold mb-2">Due Date</h3>
-                <div className="flex items-center">
-                  <input
-                    type="date"
-                    value={selectedCard.dueDate ? selectedCard.dueDate.split('T')[0] : ""}
-                    onChange={(e) => handleUpdateDueDate(e.target.value)}
-                    className="border rounded px-2 py-1 text-sm"
-                  />
-                  {selectedCard.dueDate && (
-                    <div className={`ml-2 text-xs px-2 py-1 rounded ${getEmergencyLevel(selectedCard.dueDate) === 'overdue' ? 'bg-red-500 text-white' : ''}`}>
-                      {formatDate(selectedCard.dueDate)}
-                    </div>
-                  )}
-                  {selectedCard.dueDate && (
-                    <button 
-                      onClick={() => handleUpdateDueDate("")}
-                      className="text-xs text-red-500 hover:underline ml-2"
-                    >
-                      Clear
-                    </button>
-                  )}
+              {/* Rearranged: Due Date on left, Assignment on right */}
+              <div className="mb-4 flex items-start justify-between">
+                <div className="w-1/2">
+                  <h3 className="text-sm font-semibold mb-2">Due Date</h3>
+                  <div className="flex items-center">
+                    <input
+                      type="date"
+                      value={selectedCard.dueDate ? selectedCard.dueDate.split('T')[0] : ""}
+                      onChange={(e) => handleUpdateDueDate(e.target.value)}
+                      className="border rounded px-2 py-1 text-sm"
+                    />
+                    {selectedCard.dueDate && getEmergencyLevel(selectedCard.dueDate) === 'overdue' && (
+                      <div className="ml-2 text-xs px-2 py-0.5 rounded bg-red-500 text-white">
+                        overdue
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-              
-              {/* Assignment Section - Updated for Multiple Users */}
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold mb-2">Assigned To</h3>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {teamMembers.map(member => (
+                
+                {/* Assignment Section - Multiple with search */}
+                <div className="w-1/2">
+                  <h3 className="text-sm font-semibold mb-2">Assigned To</h3>
+                  <div className="flex items-center flex-wrap gap-2">
+                    {/* Display assigned members */}
+                    {selectedCard.assignedTo && selectedCard.assignedTo.map(userId => (
+                      <div key={userId} className="flex items-center bg-gray-50 rounded-full border border-gray-200 p-1">
+                        <Avatar user={getTeamMember(userId)} />
+                        <button 
+                          onClick={() => {
+                            const newAssignees = selectedCard.assignedTo.filter(id => id !== userId);
+                            const updated = [...columns];
+                            const { columnIndex, cardIndex } = selectedCard;
+                            updated[columnIndex].cards[cardIndex].assignedTo = newAssignees;
+                            setColumns(updated);
+                            setSelectedCard({
+                              ...selectedCard,
+                              assignedTo: newAssignees
+                            });
+                          }}
+                          className="ml-1 text-gray-400 hover:text-red-500 text-xs"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                    
+                    {/* Add member button */}
                     <div 
-                      key={member.id}
-                      onClick={() => toggleUserAssignment(member.id)} 
-                      className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors ${
-                        selectedCard.assignedTo && selectedCard.assignedTo.includes(member.id) 
-                          ? 'bg-blue-100 border border-blue-300' 
-                          : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
-                      }`}
+                      className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300"
+                      onClick={() => setShowMemberSearch(!showMemberSearch)}
                     >
-                      <Avatar user={member} />
-                      <span className="text-sm">{member.name}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                      </svg>
                     </div>
-                  ))}
-                  {selectedCard.assignedTo && selectedCard.assignedTo.length > 0 && (
-                    <button 
-                      onClick={() => {
-                        const updated = [...columns];
-                        const { columnIndex, cardIndex } = selectedCard;
-                        updated[columnIndex].cards[cardIndex].assignedTo = [];
-                        setColumns(updated);
-                        setSelectedCard({
-                          ...selectedCard,
-                          assignedTo: []
-                        });
-                      }}
-                      className="text-xs text-red-500 hover:underline ml-1"
-                    >
-                      Clear All Assignments
-                    </button>
-                  )}
+                    
+                    {/* Member search panel */}
+                    {showMemberSearch && (
+                      <div className="absolute mt-24 bg-white shadow-lg rounded p-2 border">
+                        <div className="mb-2">
+                          <input
+                            type="text"
+                            value={searchMember}
+                            onChange={(e) => setSearchMember(e.target.value)}
+                            placeholder="Search members..."
+                            className="border rounded px-2 py-1 text-sm w-full"
+                            autoFocus
+                          />
+                        </div>
+                        <div className="max-h-40 overflow-y-auto">
+                          {teamMembers
+                            .filter(member => 
+                              member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
+                              !(selectedCard.assignedTo || []).includes(member.id)
+                            )
+                            .map(member => (
+                              <div 
+                                key={member.id}
+                                className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded cursor-pointer"
+                                onClick={() => {
+                                  const newAssignees = [...(selectedCard.assignedTo || []), member.id];
+                                  const updated = [...columns];
+                                  const { columnIndex, cardIndex } = selectedCard;
+                                  updated[columnIndex].cards[cardIndex].assignedTo = newAssignees;
+                                  setColumns(updated);
+                                  setSelectedCard({
+                                    ...selectedCard,
+                                    assignedTo: newAssignees
+                                  });
+                                  setSearchMember("");
+                                  setShowMemberSearch(false);
+                                }}
+                              >
+                                <Avatar user={member} />
+                                <span className="text-sm">{member.name}</span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               
@@ -832,7 +901,6 @@ const Kanban = () => {
                     </div>
                   ))}
                 </div>
-                
                 
                 <div className="flex items-center">
                   <input
