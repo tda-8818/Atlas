@@ -51,6 +51,7 @@ app.use('/gantt', taskRoutes);
 app.use('/settings', userRoutes);
 app.use('/home', projectRoutes);
 
+
 // Global error handler
 app.use((err, req, res, next) => {
     console.error(err.stack);

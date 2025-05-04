@@ -34,7 +34,7 @@ const Home = () => {
                 //console.log(currentUser.user._id);
                 //if (!currentUser?.user?._id) return;
                 
-                const response = await axios.get(`http://localhost:5001/Home/`, {
+                const response = await axios.get(`http://localhost:5001/home`, {
                     withCredentials: true
                 });
                 console.log("project data:", response.data);
@@ -61,52 +61,6 @@ const Home = () => {
     if (isLoading) return <div>Loading...</div>;
     if (isError) return <div>Error loading user data</div>;
 
-    // // homepage contents
-    // const [projects, setProjects] = useState([
-    //     {
-    //         title: "Creating Mobile App Design",
-    //         subtitle: "UI UX Design",
-    //         progress: 75,
-    //         daysLeft: 3,
-    //         team: ["/avatars/avatar1.png", "/avatars/avatar2.png"]
-    //     },
-    //     {
-    //         title: "Creating Perfect Website",
-    //         subtitle: "Web Developer",
-    //         progress: 85,
-    //         daysLeft: 4,
-    //         team: ["/avatars/avatar3.png", "/avatars/avatar4.png"]
-    //     },
-    //     {
-    //         title: "Building Dashboard",
-    //         subtitle: "React Developer",
-    //         progress: 60,
-    //         daysLeft: 6,
-    //         team: ["/avatars/avatar5.png", "/avatars/avatar6.png"]
-    //     },
-    //     {
-    //         title: "Design New Logo",
-    //         subtitle: "Graphic Design",
-    //         progress: 40,
-    //         daysLeft: 2,
-    //         team: ["/avatars/avatar7.png", "/avatars/avatar8.png"]
-    //     },
-    //     {
-    //         title: "Develop Landing Page",
-    //         subtitle: "Frontend Developer",
-    //         progress: 90,
-    //         daysLeft: 1,
-    //         team: ["/avatars/avatar9.png", "/avatars/avatar10.png"]
-    //     },
-    //     {
-    //         title: "Fix Website Bugs",
-    //         subtitle: "QA Engineer",
-    //         progress: 55,
-    //         daysLeft: 5,
-    //         team: ["/avatars/avatar11.png", "/avatars/avatar12.png"]
-    //     }
-    // ]);
-
     const [showModal, setShowModal] = useState(false);
     const [newProject, setNewProject] = useState({
         title: "",
@@ -115,40 +69,27 @@ const Home = () => {
     });
 
     const handleProjectClick = async (project) => {
-        /**
-         * Switches the view to the dashboard and sets the cookie for the selected project.
-         */
-        console.log("Clicked Project:", project);
-        
-        const projectId = project.id;
-        // 1. Clear the project cookie if not null. 
-        // set the current clicked project to be the new project cookie. 
-
-        // 2. selectedProject is the name of the cookie i defined in projectController.js
-        console.log(projectId);
         try {
-            const response = await axios.post("http://localhost:5001/Home", projectData, {
-              withCredentials: true
+            console.log("Clicked Project:", project);
+            const projectId = project.id;
+    
+            // Optional: keep setting the cookie if your backend relies on it
+            const response = await axios.post(`http://localhost:5001/home/${projectId}`, project, {
+                withCredentials: true
             });
-          
-            if (response.status === 201) {
-              const savedProject = response.data;
-              const createdProject = {
-                id: savedProject._id,
-                ...projectData
-              };
-              console.log("Received mongoID of project:", savedProject._id);
-              setProjects((prev) => [...prev, createdProject]);
-              setNewProject({ title: "", description: "", deadline: "" });
-              setShowModal(false);
-            } else {
-              console.warn("Unexpected response status:", response.status);
+    
+            if (response.status === 200) {
+                console.log("Project cookie set");
             }
-          } catch (error) {
-            console.error("Error creating project:", error);
-            alert("Failed to create project. Check console for details.");
-          }          
+    
+            // Redirect to project-specific dashboard
+            navigate(`/home/project/${projectId}/dashboard`);
+        } catch (error) {
+            console.error("Error in handleProjectClick:", error);
+        }
     };
+    
+
 
     const handleAddProjectClick = () => setShowModal(true);
 
@@ -170,21 +111,16 @@ const Home = () => {
             0
         );
 
-        // const projectData = {
-        //     title: newProject.title,
-        //     description: newProject.description,
-        //     progress: 0,
-        //     daysLeft,
-        //     team: ["/avatars/avatar1.png"]
-        // };
         const projectData = {
             title: newProject.title,
             description: newProject.description,
             progress: 0,
-            daysLeft
+            daysLeft,
+            team: ["/avatars/avatar1.png"]
         };
+
         // Send project object to database
-        const response = await axios.post("http://localhost:5001/Home", projectData, {
+        const response = await axios.post("http://localhost:5001/home", projectData, {
             withCredentials: true
         });
         
@@ -264,7 +200,6 @@ const Home = () => {
                             value={newProject.description}
                             onChange={handleInputChange}
                             placeholder="Description"
-                            className="w-full p-2 mb-3 border border-gray-300 rounded"
                         />
                         <input
                             type="date"

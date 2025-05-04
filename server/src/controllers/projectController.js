@@ -238,3 +238,26 @@ export const deleteProject = async (req,res) => {
         res.status(500).json({ message: "Error in deleteProject"});
     }
 }
+
+export const getProjectById = async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const project = await Project.findById(id).populate("users");
+      console.log("project found: ",project)
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+  
+      // Optionally check if user has access to this project:
+      if (!project.users.some(user => user.equals(req.user._id))) {
+        return res.status(403).json({ message: "Unauthorized access to this project" });
+      }
+  
+      res.status(200).json(project);
+    } catch (error) {
+      console.error("Error in getProjectById:", error);
+      res.status(500).json({ message: "Failed to get project", error });
+    }
+  };
+  

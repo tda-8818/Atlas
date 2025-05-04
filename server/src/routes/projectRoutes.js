@@ -1,5 +1,5 @@
 import express from 'express';
-import { createProject, selectProject, getUserProjects, deleteProject, addUserToProject} from "../controllers/projectController.js";
+import { createProject, selectProject, getUserProjects, deleteProject, addUserToProject, getProjectById} from "../controllers/projectController.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 import rateLimit from 'express-rate-limit';
 
@@ -20,6 +20,8 @@ router.post('/', authMiddleware, createProject);
 router.post('/:id', authMiddleware, selectProject);
 
 router.get('/', authMiddleware, getUserProjects);
+
+router.get('/project/:id', authMiddleware, getProjectById)
 
 router.put('/', authMiddleware, addUserToProject);
 
