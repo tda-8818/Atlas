@@ -52,8 +52,9 @@ const Kanban = () => {
   const [searchMember, setSearchMember] = useState("");
 
   // State for controlling collapsed sections in the card modal
-  const [showDescription, setShowDescription] = useState(true);
-  const [showSubtasks, setShowSubtasks] = useState(true);
+  // Set initial state to false so they are hidden by default
+  const [showDescription, setShowDescription] = useState(false);
+  const [showSubtasks, setShowSubtasks] = useState(false);
 
   // Helper function to generate IDs
   const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -437,9 +438,9 @@ const Kanban = () => {
       colTitle: columns[columnIndex].title
     });
 
-    // Set initial state of collapsed sections based on card data
-    setShowDescription(!!card.description); // Show if description exists
-    setShowSubtasks(card.subtasks && card.subtasks.length > 0); // Show if subtasks exist
+    // Set initial state of collapsed sections to false (hidden)
+    setShowDescription(false);
+    setShowSubtasks(false);
   };
 
   // Toggle section visibility functions
@@ -895,7 +896,7 @@ const Kanban = () => {
                     className="text-gray-500 hover:text-gray-700 text-xs"
                   >
                     {showSubtasks ? 'Collapse' : 'Expand'}
-                  </button>
+                   </button>
                  </div>
 
                 {showSubtasks && (
@@ -954,7 +955,9 @@ const Kanban = () => {
                 )}
               </div>
 
-              <div className="flex justify-between">
+              {/* Footer Buttons */}
+              <div className="flex justify-between items-center">
+                {/* Delete Button (Left) */}
                 <button
                   onClick={() => {
                     setConfirmDelete({
@@ -964,16 +967,28 @@ const Kanban = () => {
                     });
                     setSelectedCard(null);
                   }}
-                  className="px-4 py-2 bg-red-100 border border-red-300 text-red-700 rounded hover:bg-red-200"
+                  className="px-4 py-2 text-red-500 hover:text-red-700 rounded text-sm" // Red text, no background
                 >
-                  Delete Task
+                  Delete
                 </button>
-                <button
-                  onClick={() => setSelectedCard(null)}
-                  className="px-4 py-2 bg-blue-100 border border-blue-300 text-blue-700 rounded hover:bg-blue-200"
-                >
-                  Close
-                </button>
+
+                {/* Right Buttons (Cancel and Close) */}
+                <div className="flex">
+                  {/* Cancel Button (Left of Close) */}
+                  <button
+                    onClick={() => setSelectedCard(null)}
+                    className="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm mr-2" // White background, blue border/text
+                  >
+                    Cancel
+                  </button>
+                  {/* Close Button (Right) */}
+                  <button
+                     onClick={() => setSelectedCard(null)} // Close button
+                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm" // Blue background, white text
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
