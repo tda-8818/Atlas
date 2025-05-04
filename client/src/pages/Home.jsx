@@ -25,7 +25,7 @@ const Home = () => {
                 });
                 console.log("project data:", response.data);
 
-                if (response.status === 200 && Array.isArray(response.data)) {               
+                if (response.status === 200 && Array.isArray(response.data)) {
                     const projectJson = response.data.map((project) => ({
                         id: project._id,
                         title: project.title,
@@ -65,11 +65,33 @@ const Home = () => {
                 console.log("Project cookie set");
             }
             // Redirect to project-specific dashboard
-            navigate(`/home/project/${projectId}/dashboard`);
+            navigate(`/project/${projectId}/dashboard`);
         } catch (error) {
             console.error("Error in handleProjectClick:", error);
         }
     };
+
+    const handleDeleteProject = async (e, projectId) => {
+        e.stopPropagation(); // prevent triggering navigation
+
+        const confirmDelete = window.confirm("Are you sure you want to delete this project?");
+        if (!confirmDelete) return;
+
+        try {
+            const response = await axios.delete(`http://localhost:5001/home/${projectId}`, {
+                withCredentials: true
+            });
+
+            if (response.status === 200) {
+                setProjects((prev) => prev.filter((p) => p.id !== projectId));
+            } else {
+                alert("Failed to delete project.");
+            }
+        } catch (error) {
+            console.error("Error deleting project:", error);
+        }
+    };
+
 
     const handleAddProjectClick = () => setShowModal(true);
 
@@ -102,7 +124,7 @@ const Home = () => {
         const response = await axios.post("http://localhost:5001/home", projectData, {
             withCredentials: true
         });
-        
+
         if (response.data) {
             const savedProject = response.data;
             const createdProject = {
@@ -114,7 +136,7 @@ const Home = () => {
             setNewProject({ title: "", description: "", deadline: "" });
             setShowModal(false);
         }
-        else{
+        else {
             alert("Bad Response when creating project.")
             return;
         }
@@ -129,9 +151,20 @@ const Home = () => {
                     {projects.map((project, index) => (
                         <div
                             key={index}
+                            className="relative bg-white rounded-2xl shadow-md p-5 w-[300px] cursor-pointer hover:shadow-lg transition-shadow duration-200"
                             onClick={() => handleProjectClick(project)}
-                            className="bg-white rounded-2xl shadow-md p-5 w-[300px] cursor-pointer hover:shadow-lg transition-shadow duration-200"
                         >
+                            {/* Delete Button */}
+                            <button
+                                onClick={(e) => handleDeleteProject(e, project.id)}
+                                className="absolute p-1 top-2 right-2 text-gray-400 hover:text-red-500 z-10 cursor-pointer"
+                                title="Delete Project"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                            </button>
+
                             <div className="flex flex-col gap-3">
                                 <div>
                                     <h2 className="text-lg font-semibold text-gray-800">{project.title}</h2>
