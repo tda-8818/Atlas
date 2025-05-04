@@ -6,6 +6,10 @@ import jwt from 'jsonwebtoken';
  * WebSockets used for real time updates, collaboration and notifications.
  */
 export default class WebSocketService {
+  /**
+   * Constructor to initialize the WebSocket server.
+   * @param {http.Server} server - The HTTP server instance.
+   */
   constructor(server) {
     // Create WebSocket server
     this.wss = new WebSocketServer({  
@@ -17,7 +21,14 @@ export default class WebSocketService {
     this.setupConnectionHandlers();
   }
 
+  /**
+   * Sets up connection handlers for incoming WebSocket events.
+   * Handles authentication, connection events, and error handling.
+   */
   setupConnectionHandlers() {
+    // listens for the connection event, each time a new client connects, 
+    // The callback function receives two arguments: ws (the WebSocket connection) and req (the HTTP request)
+
     this.wss.on('connection', (ws, req) => {
       // Extract token from cookies
       const token = req.headers.cookie?.split('; ')
@@ -28,6 +39,7 @@ export default class WebSocketService {
         return ws.close(1008, 'Unauthorized');
       }
 
+      // Verify token and extract user ID
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         this.clients.set(decoded.userId, ws);
@@ -45,7 +57,13 @@ export default class WebSocketService {
       }
     });
   }
-
+   
+  /**
+   * Sends a notification to a specific user.
+   * @param {string} userId - The ID of the user to notify.
+   * @param {string} eventType - The type of event to notify about.
+   * @param {object} payload - The data to send with the notification.
+   */
   notifyUser(userId, eventType, payload) {
     const client = this.clients.get(userId.toString());
     if (client?.readyState === this.wss.OPEN) {

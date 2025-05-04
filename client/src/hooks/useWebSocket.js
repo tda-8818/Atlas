@@ -21,7 +21,7 @@ export default function useWebSocket(onMessage) {
     ws.onclose = () => {
       console.log('WebSocket disconnected');
       // Auto-reconnect after 5 seconds
-      setTimeout(connectWebSocket, 5000);
+      setTimeout(connectWebSocket, 5173);
     };
 
     ws.onerror = (error) => {

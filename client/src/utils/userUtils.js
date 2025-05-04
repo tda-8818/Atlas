@@ -8,5 +8,10 @@ export const getInitials = (firstName = '', lastName = '') => {
 // check if task is overdue
 export const isOverdue = (dueDate) => {
     return new Date(dueDate) < new Date() && !task.completed;
-  };
-  
+};
+
+export const notifyUser = (socket, eventType, payload) => {
+    if (socket?.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: eventType, data: payload }));
+    }
+};

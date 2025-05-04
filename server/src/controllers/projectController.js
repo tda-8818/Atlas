@@ -43,6 +43,7 @@ export const createProject = async (req, res) => {
 
         // create new project
         const projectData = new Project({
+            owner: user._id,
             title: title,
             description: description,
             daysLeft: daysLeft,
@@ -98,7 +99,7 @@ export const selectProject = async (req, res) => {
         const token = jwt.sign(
             { id },
             process.env.JWT_SECRET,
-            { expiresIn: '7d' }
+            { expiresIn: '1h' }
         );
 
         // 3. set http-only cookie

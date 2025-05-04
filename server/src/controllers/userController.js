@@ -128,7 +128,7 @@ export const logout = (req, res) => {
     res.clearCookie('token', {
       httpOnly: true,
       secure: 'lax',
-      sameSite: 'strict',
+      sameSite: 'none',
       path: '/'
     });
     console.log('User logged out, cookie cleared');
