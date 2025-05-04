@@ -4,6 +4,7 @@ import ProjectHeader from "../components/ProjectHeader";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import DeleteTaskPopup from '../components/DeleteTaskPopup';
 import AddTaskPopup from '../components/AddTaskPopup-1';
+import { useOutletContext } from "react-router-dom";
 
 // Sample team members data
 const teamMembers = [
@@ -109,6 +110,8 @@ const Kanban = () => {
 
   // Ref for the card detail modal content
   const cardModalRef = useRef(null);
+
+  const { currentProject } = useOutletContext();
 
   // Effect to handle click outside and keydown for the card detail modal
   useEffect(() => {
@@ -626,7 +629,7 @@ const Kanban = () => {
     <div>
       <Navbar />
       <div className="ml-[15%] w-[85%] h-[9vh]">
-        <ProjectHeader title="Kanban Board" />
+        <ProjectHeader project={currentProject} />
       </div>
       <div className="p-4 font-sans ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
         {/* Kanban Board (Main DragDropContext) */}
