@@ -2,25 +2,14 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { useGetCurrentUserQuery } from '../redux/slices/apiSlice';
 import axios from "axios";
-import { retry } from "@reduxjs/toolkit/query";
 import { useNavigate } from "react-router-dom";
-
 
 const Home = () => {
 
     const navigate = useNavigate();
 
     // homepage contents
-    const [projects, setProjects] = useState([
-        // STATIC PROJECT CARD: NOT RENDERED FROM DATABASE
-        // {
-        //     title: "Creating Mobile App Design",
-        //     description: "UI UX Design",
-        //     progress: 75,
-        //     daysLeft: 3,
-        //     team: ["/avatars/avatar1.png", "/avatars/avatar2.png"]
-        // },
-    ]);
+    const [projects, setProjects] = useState([]);
 
     // Get current user's first name to display on homepage
     const [firstName, setFirstName] = useState('');
@@ -31,9 +20,6 @@ const Home = () => {
         const getUserProjects = async () => {
             try {
                 console.log("cast on load");
-                //console.log(currentUser.user._id);
-                //if (!currentUser?.user?._id) return;
-                
                 const response = await axios.get(`http://localhost:5001/home`, {
                     withCredentials: true
                 });
@@ -72,24 +58,18 @@ const Home = () => {
         try {
             console.log("Clicked Project:", project);
             const projectId = project.id;
-    
-            // Optional: keep setting the cookie if your backend relies on it
             const response = await axios.post(`http://localhost:5001/home/${projectId}`, project, {
                 withCredentials: true
             });
-    
             if (response.status === 200) {
                 console.log("Project cookie set");
             }
-    
             // Redirect to project-specific dashboard
             navigate(`/home/project/${projectId}/dashboard`);
         } catch (error) {
             console.error("Error in handleProjectClick:", error);
         }
     };
-    
-
 
     const handleAddProjectClick = () => setShowModal(true);
 
@@ -119,7 +99,6 @@ const Home = () => {
             team: ["/avatars/avatar1.png"]
         };
 
-        // Send project object to database
         const response = await axios.post("http://localhost:5001/home", projectData, {
             withCredentials: true
         });
@@ -130,7 +109,7 @@ const Home = () => {
                 id: savedProject._id,
                 ...projectData
             }
-            console.log("Recieved mongoID of project:", savedProject._id);
+            console.log("Received mongoID of project:", savedProject._id);
             setProjects((prev) => [...prev, createdProject]);
             setNewProject({ title: "", description: "", deadline: "" });
             setShowModal(false);
@@ -139,7 +118,6 @@ const Home = () => {
             alert("Bad Response when creating project.")
             return;
         }
-
     };
 
     return (
@@ -149,33 +127,58 @@ const Home = () => {
                 <h1 className="text-3xl font-bold mb-8 text-[var(--text)]">Projects</h1>
                 <div className="flex flex-wrap gap-5">
                     {projects.map((project, index) => (
-                        <div className="card" key={index} onClick={() => handleProjectClick(project)}> 
-                            <div className="card-body">
-                                <h2 className="card-title">{project.title}</h2>
-                                <p className="card-description">{project.description}</p>
-                                <div className="progress-section">
-                                    <div className="progress-text">Progress</div>
-                                    <div className="progress-value">{project.progress}%</div>
-                                    <div className="progress-bar">
+                        <div
+                            key={index}
+                            onClick={() => handleProjectClick(project)}
+                            className="bg-white rounded-2xl shadow-md p-5 w-[300px] cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                        >
+                            <div className="flex flex-col gap-3">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-800">{project.title}</h2>
+                                    <p className="text-sm text-gray-500 mt-1">{project.description}</p>
+                                </div>
+
+                                <div>
+                                    <div className="flex justify-between items-center text-sm text-gray-600 mb-1">
+                                        <span>Progress</span>
+                                        <span>{project.progress}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                                         <div
-                                            className="progress-fill"
+                                            className="bg-[#5b5fc7] h-2 rounded-full"
                                             style={{ width: `${project.progress}%` }}
                                         ></div>
                                     </div>
                                 </div>
-                                <div className="flex justify-between items-center text-xs text-gray-600">
-                                    <div><i className="far fa-clock mr-1"></i>{project.daysLeft} Days Left</div>
-                                    
+
+                                <div className="flex justify-between items-center text-xs text-gray-500 mt-3">
+                                    <div className="flex items-center gap-1">
+                                        <i className="far fa-clock"></i>
+                                        <span>{project.daysLeft} Days Left</span>
+                                    </div>
+                                    <div className="flex -space-x-2">
+                                        {project.team.map((avatar, i) => (
+                                            <img
+                                                key={i}
+                                                src={avatar}
+                                                alt="team"
+                                                className="w-6 h-6 rounded-full border-2 border-white"
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     ))}
 
                     {/* Add Project Card */}
-                    <div onClick={handleAddProjectClick} className="bg-background border-2 border-dashed border-gray-300 rounded-2xl w-[300px] min-h-[200px] flex justify-center items-center cursor-pointer hover:bg-nav-hover transition-all">
-                        <div className="flex flex-col items-center">
+                    <div
+                        onClick={handleAddProjectClick}
+                        className="bg-white border-2 border-dashed border-gray-300 rounded-2xl w-[300px] h-[200px] flex justify-center items-center cursor-pointer hover:border-[#5b5fc7] hover:bg-gray-50 transition-all"
+                    >
+                        <div className="flex flex-col items-center text-gray-500">
                             <div className="text-[40px] font-bold text-[#5b5fc7]">+</div>
-                            <div className="mt-2 text-base text-gray-600">Add Project</div>
+                            <div className="mt-2 text-base">New Project</div>
                         </div>
                     </div>
                 </div>

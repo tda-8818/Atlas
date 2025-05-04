@@ -53,7 +53,7 @@ function App() {
         </Route>
 
         {/* Project Routes */}
-        <Route path="/project/:id" element={<ProjectLayout />}>
+        <Route path="/home/project/:id" element={<ProjectLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="kanban" element={<Kanban />} />
           <Route path="calendar" element={<Calendar />} />

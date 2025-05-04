@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import StatBox from '../components/StatBox';
 import ProjectHeader from '../components/ProjectHeader';
+import { useOutletContext } from 'react-router-dom';
 
 const Dashboard = () => {
   // Dummy data for "Your Tasks"
@@ -19,11 +20,14 @@ const Dashboard = () => {
     { id: 3, name: "Alice Johnson", role: "Designer" },
   ];
   //function for fetching users in a project here
+
+const { currentProject } = useOutletContext();
+
   return (
     <>
       <Navbar />
       <div className="ml-[15%] w-[85%] min-h-screen bg-[var(--background-primary)]">
-        <ProjectHeader title="Home" />
+        <ProjectHeader project={currentProject} />
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 auto-rows-fr">
           {/* Top Stats (tasks complete, overdue and in progress) */}
