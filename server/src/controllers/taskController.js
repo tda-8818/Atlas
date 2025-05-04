@@ -4,15 +4,19 @@ import { selectProject } from './projectController.js';
 
 export const getTask = async (req, res) => {
     try {
-        const tasks = await Task.find(); // or filter by project/user/etc
+        const tasks = await Task.find().populate('assignedTo', 'name').populate('projectId', 'name');
 
         const calendarEvents = tasks.map(task => ({
             id: task._id,
             title: task.title,
             start: task.startDate,
             end: task.dueDate,
-            allDay: true, // optional: assume all tasks span full days
+            allDay: true,
             description: task.description,
+            status: task.status,
+            priority: task.priority,
+            assignedTo: task.assignedTo.map(user => user.name).join(', '),
+            projectName: task.projectId?.name || "Unassigned"
         }));
 
         res.status(200).json(calendarEvents);
@@ -20,6 +24,7 @@ export const getTask = async (req, res) => {
         res.status(500).json({ message: 'Error fetching tasks', error });
     }
 };
+
 
 export const createEvent = async (req, res) => {
     try {
