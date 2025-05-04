@@ -63,7 +63,7 @@ const CalendarComp = ({ project }) => {
       //ROUTING ISSUE EXISTS
       const response = await axios.post(`http://localhost:5001/calendar`, newEvent, {
         withCredentials: true
-      });
+      }, { withCredentials: true });
       if (response.data) {
         const savedTask = response.data;
         console.log("Task created:", savedTask);

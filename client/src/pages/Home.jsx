@@ -126,10 +126,9 @@ const Home = () => {
             team: ["/avatars/avatar1.png"]
         };
 
-        const response = await axios.post("http://localhost:5001/home", projectData, {
-            withCredentials: true
-        });
-
+        // Send project object to database
+        const response = await axios.post("http://localhost:5001/home", projectData, { withCredentials: true });
+        
         if (response.data) {
             const savedProject = response.data;
             const createdProject = {

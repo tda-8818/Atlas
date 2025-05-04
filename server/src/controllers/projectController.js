@@ -9,34 +9,34 @@ const cookieOptions = {
     domain: 'localhost', // Explicitly set domain
     path: '/', // Root path
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-  };
+};
 
+// This function creates a new project and associates it with the user who created it
 export const createProject = async (req, res) => {
     try {
         console.log("create project executed");
 
-        const {title, description, daysLeft} = req.body;
+        const { title, description, daysLeft } = req.body;
         console.log("Received Data:", req.body);
 
         // grab the email of the user who created the project
         console.log("Authenticated user in createProject:", req.user);
 
         // check if user exists
-        if (!req.user)
-        {
-            console.error({message: "token user undefined"});
+        if (!req.user) {
+            console.error({ message: "token user undefined" });
             return;
-        }  
+        }
 
         // get userId
         const userCreator = req.user.email
         console.log("Project created by: ", userCreator);
-        
+
         // fetch user from DB
-        const user = await UserModel.findOne({email: userCreator});
+        const user = await UserModel.findOne({ email: userCreator });
 
         if (!user) {
-            return res.status(400).json({message: "user not found in database."});
+            return res.status(400).json({ message: "user not found in database." });
         }
 
         console.log("MongoId of user is:", user._id);
@@ -64,10 +64,11 @@ export const createProject = async (req, res) => {
 
     } catch (error) {
         console.error("Error creating project", error);
-        res.status(500).json({message: "Error creating project.", error});
+        res.status(500).json({ message: "Error creating project.", error });
     }
 }
 
+// This function selects a project from the homepage and sets it as the current project in a cookie
 export const selectProject = async (req, res) => {
     /*
     Selecting a project in from the homepage directs a user to the dashboard
@@ -75,42 +76,47 @@ export const selectProject = async (req, res) => {
     ONLY ONE PROJECT SHOULD BE STORED IN THE COOKIE
     */
     try {
-        
-        const {id} = req.body;
-        
-        console.log("recieved projectId:", id);
-
-        // 1. Check if project is valid in DB
-        const existingProject = await Project.findById(id);
-
-        // testing logs
-        console.log("found project:", existingProject);
-
-        if (!existingProject){
-            return res.status(400).json({
-                message: "Project data not found"
-            })
-        }
-
-        // 1.5 clear existing project cookie
-        res.clearCookie("selectedProject");
-
-        // 2. generate token
-        const token = jwt.sign(
-            { id },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
-
-        // 3. set http-only cookie
+        const tokenPayload = { projectId: id };
+         // 2. generate token
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.cookie('selectedProject', token, cookieOptions);
 
-        // 4. send response
-        res.status(200).json({
-            success: true,
-            message: 'Project selected successfully',
-          });
-          
+        // const { projectId: id } = req.body;
+
+        console.log("recieved projectId:", id);
+
+
+        // // 1. Check if project is valid in DB
+        // const existingProject = await Project.findById(projectId);
+
+        // // testing logs
+        // console.log("found project:", existingProject);
+
+        // if (!existingProject) {
+        //     return res.status(400).json({
+        //         message: "Project data not found"
+        //     })
+        // }
+
+        // // 1.5 clear existing project cookie
+        // res.clearCookie("selectedProject");
+
+       
+        // const token = jwt.sign(
+        //     { id },
+        //     process.env.JWT_SECRET,
+        //     { expiresIn: '1h' }
+        // );
+
+        // // 3. set http-only cookie
+        // res.cookie('selectedProject', token, cookieOptions);
+
+        // // 4. send response
+        // res.status(200).json({
+        //     success: true,
+        //     message: 'Project selected successfully',
+        // });
+
 
     } catch (error) {
         res.status(400).json({
@@ -128,15 +134,15 @@ export const getUserProjects = async (req, res) => {
     try {
 
         console.log("getUserProjects Executed");
-        
+
         // receive user cookie
         const userCookie = req.user;
 
         console.log("userId", userCookie);
-        
+
         // get user from database
         if (!req.user) {
-            console.error({message: "token user undefined"});
+            console.error({ message: "token user undefined" });
             return;
         }
 
@@ -150,7 +156,7 @@ export const getUserProjects = async (req, res) => {
 
     } catch (error) {
         console.error("Error in getUserProjects:", error);
-        res.status(500).json({ success: false, message: error.message});
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -164,41 +170,41 @@ export const addUserToProject = async (req, res) => {
 
         // 2. fetch user from database
         // May need to force toLowerCase() if not done on the front-end
-        const userToAdd = await UserModel.findOne({email});
+        const userToAdd = await UserModel.findOne({ email });
 
         console.log(userToAdd);
 
         // 3. Check if user exists
         if (!userToAdd) {
-            console.error({message: "Unable to add user to project. User not found"})
-            return res.status(404).json({message: "User not found when adding to project."});
+            console.error({ message: "Unable to add user to project. User not found" })
+            return res.status(404).json({ message: "User not found when adding to project." });
         }
-        
+
         // 4. Get projectId from selectedProject token.
         const selectedProject = req.cookies?.selectedProject;
         console.log("Selected project from cookie:", selectedProject);
 
         // 5. Check if projectId is valid
         if (!selectedProject) {
-            console.error({message: "Error selected project not found"})
-            return res.status(404).json({message: "selectedProject token not found"});
-        }   
+            console.error({ message: "Error selected project not found" })
+            return res.status(404).json({ message: "selectedProject token not found" });
+        }
 
         // 6. Fetch the project from the database
         const project = await Project.findById(selectedProject);
 
         // 6.5 Check if project is null
         if (!project) {
-            return res.status(404).json({message: "Project not found"});
+            return res.status(404).json({ message: "Project not found" });
         }
 
         // 7. add the user to project's list of users and vice-versa
         // Make sure to check that you're not adding duplicate copies of projects/users to each other.
-        if (!project.users.includes(userToAdd._id)){
+        if (!project.users.includes(userToAdd._id)) {
             project.users.push(userToAdd._id);
         }
-        
-        if (!userToAdd.projects.includes(project._id)){
+
+        if (!userToAdd.projects.includes(project._id)) {
             userToAdd.projects.push(project._id)
         }
 
@@ -206,13 +212,13 @@ export const addUserToProject = async (req, res) => {
         await project.save();
         await userToAdd.save();
 
-        return res.status(200).json({message: "User added to project successfully"});
+        return res.status(200).json({ message: "User added to project successfully" });
     } catch (error) {
-        console.error("Error in addUserToProject in projectController.js:", error); 
+        console.error("Error in addUserToProject in projectController.js:", error);
     }
 }
 
-export const deleteProject = async (req,res) => {
+export const deleteProject = async (req, res) => {
     /**Deletes a project
      * After deletion, it should clear the project from any instance in
      * other components such as the UserModel.
@@ -221,7 +227,7 @@ export const deleteProject = async (req,res) => {
      */
     try {
         const { id } = req.params
-        
+
         console.log('deleteProject has been executed');
 
         console.log("recieved token: ", req.user);
@@ -229,14 +235,14 @@ export const deleteProject = async (req,res) => {
         console.log(email);
 
         const projectToDelete = await Project.findByIdAndDelete(id);
-        
+
         if (!projectToDelete) {
-            return res.status(404).json({ message: "Project not found"});
+            return res.status(404).json({ message: "Project not found" });
         }
-        res.status(200).json({ message: "Project deleted successfully", task_to_delete})
+        res.status(200).json({ message: "Project deleted successfully", task_to_delete })
     } catch (error) {
         console.error("Error in deleteProject: ", error);
-        res.status(500).json({ message: "Error in deleteProject"});
+        res.status(500).json({ message: "Error in deleteProject" });
     }
 }
 
