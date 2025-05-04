@@ -1,11 +1,11 @@
 import React, { useState, useRef } from "react";
-import Navbar from "../components/Navbar"; 
+import Navbar from "../components/Navbar";
 import ProjectHeader from "../components/ProjectHeader";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import DeleteTaskPopup from '../components/DeleteTaskPopup';
 import AddTaskPopup from '../components/AddTaskPopup-1';
 
-// Sample team members data 
+// Sample team members data
 const teamMembers = [
   { id: "user-1", name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", initials: "AJ" },
   { id: "user-2", name: "Sarah Wilson", avatar: "https://i.pravatar.cc/150?img=2", initials: "SW" },
@@ -19,16 +19,17 @@ const defaultColumns = [
     id: "column-1",
     title: "Tasks",
     cards: [
-      { 
-        id: "card-1", 
-        title: "Example Task", 
+      {
+        id: "card-1",
+        title: "Example Task",
         tag: "Design",
         dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(), // 7 days from now
-        assignedTo: ["user-1"], // Changed to array for multiple assignments 
-        description: "",
+        assignedTo: ["user-1"], // Changed to array for multiple assignments
+        description: "This is an example task description.",
         subtasks: [
           { id: "subtask-1", title: "Research component libraries", completed: false },
-        ] 
+          { id: "subtask-2", title: "Sketch initial UI", completed: true },
+        ]
       }
     ]
   }
@@ -41,18 +42,18 @@ const Kanban = () => {
   const [selectedCard, setSelectedCard] = useState(null);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
-  
+
   // Add states for column editing
   const [editingColumnIndex, setEditingColumnIndex] = useState(null);
   const [editColumnName, setEditColumnName] = useState("");
-  
+
   // Add these missing state variables
   const [showMemberSearch, setShowMemberSearch] = useState(false);
   const [searchMember, setSearchMember] = useState("");
-  
-  // Additional state for controlling collapsed sections
-  const [showDescription, setShowDescription] = useState(false);
-  const [showSubtasks, setShowSubtasks] = useState(false);
+
+  // State for controlling collapsed sections in the card modal
+  const [showDescription, setShowDescription] = useState(true);
+  const [showSubtasks, setShowSubtasks] = useState(true);
 
   // Helper function to generate IDs
   const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -90,16 +91,16 @@ const Kanban = () => {
   // Get the emergency level based on due date
   const getEmergencyLevel = (dueDate) => {
     if (!dueDate) return "none";
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Set to start of day for proper comparison
-    
+
     const due = new Date(dueDate);
     due.setHours(0, 0, 0, 0); // Set to start of day for proper comparison
-    
+
     const diffTime = due - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays < 0) return "overdue";
     if (diffDays === 0) return "today";
     if (diffDays <= 2) return "high";
@@ -119,10 +120,10 @@ const Kanban = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     });
   };
 
@@ -130,10 +131,10 @@ const Kanban = () => {
     if (!newColumnName.trim()) return;
     setColumns([
       ...columns,
-      { 
-        id: generateId("column"), 
-        title: newColumnName, 
-        cards: [] 
+      {
+        id: generateId("column"),
+        title: newColumnName,
+        cards: []
       }
     ]);
     setNewColumnName("");
@@ -141,7 +142,7 @@ const Kanban = () => {
 
   const addCard = (columnIndex, cardData) => {
     if (columnIndex < 0 || columnIndex >= columns.length) return;
-    
+
     const updated = [...columns];
     updated[columnIndex].cards.push({
       id: generateId("card"),
@@ -158,7 +159,7 @@ const Kanban = () => {
 
   const confirmDeleteColumn = (columnIndex) => {
     if (columnIndex < 0 || columnIndex >= columns.length) return;
-    
+
     setConfirmDelete({
       type: 'column',
       index: columnIndex
@@ -168,10 +169,10 @@ const Kanban = () => {
   const deleteColumn = () => {
     if (!confirmDelete || confirmDelete.type !== 'column') return;
     if (columns.length <= 1) return; // Prevent deleting if it's the only column
-    
+
     const columnIndex = confirmDelete.index;
     if (columnIndex < 0 || columnIndex >= columns.length) return;
-    
+
     const updated = [...columns];
     updated.splice(columnIndex, 1);
     setColumns(updated);
@@ -182,30 +183,30 @@ const Kanban = () => {
     if (e && e.stopPropagation) {
       e.stopPropagation();
     }
-    
+
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-    
+
     const updated = [...columns];
     updated[columnIndex].cards.splice(cardIndex, 1);
     setColumns(updated);
-    
+
     // Close any open modals
     setSelectedCard(null);
     setConfirmDelete(null);
   };
-  
+
   const handleUpdateCardTitle = (title) => {
     if (!selectedCard) return;
-    
+
     const { columnIndex, cardIndex } = selectedCard;
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-    
+
     const updated = [...columns];
     updated[columnIndex].cards[cardIndex].title = title;
     setColumns(updated);
-    
+
     // Update the selected card to reflect changes
     setSelectedCard({
       ...selectedCard,
@@ -215,55 +216,55 @@ const Kanban = () => {
 
   const addSubtask = () => {
     if (!newSubtaskTitle.trim() || !selectedCard) return;
-    
+
     const { columnIndex, cardIndex } = selectedCard;
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-    
+
     const updated = [...columns];
-    
+
     // Create a new subtask object
     const newSubtask = {
       id: generateId("subtask"),
       title: newSubtaskTitle,
       completed: false
     };
-    
+
     // Add it to the data
     updated[columnIndex].cards[cardIndex].subtasks.push(newSubtask);
-    
+
     // Update the columns state
     setColumns(updated);
-    
+
     // Get the updated card with the new subtask array directly from the updated state
     const updatedCard = updated[columnIndex].cards[cardIndex];
-    
+
     // Update the selected card with the same subtasks array from the updated state
     setSelectedCard({
       ...selectedCard,
       subtasks: [...updatedCard.subtasks]
     });
-    
+
     // Clear the input field
     setNewSubtaskTitle("");
   };
 
   const toggleSubtask = (subtaskIndex) => {
     if (!selectedCard) return;
-  
+
     const { columnIndex, cardIndex } = selectedCard;
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-  
+
     const updated = [...columns];
     const subtasks = updated[columnIndex].cards[cardIndex].subtasks;
     if (subtaskIndex >= 0 && subtaskIndex < subtasks.length) {
       subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
     }
-  
+
     // Update the columns state
     setColumns(updated);
-  
+
     // Ensure the selected card is updated with the latest subtasks array
     const updatedCard = updated[columnIndex].cards[cardIndex];
     setSelectedCard({
@@ -271,27 +272,27 @@ const Kanban = () => {
       subtasks: [...updatedCard.subtasks]
     });
   };
-  
+
 
   const deleteSubtask = (subtaskIndex) => {
     if (!selectedCard) return;
-    
+
     const { columnIndex, cardIndex } = selectedCard;
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-    
+
     const updated = [...columns];
-    
+
     const subtasks = updated[columnIndex].cards[cardIndex].subtasks;
     if (subtaskIndex < 0 || subtaskIndex >= subtasks.length) return;
-    
+
     updated[columnIndex].cards[cardIndex].subtasks.splice(subtaskIndex, 1);
     setColumns(updated);
-    
+
     // Update the selected card to reflect changes
     const updatedSubtasks = [...selectedCard.subtasks];
     updatedSubtasks.splice(subtaskIndex, 1);
-    
+
     setSelectedCard({
       ...selectedCard,
       subtasks: updatedSubtasks
@@ -300,15 +301,15 @@ const Kanban = () => {
 
   const handleUpdateCardDescription = (description) => {
     if (!selectedCard) return;
-    
+
     const { columnIndex, cardIndex } = selectedCard;
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-    
+
     const updated = [...columns];
     updated[columnIndex].cards[cardIndex].description = description;
     setColumns(updated);
-    
+
     // Update the selected card to reflect changes
     setSelectedCard({
       ...selectedCard,
@@ -318,15 +319,15 @@ const Kanban = () => {
 
   const handleUpdateDueDate = (dueDate) => {
     if (!selectedCard) return;
-    
+
     const { columnIndex, cardIndex } = selectedCard;
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-    
+
     const updated = [...columns];
     updated[columnIndex].cards[cardIndex].dueDate = dueDate;
     setColumns(updated);
-    
+
     // Update the selected card to reflect changes
     setSelectedCard({
       ...selectedCard,
@@ -337,23 +338,23 @@ const Kanban = () => {
   // Updated to handle multiple user assignments
   const toggleUserAssignment = (userId) => {
     if (!selectedCard) return;
-    
+
     const { columnIndex, cardIndex } = selectedCard;
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-    
+
     const updated = [...columns];
-    
+
     const currentAssignees = updated[columnIndex].cards[cardIndex].assignedTo || [];
-    
+
     // If user is already assigned, remove them, otherwise add them
     const newAssignees = currentAssignees.includes(userId)
       ? currentAssignees.filter(id => id !== userId)
       : [...currentAssignees, userId];
-    
+
     updated[columnIndex].cards[cardIndex].assignedTo = newAssignees;
     setColumns(updated);
-    
+
     // Update the selected card to reflect changes
     setSelectedCard({
       ...selectedCard,
@@ -387,16 +388,16 @@ const Kanban = () => {
       const columnIndex = columnsCopy.findIndex(
         col => col.id === source.droppableId
       );
-      
+
       if (columnIndex < 0) return;
-      
+
       const column = columnsCopy[columnIndex];
       const cards = Array.from(column.cards);
       const [removed] = cards.splice(source.index, 1);
       cards.splice(destination.index, 0, removed);
-      
+
       columnsCopy[columnIndex].cards = cards;
-      
+
     } else {
       // Moving from one column to another
       const sourceColumnIndex = columnsCopy.findIndex(
@@ -405,29 +406,29 @@ const Kanban = () => {
       const destColumnIndex = columnsCopy.findIndex(
         col => col.id === destination.droppableId
       );
-      
+
       if (sourceColumnIndex < 0 || destColumnIndex < 0) return;
-      
+
       const sourceColumn = columnsCopy[sourceColumnIndex];
       const destColumn = columnsCopy[destColumnIndex];
-      
+
       const sourceCards = Array.from(sourceColumn.cards);
       const destCards = Array.from(destColumn.cards);
-      
+
       const [removed] = sourceCards.splice(source.index, 1);
       destCards.splice(destination.index, 0, removed);
-      
+
       columnsCopy[sourceColumnIndex].cards = sourceCards;
       columnsCopy[destColumnIndex].cards = destCards;
     }
-    
+
     setColumns(columnsCopy);
   };
 
   const openCardDetails = (columnIndex, cardIndex) => {
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-    
+
     const card = columns[columnIndex].cards[cardIndex];
     setSelectedCard({
       ...card,
@@ -435,20 +436,29 @@ const Kanban = () => {
       cardIndex,
       colTitle: columns[columnIndex].title
     });
-    
-    // Reset collapsed sections state when opening a new card
-    setShowDescription(false);
-    setShowSubtasks(false);
+
+    // Set initial state of collapsed sections based on card data
+    setShowDescription(!!card.description); // Show if description exists
+    setShowSubtasks(card.subtasks && card.subtasks.length > 0); // Show if subtasks exist
+  };
+
+  // Toggle section visibility functions
+  const toggleDescriptionSection = () => {
+    setShowDescription(!showDescription);
+  };
+
+  const toggleSubtasksSection = () => {
+    setShowSubtasks(!showSubtasks);
   };
 
   // Multi-avatar component that shows up to 3 avatars + count for extras
   const MultiAvatar = ({ assignedUsers }) => {
     if (!assignedUsers || assignedUsers.length === 0) return null;
-    
+
     const users = assignedUsers.map(id => getTeamMember(id)).filter(Boolean);
     const displayUsers = users.slice(0, 3); // Show up to 3 avatars
     const extraCount = users.length - displayUsers.length;
-    
+
     return (
       <div className="flex -space-x-2 items-center">
         {displayUsers.map((user, index) => (
@@ -468,15 +478,15 @@ const Kanban = () => {
   // Avatar component with fallback to initials
   const Avatar = ({ user, size = "small" }) => {
     if (!user) return null;
-    
+
     const sizeClass = size === "small" ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm";
-    
+
     return (
       <div className={`relative rounded-full overflow-hidden ${sizeClass} flex items-center justify-center`}>
         {user.avatar ? (
-          <img 
-            src={user.avatar} 
-            alt={user.name} 
+          <img
+            src={user.avatar}
+            alt={user.name}
             className="w-full h-full object-cover"
             onError={(e) => {
               e.target.style.display = 'none';
@@ -484,7 +494,7 @@ const Kanban = () => {
             }}
           />
         ) : null}
-        <div 
+        <div
           className={`absolute inset-0 bg-blue-500 text-white flex items-center justify-center ${user.avatar ? 'hidden' : ''}`}
           style={{ backgroundColor: stringToColor(user.name) }}
         >
@@ -497,7 +507,7 @@ const Kanban = () => {
   // Generate a color based on a string (name)
   const stringToColor = (str) => {
     if (!str) return '#000000';
-    
+
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -521,19 +531,19 @@ const Kanban = () => {
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="all-columns" direction="horizontal" type="column">
             {(provided) => (
-              <div 
+              <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
                 className="flex flex-row overflow-x-auto pb-4"
-                style={{ 
+                style={{
                   overflowX: 'auto',
                   paddingBottom: '16px'
                 }}
               >
                 {columns.map((column, columnIndex) => (
-                  <Draggable 
-                    key={column.id} 
-                    draggableId={column.id} 
+                  <Draggable
+                    key={column.id}
+                    draggableId={column.id}
                     index={columnIndex}
                   >
                     {(provided) => (
@@ -549,7 +559,7 @@ const Kanban = () => {
                         }}
                       >
                         {/* Column Header */}
-                        <div 
+                        <div
                           {...provided.dragHandleProps}
                           className="flex justify-between items-center mb-3 p-2 bg-[var(--background-secondary)] rounded-t"
                         >
@@ -565,17 +575,17 @@ const Kanban = () => {
                               />
                             </div>
                           ) : (
-                            <h2 
+                            <h2
                               className="font-bold text-[var(--text)] text-sm uppercase cursor-pointer hover:text-blue-600"
                               onDoubleClick={() => startEditingColumnName(columnIndex)}
                             >
                               {column.title} ({column.cards.length})
                             </h2>
                           )}
-                          
+
                           {editingColumnIndex !== columnIndex && (
-                            <button 
-                              onClick={() => confirmDeleteColumn(columnIndex)} 
+                            <button
+                              onClick={() => confirmDeleteColumn(columnIndex)}
                               className="text-gray-400 hover:text-red-500 transition-colors"
                               disabled={columns.length <= 1}
                             >
@@ -622,14 +632,14 @@ const Kanban = () => {
                                           <div className="text-sm font-medium">{card.title}</div>
                                         </div>
                                       </div>
-                                      
+
                                       {card.description && (
                                         <div className="text-xs text-gray-600 mb-2 truncate">
                                           {card.description.substring(0, 60)}
                                           {card.description.length > 60 ? "..." : ""}
                                         </div>
                                       )}
-                                      
+
                                       <div className="flex justify-between items-center mt-auto pt-2">
                                         {/* Due Date on the left */}
                                         {card.dueDate && (
@@ -644,7 +654,7 @@ const Kanban = () => {
                                             )}
                                           </div>
                                         )}
-                                        
+
                                         {/* Assigned User Avatars on the right */}
                                         <div className="flex items-center ml-auto">
                                           {card.assignedTo && card.assignedTo.length > 0 && (
@@ -663,7 +673,7 @@ const Kanban = () => {
                                           )}
                                         </div>
                                       </div>
-                                      
+
                                       <button
                                         onClick={(e) => deleteCard(columnIndex, cardIndex, e)}
                                         className="absolute top-1 right-1 text-gray-400 hover:text-red-500 transition-colors"
@@ -683,9 +693,9 @@ const Kanban = () => {
 
                         {/* Add Card UI */}
                         {showCardInput === columnIndex ? (
-                          <AddTaskPopup 
-                            onAdd={(cardData) => addCard(columnIndex, cardData)} 
-                            onCancel={() => setShowCardInput(null)} 
+                          <AddTaskPopup
+                            onAdd={(cardData) => addCard(columnIndex, cardData)}
+                            onCancel={() => setShowCardInput(null)}
                           />
                         ) : (
                           <button
@@ -727,6 +737,7 @@ const Kanban = () => {
           </Droppable>
         </DragDropContext>
 
+
         {/* Card Detail Modal */}
         {selectedCard && (
           <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
@@ -747,7 +758,7 @@ const Kanban = () => {
                   </div>
                 )}
               </div>
-              
+
               {/* Rearranged: Due Date on left, Assignment on right */}
               <div className="mb-4 flex items-start justify-between">
                 <div className="w-1/2">
@@ -766,7 +777,7 @@ const Kanban = () => {
                     )}
                   </div>
                 </div>
-                
+
                 {/* Assignment Section - Multiple with search */}
                 <div className="w-1/2">
                   <h3 className="text-sm font-semibold mb-2">Assigned To</h3>
@@ -775,7 +786,7 @@ const Kanban = () => {
                     {selectedCard.assignedTo && selectedCard.assignedTo.map(userId => (
                       <div key={userId} className="flex items-center bg-gray-50 rounded-full border border-gray-200 p-1">
                         <Avatar user={getTeamMember(userId)} />
-                        <button 
+                        <button
                           onClick={() => {
                             const newAssignees = selectedCard.assignedTo.filter(id => id !== userId);
                             const updated = [...columns];
@@ -795,9 +806,9 @@ const Kanban = () => {
                         </button>
                       </div>
                     ))}
-                    
+
                     {/* Add member button */}
-                    <div 
+                    <div
                       className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300"
                       onClick={() => setShowMemberSearch(!showMemberSearch)}
                     >
@@ -805,7 +816,7 @@ const Kanban = () => {
                         <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    
+
                     {/* Member search panel */}
                     {showMemberSearch && (
                       <div className="absolute mt-24 bg-white shadow-lg rounded p-2 border">
@@ -821,12 +832,12 @@ const Kanban = () => {
                         </div>
                         <div className="max-h-40 overflow-y-auto">
                           {teamMembers
-                            .filter(member => 
+                            .filter(member =>
                               member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
                               !(selectedCard.assignedTo || []).includes(member.id)
                             )
                             .map(member => (
-                              <div 
+                              <div
                                 key={member.id}
                                 className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded cursor-pointer"
                                 onClick={() => {
@@ -853,72 +864,96 @@ const Kanban = () => {
                   </div>
                 </div>
               </div>
-              
+
+              {/* Description Section */}
               <div className="mb-4">
-                <h3 className="text-sm font-semibold mb-2">Description</h3>
-                <textarea
-                  value={selectedCard.description || ""}
-                  onChange={(e) => handleUpdateCardDescription(e.target.value)}
-                  placeholder="Add a more detailed description..."
-                  className="w-full border rounded p-2 text-sm min-h-[80px]"
-                />
-              </div>
-              
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold mb-2">Subtasks ({selectedCard.subtasks?.filter(st => st.completed).length || 0}/{selectedCard.subtasks?.length || 0})</h3>
-                
-                <div className="space-y-2 mb-3">
-                  {selectedCard.subtasks?.map((subtask, index) => (
-                    <div key={subtask.id} className="flex items-center bg-gray-50 p-2 rounded group">
-                      {/* Improved checkbox button with better visibility for the checkmark */}
-                      <button
-                        onClick={() => toggleSubtask(index)}
-                        className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
-                        style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
-                      >
-                        {subtask.completed && (
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </button>
-                      
-                      <span 
-                        onClick={() => toggleSubtask(index)}
-                        className={`text-sm flex-1 cursor-pointer ${subtask.completed ? "line-through text-gray-400" : ""}`}
-                      >
-                        {subtask.title}
-                      </span>
-                      
-                      <button
-                        onClick={() => deleteSubtask(index)}
-                        className="text-gray-400 hover:text-red-500 text-xs"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="flex items-center">
-                  <input
-                    value={newSubtaskTitle}
-                    onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                    placeholder="Add a subtask..."
-                    className="flex-1 border rounded px-2 py-1 text-sm"
-                  />
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold">Description</h3>
                   <button
-                    onClick={addSubtask}
-                    className="ml-2 bg-blue-100 border border-blue-300 px-3 py-1 rounded text-blue-700 hover:bg-blue-200 text-sm"
-                    disabled={!newSubtaskTitle.trim()}
+                    onClick={toggleDescriptionSection}
+                    className="text-gray-500 hover:text-gray-700 text-xs"
                   >
-                    Add
+                    {showDescription ? 'Collapse' : 'Expand'}
                   </button>
                 </div>
+                {showDescription && (
+                  <textarea
+                    value={selectedCard.description || ""}
+                    onChange={(e) => handleUpdateCardDescription(e.target.value)}
+                    placeholder="Add a more detailed description..."
+                    className="w-full border rounded p-2 text-sm min-h-[80px]"
+                  />
+                )}
               </div>
-              
+
+              {/* Subtasks Section */}
+              <div className="mb-4">
+                 <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold">Subtasks ({selectedCard.subtasks?.filter(st => st.completed).length || 0}/{selectedCard.subtasks?.length || 0})</h3>
+                   <button
+                    onClick={toggleSubtasksSection}
+                    className="text-gray-500 hover:text-gray-700 text-xs"
+                  >
+                    {showSubtasks ? 'Collapse' : 'Expand'}
+                  </button>
+                 </div>
+
+                {showSubtasks && (
+                  <> {/* Use a fragment to group multiple elements */}
+                    <div className="space-y-2 mb-3">
+                      {selectedCard.subtasks?.map((subtask, index) => (
+                        <div key={subtask.id} className="flex items-center bg-gray-50 p-2 rounded group">
+                          {/* Improved checkbox button with better visibility for the checkmark */}
+                          <button
+                            onClick={() => toggleSubtask(index)}
+                            className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
+                            style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
+                          >
+                            {subtask.completed && (
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </button>
+
+                          <span
+                            onClick={() => toggleSubtask(index)}
+                            className={`text-sm flex-1 cursor-pointer ${subtask.completed ? "line-through text-gray-400" : ""}`}
+                          >
+                            {subtask.title}
+                          </span>
+
+                          <button
+                            onClick={() => deleteSubtask(index)}
+                            className="text-gray-400 hover:text-red-500 text-xs"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        value={newSubtaskTitle}
+                        onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                        placeholder="Add a subtask..."
+                        className="flex-1 border rounded px-2 py-1 text-sm"
+                      />
+                      <button
+                        onClick={addSubtask}
+                        className="ml-2 bg-blue-100 border border-blue-300 px-3 py-1 rounded text-blue-700 hover:bg-blue-200 text-sm"
+                        disabled={!newSubtaskTitle.trim()}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+
               <div className="flex justify-between">
                 <button
                   onClick={() => {
@@ -946,7 +981,7 @@ const Kanban = () => {
 
         {/* Integration with DeleteTaskPopup for card deletion */}
         {confirmDelete && confirmDelete.type === 'card' && (
-          <DeleteTaskPopup 
+          <DeleteTaskPopup
             toggle={true}
             onSubmit={() => {
               const { columnIndex, cardIndex } = confirmDelete;
@@ -956,13 +991,13 @@ const Kanban = () => {
             onClose={() => setConfirmDelete(null)}
           />
         )}
-        
+
         {/* Confirm Delete Column Modal */}
         {confirmDelete && confirmDelete.type === 'column' && (
-          <DeleteTaskPopup 
-            toggle={true} 
-            onSubmit={deleteColumn} 
-            onClose={() => setConfirmDelete(null)} 
+          <DeleteTaskPopup
+            toggle={true}
+            onSubmit={deleteColumn}
+            onClose={() => setConfirmDelete(null)}
           />
         )}
       </div>
