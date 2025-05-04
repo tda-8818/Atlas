@@ -4,6 +4,7 @@ import { useGetCurrentUserQuery } from '../redux/slices/apiSlice';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import UserAvatar from "../components/UserAvatar";
+import { LuClock } from "react-icons/lu";
 
 const Home = () => {
 
@@ -159,7 +160,7 @@ const Home = () => {
                     {projects.map((project, index) => (
                         <div
                             key={index}
-                            className="relative bg-white rounded-2xl shadow-md p-5 w-[300px] cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                            className="relative bg-[var(--background)] rounded-2xl shadow-md p-5 w-[300px] cursor-pointer hover:shadow-lg transition-shadow duration-200"
                             onClick={() => handleProjectClick(project)}
                         >
                             {/* Delete Button */}
@@ -175,16 +176,16 @@ const Home = () => {
 
                             <div className="flex flex-col gap-3">
                                 <div>
-                                    <h2 className="text-lg font-semibold text-gray-800">{project.title}</h2>
-                                    <p className="text-sm text-gray-500 mt-1">{project.description}</p>
+                                    <h2 className="text-lg font-semibold text-[var(--text)]">{project.title}</h2>
+                                    <p className="text-sm text-[var(--text-muted)] mt-1">{project.description}</p>
                                 </div>
 
                                 <div>
-                                    <div className="flex justify-between items-center text-sm text-gray-600 mb-1">
+                                    <div className="flex justify-between items-center text-sm text-[var(--text)] mb-1">
                                         <span>Progress</span>
                                         <span>{project.progress}%</span>
                                     </div>
-                                    <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                                    <div className="w-full bg-[var(--background-primary)] h-2 rounded-full overflow-hidden">
                                         <div
                                             className="bg-[#5b5fc7] h-2 rounded-full"
                                             style={{ width: `${project.progress}%` }}
@@ -192,9 +193,9 @@ const Home = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex justify-between items-center text-xs text-gray-500 mt-3">
+                                <div className="flex justify-between items-center text-xs text-[var(--text)] mt-3">
                                     <div className="flex items-center gap-1">
-                                        <i className="far fa-clock"></i>
+                                        <LuClock/>
                                         <span>{project.daysLeft} Days Left</span>
                                     </div>
                                     <div className="flex -space-x-2">
@@ -215,10 +216,10 @@ const Home = () => {
                     {/* Add Project Card */}
                     <div
                         onClick={handleAddProjectClick}
-                        className="bg-white border-2 border-dashed border-gray-300 rounded-2xl w-[300px] h-[200px] flex justify-center items-center cursor-pointer hover:border-[#5b5fc7] hover:bg-gray-50 transition-all"
+                        className="bg-[var(--background)] border-2 border-dashed border-gray-300 rounded-2xl w-[300px] h-[200px] flex justify-center items-center cursor-pointer hover:border-[#187cb4] hover:bg-[var(--background-primary)] transition-all"
                     >
                         <div className="flex flex-col items-center text-gray-500">
-                            <div className="text-[40px] font-bold text-[#5b5fc7]">+</div>
+                            <div className="text-[40px] font-bold text-[#187cb4]">+</div>
                             <div className="mt-2 text-base">New Project</div>
                         </div>
                     </div>

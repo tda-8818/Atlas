@@ -628,10 +628,10 @@ const Kanban = () => {
   return (
     <div>
       <Navbar />
-      <div className="ml-[15%] w-[85%] h-[9vh]">
+      <div className=" ml-[15%] w-[85%] h-[9vh]">
         <ProjectHeader project={currentProject} />
       </div>
-      <div className="p-4 font-sans ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
+      <div className="p-4 ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
         {/* Kanban Board (Main DragDropContext) */}
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="all-columns" direction="horizontal" type="column">

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { current } from "@reduxjs/toolkit";
 
 const Settings = ({ setTheme }) => {
   const navigate = useNavigate();
@@ -31,116 +30,106 @@ const Settings = ({ setTheme }) => {
     }
 
     try {
-      const response = await axios.put(
+      await axios.put(
         "http://localhost:5001/settings",
         {
           currentPassword,
           confirmPassword,
         },
         {
-          withCredentials:true,
+          withCredentials: true,
         }
       );
-
       alert("Password updated successfully!");
-
     } catch (error) {
       console.error("Password update error:", error);
       alert("Failed to update password.");
-
     }
   };
 
   return (
-    <div className="p-8 bg-[var(--background)] min-h-screen">
-      <button
-        onClick={() => navigate("/")}
-        className="bg-transparent border-0 text-[#4f46e5] font-medium text-[0.95rem] mb-4 cursor-pointer no-underline hover:text-[#3730a3]"
-      >
-        ← Back to Home
-      </button>
+    <div className="p-8 bg-[var(--background-primary)] min-h-screen">
+      {/* Back Button */}
+      <div className="mb-6">
+        <button
+          onClick={() => navigate("/")}
+          className="bg-[var(--background)] text-[var(--text)] border border-[var(--border-color)] rounded-lg px-4 py-2 text-sm hover:bg-[var(--background-secondary)] transition-all"
+        >
+          ← Back to Home
+        </button>
+      </div>
 
-      <h1 className="text-[2rem] text-[var(--text)] font-bold mb-8">Settings</h1>
+      <h1 className="text-[2rem] font-bold text-[var(--text)] mb-8">Settings</h1>
 
-      {/* General Info */}
-      <div className="mb-12">
-        <h2 className="text-xl font-semibold mb-6 text-[var(--text)]">General</h2>
-        <div className="flex flex-col items-start gap-2">
-          <label className="text-[0.9rem] text-gray-500 mb-2">
-            Your Profile Picture
-          </label>
-          <label
-            htmlFor="upload-photo"
-            className="w-[120px] h-[120px] border-2 border-dashed border-gray-300 rounded-[12px] flex items-center justify-center cursor-pointer bg-[var(--background-primary)] text-[var(--text)] "
-          >
-            {profileImage ? (
-              <img
-                src={profileImage}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="text-[0.9rem] text-gray-400 text-center">
-                Upload your photo
-              </div>
-            )}
-          </label>
-          <input
-            id="upload-photo"
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
-        </div>
+      {/* General Info Section */}
+      <div className="bg-[var(--background)] rounded-2xl p-6 mb-12 shadow-sm">
+        <h2 className="text-xl font-semibold text-[var(--text)] mb-6">General</h2>
 
-        <div>
-          <div className="flex gap-4 mb-6 flex-wrap">
-            <div className="flex flex-col flex-1">
-              <label className="text-[0.9rem] text-gray-500 mb-2">
-                First name
-              </label>
+        <div className="flex flex-col gap-6">
+          {/* Profile Image */}
+          <div>
+            <label className="text-[0.9rem] text-gray-500 mb-2 block">Your Profile Picture</label>
+            <label
+              htmlFor="upload-photo"
+              className="w-[120px] h-[120px] border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer bg-[var(--background-primary)] text-[var(--text)]"
+            >
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="w-full h-full object-cover rounded-xl"
+                />
+              ) : (
+                <span className="text-[0.9rem] text-gray-400 text-center">Upload your photo</span>
+              )}
+            </label>
+            <input
+              id="upload-photo"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+          </div>
+
+          {/* Inputs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[0.9rem] text-gray-500 mb-2 block">First Name</label>
               <input
                 type="text"
-                placeholder="Please enter your full name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="bg-[var(--background-primary)] text-[var(--text)] p-3 rounded-lg text-base border-0"
+                placeholder="Enter first name"
+                className="w-full p-3 rounded-lg bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color)]"
               />
             </div>
-            <div className="flex flex-col flex-1">
-              <label className="text-[0.9rem] text-gray-500 mb-2">
-                Email
-              </label>
+            <div>
+              <label className="text-[0.9rem] text-gray-500 mb-2 block">Email</label>
               <input
                 type="email"
-                placeholder="Please enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-[var(--background-primary)] text-[var(--text)] p-3 rounded-lg text-base border-0"
+                placeholder="Enter email"
+                className="w-full p-3 rounded-lg bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color)]"
               />
             </div>
-          </div>
-
-          <div className="flex gap-4 mb-6 flex-wrap">
-            <div className="flex flex-col flex-1 basis-full">
-              <label className="text-[0.9rem] text-gray-500 mb-2">
-                Last name
-              </label>
+            <div className="md:col-span-2">
+              <label className="text-[0.9rem] text-gray-500 mb-2 block">Last Name</label>
               <input
                 type="text"
-                placeholder="Please enter your username"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="bg-[var(--background-primary)] text-[var(--text)] p-3 rounded-lg text-base border-0"
+                placeholder="Enter last name"
+                className="w-full p-3 rounded-lg bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color)]"
               />
             </div>
           </div>
 
-          <div className="mt-8">
+          <div>
             <button
               onClick={handleSaveGeneral}
-              className="bg-[#6366f1] hover:bg-[#4f46e5] text-white py-3 px-8 text-base font-semibold rounded-lg cursor-pointer"
+              className="mt-4 bg-[#187cb4] hover:bg-[#12547a] text-white py-3 px-6 text-sm font-medium rounded-lg cursor-pointer"
             >
               Save Changes
             </button>
@@ -148,55 +137,49 @@ const Settings = ({ setTheme }) => {
         </div>
       </div>
 
-      <hr className="h-px bg-gray-200 my-8" />
+      {/* Password Section */}
+      <div className="bg-[var(--background)] rounded-2xl p-6 mb-12 shadow-sm">
+        <h2 className="text-xl font-semibold text-[var(--text)] mb-6">Change Password</h2>
 
-
-      {/* Password */}
-      <div className="mb-12">
-        <h2 className="text-xl text-[var(--text)] font-semibold mb-6">Change Password</h2>
-        <div>
-          <div className="flex flex-col flex-1 mb-6">
-            <label className="text-[0.9rem] text-gray-500 mb-2">
-              Current Password
-            </label>
+        <div className="flex flex-col gap-6">
+          <div>
+            <label className="text-[0.9rem] text-gray-500 mb-2 block">Current Password</label>
             <input
               type="password"
-              placeholder="Enter current password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="bg-[var(--background-primary)] text-[var(--text)] p-3 rounded-lg text-base border-0"
+              placeholder="Enter current password"
+              className="w-full p-3 rounded-lg bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color)]"
             />
           </div>
-          <div className="flex gap-4 mb-6 flex-wrap">
-            <div className="flex flex-col flex-1">
-              <label className="text-[0.9rem] text-gray-500 mb-2">
-                New Password
-              </label>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[0.9rem] text-gray-500 mb-2 block">New Password</label>
               <input
                 type="password"
-                placeholder="Enter new password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-[var(--background-primary)] text-[var(--text)] p-3 rounded-lg text-base border-0"
+                placeholder="Enter new password"
+                className="w-full p-3 rounded-lg bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color)]"
               />
             </div>
-            <div className="flex flex-col flex-1">
-              <label className="text-[0.9rem] text-gray-500 mb-2">
-                Confirm New Password
-              </label>
+            <div>
+              <label className="text-[0.9rem] text-gray-500 mb-2 block">Confirm Password</label>
               <input
                 type="password"
-                placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-[var(--background-primary)] text-[var(--text)] p-3 rounded-lg text-base border-0"
+                placeholder="Confirm new password"
+                className="w-full p-3 rounded-lg bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color)]"
               />
             </div>
           </div>
-          <div className="mt-8">
+
+          <div>
             <button
               onClick={handlePasswordChange}
-              className="bg-[#6366f1] hover:bg-[#4f46e5] text-white py-3 px-8 text-base font-semibold rounded-lg cursor-pointer"
+              className="mt-2 bg-[#187cb4] hover:bg-[#12547a] text-white py-3 px-6 text-sm font-medium rounded-lg cursor-pointer"
             >
               Update Password
             </button>
@@ -204,22 +187,19 @@ const Settings = ({ setTheme }) => {
         </div>
       </div>
 
-
-      <hr className="h-px bg-[var(--border-color)] my-8" />
-
       {/* Theme Selection */}
-      <div className="mb-12">
-        <h2 className="text-xl text-[var(--text)] font-semibold mb-6">Display</h2>
-        <div className="flex w-full gap-4">
+      <div className="bg-[var(--background)] rounded-2xl p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-[var(--text)] mb-6">Display</h2>
+        <div className="flex gap-4">
           <button
             onClick={() => setTheme("light")}
-            className="w-[20vh] bg-[#f5f5f7] text-black rounded-[6%]"
+            className="px-6 py-3 rounded-xl bg-white text-black shadow-md hover:shadow-lg transition"
           >
             Light
           </button>
           <button
             onClick={() => setTheme("dark")}
-            className="w-[20vh] bg-[#f5f5f7] text-black rounded-[6%]"
+            className="px-6 py-3 rounded-xl bg-[#1e1e1e] text-white shadow-md hover:shadow-lg transition"
           >
             Dark
           </button>

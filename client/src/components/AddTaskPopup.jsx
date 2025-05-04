@@ -4,7 +4,7 @@ import { Fragment, useState, useEffect } from 'react'
 import DeleteTaskPopup from './DeleteTaskPopup'
 
 function AddTaskPopup(props) {
-  const { toggle, onSubmit, onClose, onDelete, event, teamMembers, actionName } = props  //inputs from parent component
+  const { toggle, onSubmit, onClose, onDelete, event, actionName } = props  //inputs from parent component
   const [childModalState, setChildModalState] = useState(false) //controls the state of the child modal (open/closed)
   const [title, setTitle] = useState('')  //stores input value for title upon submit
   const [description, setDescription] = useState('')  //stores input value for description upon submit
@@ -105,7 +105,7 @@ function AddTaskPopup(props) {
                         onChange={(e) => setDescription(e.target.value)}
                       />
                     </Field>
-                    <Field>
+                    {/* <Field>
                       <Label className="block text-sm font-medium text-gray-700">Assign a Member</Label>
                       <Select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 focus:border-blue-500 focus:ring focus:ring-blue-200" name="Assign Member">
                         {teamMembers.map((teamMembers) => (
@@ -114,7 +114,7 @@ function AddTaskPopup(props) {
                           </option>
                         ))}
                       </Select>
-                    </Field>
+                    </Field> */}
                     <div className="flex justify-between gap-2 pt-2">
                       <button
                         onClick={handleConfirm}
