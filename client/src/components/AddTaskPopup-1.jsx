@@ -1,155 +1,405 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-/**
- * AddTaskPopup Component
- * A reusable component for adding or editing tasks/cards to the Kanban board.
- *
- * @param {Object} props
- * @param {Function} props.onAdd - Callback function when task is added/updated. Receives task data object.
- * @param {Function} props.onCancel - Callback function when adding is cancelled.
- * @param {Object} props.initialData - Optional initial data for the task (for editing existing tasks).
- * @param {boolean} props.isEditing - Optional flag to indicate if we're editing an existing task.
- * @returns {JSX.Element}
- */
-const AddTaskPopup = ({ onAdd, onCancel, initialData = {}, isEditing = false }) => {
-  // State for task properties
-  const [title, setTitle] = useState(initialData.title || '');
-  const [tag, setTag] = useState(initialData.tag || '');
-  const [dueDate, setDueDate] = useState(initialData.dueDate || '');
-  const [description, setDescription] = useState(initialData.description || '');
-  const [assignedTo, setAssignedTo] = useState(initialData.assignedTo || []);
-  const [subtasks, setSubtasks] = useState(initialData.subtasks || []);
+// Sample team members data (you might want to fetch this from a shared source later)
+const teamMembers = [
+  { id: "user-1", name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", initials: "AJ" },
+  { id: "user-2", name: "Sarah Wilson", avatar: "https://i.pravatar.cc/150?img=2", initials: "SW" },
+  { id: "user-3", name: "David Chen", avatar: "https://i.pravatar.cc/150?img=3", initials: "DC" },
+  { id: "user-4", name: "Emma Rodriguez", avatar: "https://i.pravatar.cc/150?img=4", initials: "ER" },
+  { id: "user-5", name: "Michael Brown", avatar: "https://i.pravatar.cc/150?img=5", initials: "MB" },
+];
 
-  // Optional additional fields that can be toggled
-  const [showDescription, setShowDescription] = useState(!!initialData.description);
+// Define priority levels
+const priorityLevels = ['none', '!', '!!', '!!!'];
 
-  /**
-   * Handles form submission
-   * @param {Event} e - The form submission event
-   */
-  const handleSubmit = (e) => {
-    if (e) e.preventDefault();
+// Helper function to generate IDs (can be moved to a utility file)
+const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    if (!title.trim()) return;
+// Avatar component (can be moved to a shared component file)
+const Avatar = ({ user, size = "small" }) => {
+  if (!user) return null;
 
-    // Create the task data object
-    const taskData = {
-      title,
-      tag: tag.trim() || null,
-      dueDate: dueDate || null,
-      description,
-      assignedTo,
-      subtasks
-    };
-
-    // Call the onAdd callback with the task data
-    onAdd(taskData);
-
-    // Reset form fields
-    resetForm();
-  };
-
-  /**
-   * Resets the form fields to their initial state
-   */
-  const resetForm = () => {
-    setTitle('');
-    setTag('');
-    setDueDate('');
-    setDescription('');
-    setAssignedTo([]);
-    setSubtasks([]);
-  };
-
-  /**
-   * Toggles the display of description field
-   */
-  const toggleDescription = () => {
-    setShowDescription(!showDescription);
-  };
+  const sizeClass = size === "small" ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm";
 
   return (
-    <div className="mt-2 p-2 bg-[var(--background-secondary)] rounded">
-      <form onSubmit={handleSubmit}>
-        {/* Required Fields */}
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Task title *"
-          className="border px-2 py-1 rounded w-full text-sm mb-2 bg-white text-gray-800"
-          required
-          autoFocus
+    <div className={`relative rounded-full overflow-hidden ${sizeClass} flex items-center justify-center`}>
+      {user.avatar ? (
+        <img
+          src={user.avatar}
+          alt={user.name}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.target.style.display = 'none';
+            e.target.nextSibling.style.display = 'flex';
+          }}
         />
+      ) : null}
+      <div
+        className={`absolute inset-0 bg-blue-500 text-white flex items-center justify-center ${user.avatar ? 'hidden' : ''}`}
+        style={{ backgroundColor: stringToColor(user.name) }}
+      >
+        {user.initials}
+      </div>
+    </div>
+  );
+};
 
-        <div className="flex mb-2">
-          {/* Due Date */}
-          <div className="w-1/2 mr-2">
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="border px-2 py-1 rounded w-full text-sm bg-white text-gray-800"
-              placeholder="Due date"
-            />
-          </div>
+// Generate a color based on a string (name) (can be moved to a utility file)
+const stringToColor = (str) => {
+  if (!str) return '#000000';
 
-          {/* Tag */}
-          <div className="w-1/2">
-            <input
-              value={tag}
-              onChange={(e) => setTag(e.target.value)}
-              placeholder="Tag (optional)"
-              className="border px-2 py-1 rounded w-full text-sm bg-white text-gray-800"
-            />
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  let color = '#';
+  for (let i = 0; i < 3; i++) {
+    const value = (hash >> (i * 8)) & 0xFF;
+    color += ('00' + value.toString(16)).substr(-2);
+  }
+  return color;
+};
+
+
+const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
+  const [title, setTitle] = useState('');
+  const [tag, setTag] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [assignedTo, setAssignedTo] = useState([]);
+  const [description, setDescription] = useState('');
+  const [subtasks, setSubtasks] = useState([]); // Subtasks will be added within the modal
+  const [priority, setPriority] = useState('none'); // Default priority
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
+
+  // State for member search within the popup
+  const [showMemberSearch, setShowMemberSearch] = useState(false);
+  const [searchMember, setSearchMember] = useState("");
+
+  // Reset state when the modal is shown
+  useEffect(() => {
+    if (show) {
+      setTitle('');
+      setTag('');
+      setDueDate('');
+      setAssignedTo([]);
+      setDescription('');
+      setSubtasks([]);
+      setPriority('none');
+      setNewSubtaskTitle('');
+      setShowMemberSearch(false);
+      setSearchMember('');
+    }
+  }, [show]);
+
+  if (!show) return null; // Render nothing if show prop is false
+
+  const handleAddTask = () => {
+    if (!title.trim()) {
+      alert("Task title is required.");
+      return;
+    }
+
+    const newTask = {
+      id: generateId("card"), // Generate ID here
+      title: title.trim(),
+      tag: tag.trim() === '' ? null : tag.trim(), // Set to null if empty
+      dueDate: dueDate || null, // Set to null if empty
+      assignedTo: assignedTo,
+      description: description.trim(),
+      subtasks: subtasks, // Include collected subtasks
+      priority: priority
+    };
+
+    onAddTask(newTask); // Call the parent's handler with the new task data
+    // Parent component will handle closing the modal and resetting state
+  };
+
+  const addSubtask = () => {
+    if (!newSubtaskTitle.trim()) return;
+
+    const newSubtask = {
+      id: generateId("subtask"),
+      title: newSubtaskTitle.trim(),
+      completed: false,
+      priority: 'none' // Default priority for new subtasks in the popup
+    };
+
+    setSubtasks([...subtasks, newSubtask]);
+    setNewSubtaskTitle('');
+  };
+
+  const deleteSubtask = (subtaskId) => {
+    setSubtasks(subtasks.filter(st => st.id !== subtaskId));
+  };
+
+  const toggleSubtask = (subtaskId) => {
+    setSubtasks(subtasks.map(st =>
+      st.id === subtaskId ? { ...st, completed: !st.completed } : st
+    ));
+  };
+
+  const handleUpdateSubtaskPriority = (subtaskId, newPriority) => {
+    setSubtasks(subtasks.map(st =>
+      st.id === subtaskId ? { ...st, priority: newPriority } : st
+    ));
+  };
+
+
+  const toggleUserAssignment = (userId) => {
+    setAssignedTo(prevAssignedTo =>
+      prevAssignedTo.includes(userId)
+        ? prevAssignedTo.filter(id => id !== userId)
+        : [...prevAssignedTo, userId]
+    );
+  };
+
+  const getTeamMember = (userId) => {
+    return teamMembers.find(member => member.id === userId);
+  };
+
+
+  return (
+    <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
+      <div className="bg-white rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto">
+        <h2 className="text-xl font-bold mb-4">Add New Task</h2>
+
+        {/* Task Title */}
+        <div className="mb-4">
+          <label htmlFor="taskTitle" className="block text-sm font-semibold mb-2">Task Title <span className="text-red-500">*</span></label>
+          <input
+            type="text"
+            id="taskTitle"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g., Design landing page"
+            className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+
+        {/* Tag */}
+        <div className="mb-4">
+          <label htmlFor="taskTag" className="block text-sm font-semibold mb-2">Tag (Optional)</label>
+          <input
+            type="text"
+            id="taskTag"
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+            placeholder="e.g., Design, Development"
+            className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        {/* Priority */}
+        <div className="mb-4">
+          <label htmlFor="taskPriority" className="block text-sm font-semibold mb-2">Priority</label>
+          <select
+            id="taskPriority"
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+            className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+            {priorityLevels.map(level => (
+              <option key={level} value={level}>
+                {level === 'none' ? 'None' : level}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Due Date */}
+        <div className="mb-4">
+          <label htmlFor="taskDueDate" className="block text-sm font-semibold mb-2">Due Date (Optional)</label>
+          <input
+            type="date"
+            id="taskDueDate"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        {/* Assigned To */}
+        <div className="mb-4 relative"> {/* Added relative for absolute positioning of member search */}
+          <h3 className="text-sm font-semibold mb-2">Assigned To (Optional)</h3>
+          <div className="flex items-center flex-wrap gap-2">
+            {/* Display assigned members */}
+            {assignedTo.map(userId => (
+              <div key={userId} className="flex items-center bg-gray-50 rounded-full border border-gray-200 p-1">
+                <Avatar user={getTeamMember(userId)} />
+                <button
+                  onClick={() => toggleUserAssignment(userId)}
+                  className="ml-1 text-gray-400 hover:text-red-500 text-xs"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+
+            {/* Add member button */}
+            <div
+              className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300"
+              onClick={() => setShowMemberSearch(!showMemberSearch)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+
+            {/* Member search panel */}
+            {showMemberSearch && (
+              <div className="absolute top-full mt-2 bg-white shadow-lg rounded p-2 border w-full max-w-xs">
+                <div className="mb-2">
+                  <input
+                    type="text"
+                    value={searchMember}
+                    onChange={(e) => setSearchMember(e.target.value)}
+                    placeholder="Search members..."
+                    className="border rounded px-2 py-1 text-sm w-full"
+                    autoFocus
+                  />
+                </div>
+                <div className="max-h-40 overflow-y-auto">
+                  {teamMembers
+                    .filter(member =>
+                      member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
+                      !assignedTo.includes(member.id) // Filter out already assigned members
+                    )
+                    .map(member => (
+                      <div
+                        key={member.id}
+                        className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded cursor-pointer"
+                        onClick={() => {
+                          toggleUserAssignment(member.id);
+                          setSearchMember(""); // Clear search after selection
+                          // setShowMemberSearch(false); // Keep open for multiple selections
+                        }}
+                      >
+                        <Avatar user={member} size="small" />
+                        <span className="text-sm">{member.name}</span>
+                      </div>
+                    ))}
+                     {teamMembers.filter(member =>
+                      member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
+                      !assignedTo.includes(member.id)
+                    ).length === 0 && (
+                        <div className="text-center text-sm text-gray-500">No members found</div>
+                     )}
+                </div>
+                 {/* Close search button */}
+                 <div className="mt-2 text-right">
+                    <button
+                        onClick={() => { setShowMemberSearch(false); setSearchMember(''); }}
+                        className="text-xs text-blue-600 hover:underline"
+                    >
+                        Close
+                    </button>
+                 </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Description Toggle */}
-        {!showDescription ? (
-          <button
-            type="button"
-            onClick={toggleDescription}
-            className="text-xs text-blue-600 hover:underline mb-2"
-          >
-            + Add description
-          </button>
-        ) : (
-          <div className="mb-2">
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description"
-              className="border px-2 py-1 rounded w-full text-sm bg-white text-gray-800 min-h-[60px]"
-            />
 
-            <button
-              type="button"
-              onClick={toggleDescription}
-              className="text-xs text-blue-600 hover:underline mt-1"
-            >
-              - Hide description
-            </button>
-          </div>
-        )}
+        {/* Description */}
+        <div className="mb-4">
+          <label htmlFor="taskDescription" className="block text-sm font-semibold mb-2">Description (Optional)</label>
+          <textarea
+            id="taskDescription"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Add a detailed description..."
+            className="w-full border rounded px-3 py-2 text-sm min-h-[80px] focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-end">
+        {/* Subtasks Section */}
+        <div className="mb-4">
+           <h3 className="text-sm font-semibold mb-2">Subtasks (Optional)</h3>
+           {/* Subtask List */}
+           {subtasks.length > 0 && (
+              <div className="space-y-2 mb-3">
+                 {subtasks.map((subtask) => (
+                    <div key={subtask.id} className="flex items-center bg-gray-50 p-2 rounded">
+                       <button
+                         onClick={() => toggleSubtask(subtask.id)}
+                         className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
+                         style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
+                       >
+                         {subtask.completed && (
+                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
+                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                           </svg>
+                         )}
+                       </button>
+                       <span className={`text-sm flex-1 mr-2 ${subtask.completed ? "line-through text-gray-400" : ""}`}>
+                         {subtask.title}
+                       </span>
+                        {/* Priority dropdown for each subtask */}
+                       <select
+                           value={subtask.priority || 'none'}
+                           onChange={(e) => handleUpdateSubtaskPriority(subtask.id, e.target.value)}
+                           className="text-xs border rounded px-1 py-0.5 text-gray-700"
+                        >
+                           {priorityLevels.map(level => (
+                              <option key={level} value={level}>
+                                 {level === 'none' ? 'Prio' : level}
+                              </option>
+                           ))}
+                        </select>
+                       <button
+                         onClick={() => deleteSubtask(subtask.id)}
+                         className="ml-2 text-gray-400 hover:text-red-500 text-xs"
+                       >
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                         </svg>
+                       </button>
+                    </div>
+                 ))}
+              </div>
+           )}
+
+           {/* Add New Subtask Input */}
+           <div className="flex items-center">
+              <input
+                 type="text"
+                 value={newSubtaskTitle}
+                 onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                 placeholder="Add a subtask..."
+                 className="flex-1 border rounded px-3 py-2 text-sm mr-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSubtask(); } }}
+              />
+              <button
+                 onClick={addSubtask}
+                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                 disabled={!newSubtaskTitle.trim()}
+              >
+                 Add
+              </button>
+           </div>
+        </div>
+
+
+        {/* Buttons */}
+        <div className="flex justify-end gap-2 mt-6">
           <button
-            type="submit"
-            className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded mr-2 border border-blue-300"
-            disabled={!title.trim()}
-          >
-            {isEditing ? 'Update' : 'Add'}
-          </button>
-          <button
-            type="button"
             onClick={onCancel}
-            className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded border border-gray-300"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
           >
             Cancel
           </button>
+          <button
+            onClick={handleAddTask}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!title.trim()} // Disable if title is empty
+          >
+            Add Task
+          </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import ProjectHeader from "../components/ProjectHeader";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import DeleteTaskPopup from '../components/DeleteTaskPopup';
+// Import the updated AddTaskPopup
 import AddTaskPopup from '../components/AddTaskPopup-1';
 
 // Sample team members data
@@ -42,19 +43,69 @@ const defaultColumns = [
   }
 ];
 
+// Generate a color based on a string (name) - ADDED BACK
+const stringToColor = (str) => {
+    if (!str) return '#000000';
+
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    let color = '#';
+    for (let i = 0; i < 3; i++) {
+      const value = (hash >> (i * 8)) & 0xFF;
+      color += ('00' + value.toString(16)).substr(-2);
+    }
+    return color;
+};
+
+// Avatar component with fallback to initials - ADDED BACK
+const Avatar = ({ user, size = "small" }) => {
+  if (!user) return null;
+
+  const sizeClass = size === "small" ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm";
+
+  return (
+    <div className={`relative rounded-full overflow-hidden ${sizeClass} flex items-center justify-center`}>
+      {user.avatar ? (
+        <img
+          src={user.avatar}
+          alt={user.name}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.target.style.display = 'none';
+            e.target.nextSibling.style.display = 'flex';
+          }}
+        />
+      ) : null}
+      <div
+        className={`absolute inset-0 bg-blue-500 text-white flex items-center justify-center ${user.avatar ? 'hidden' : ''}`}
+        style={{ backgroundColor: stringToColor(user.name) }}
+      >
+        {user.initials}
+      </div>
+    </div>
+  );
+};
+
+
 const Kanban = () => {
   const [columns, setColumns] = useState(defaultColumns);
-  const [showCardInput, setShowCardInput] = useState(null);
+  // State to control the visibility of the AddTaskPopup
+  const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
+  // State to store the column index where the new task should be added
+  const [addTaskColumnIndex, setAddTaskColumnIndex] = useState(null);
+
   const [newColumnName, setNewColumnName] = useState("");
   const [selectedCard, setSelectedCard] = useState(null);
-  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState(""); // Keep for modal subtask adding
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   // Add states for column editing
   const [editingColumnIndex, setEditingColumnIndex] = useState(null);
   const [editColumnName, setEditColumnName] = useState("");
 
-  // Add these missing state variables
+  // Add these missing state variables (still needed for card modal)
   const [showMemberSearch, setShowMemberSearch] = useState(false);
   const [searchMember, setSearchMember] = useState("");
 
@@ -62,7 +113,7 @@ const Kanban = () => {
   const [showDescription, setShowDescription] = useState(false);
   const [showSubtasks, setShowSubtasks] = useState(false);
 
-  // Helper function to generate IDs
+  // Helper function to generate IDs (can be moved to a utility file)
   const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
   // Column editing functions
@@ -147,23 +198,30 @@ const Kanban = () => {
     setNewColumnName("");
   };
 
-  const addCard = (columnIndex, cardData) => {
-    if (columnIndex < 0 || columnIndex >= columns.length) return;
+  // Modified addCard function to be called from the popup's onAddTask
+  const handleAddTaskFromPopup = (cardData) => {
+    if (addTaskColumnIndex === null || addTaskColumnIndex < 0 || addTaskColumnIndex >= columns.length) {
+       console.error("Attempted to add task to invalid column index.");
+       setShowAddTaskPopup(false); // Close popup on error
+       setAddTaskColumnIndex(null);
+       return;
+    }
 
     const updated = [...columns];
-    updated[columnIndex].cards.push({
-      id: generateId("card"),
-      title: cardData.title,
-      tag: cardData.tag || null, // Add default tag
-      dueDate: cardData.dueDate || null,
-      assignedTo: cardData.assignedTo || [], // Empty array for multiple assignments
-      description: cardData.description || "",
-      subtasks: cardData.subtasks || [],
-      priority: cardData.priority || 'none' // Add default priority
-    });
+    updated[addTaskColumnIndex].cards.push(cardData); // Add the full cardData object from the popup
     setColumns(updated);
-    setShowCardInput(null);
+
+    // Close the popup and reset the column index state
+    setShowAddTaskPopup(false);
+    setAddTaskColumnIndex(null);
   };
+
+  // Function to open the AddTaskPopup for a specific column
+  const openAddTaskPopup = (columnIndex) => {
+    setAddTaskColumnIndex(columnIndex);
+    setShowAddTaskPopup(true);
+  };
+
 
   const confirmDeleteColumn = (columnIndex) => {
     if (columnIndex < 0 || columnIndex >= columns.length) return;
@@ -259,8 +317,11 @@ const Kanban = () => {
     });
   };
 
+  // --- Subtask Management within Card Modal ---
+  // These functions now only update the 'selectedCard' state and the main 'columns' state
+  // They are NOT used by the AddTaskPopup anymore.
 
-  const addSubtask = () => {
+  const addSubtaskToCard = () => {
     if (!newSubtaskTitle.trim() || !selectedCard) return;
 
     const { columnIndex, cardIndex } = selectedCard;
@@ -269,113 +330,98 @@ const Kanban = () => {
 
     const updated = [...columns];
 
-    // Create a new subtask object with default priority
     const newSubtask = {
       id: generateId("subtask"),
       title: newSubtaskTitle,
       completed: false,
-      priority: 'none' // Default priority for new subtasks
+      priority: 'none'
     };
 
-    // Add it to the data
+    // Add to the main columns state
     updated[columnIndex].cards[cardIndex].subtasks.push(newSubtask);
-
-    // Update the columns state
     setColumns(updated);
 
-    // Get the updated card with the new subtask array directly from the updated state
-    const updatedCard = updated[columnIndex].cards[cardIndex];
-
-    // Update the selected card with the same subtasks array from the updated state
+    // Also update the selectedCard state
     setSelectedCard({
       ...selectedCard,
-      subtasks: [...updatedCard.subtasks]
+      subtasks: [...(selectedCard.subtasks || []), newSubtask] // Add to existing subtasks array
     });
 
-    // Clear the input field
-    setNewSubtaskTitle("");
+    setNewSubtaskTitle(""); // Clear input
   };
 
-  const toggleSubtask = (subtaskIndex) => {
+  const toggleSubtaskCompletionInCard = (subtaskId) => {
     if (!selectedCard) return;
 
     const { columnIndex, cardIndex } = selectedCard;
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
 
-    const updated = [...columns];
-    // Ensure subtasks is an array before accessing it
-    const subtasks = updated[columnIndex].cards[cardIndex].subtasks || [];
-    if (subtaskIndex >= 0 && subtaskIndex < subtasks.length) {
-      subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
-    }
+    const updatedColumns = [...columns];
+    const subtasks = updatedColumns[columnIndex].cards[cardIndex].subtasks || [];
 
-    // Update the columns state
-    setColumns(updated);
+    const updatedSubtasks = subtasks.map(st =>
+      st.id === subtaskId ? { ...st, completed: !st.completed } : st
+    );
 
-    // Ensure the selected card is updated with the latest subtasks array
-    const updatedCard = updated[columnIndex].cards[cardIndex];
-    setSelectedCard({
-      ...selectedCard,
-      subtasks: [...updatedCard.subtasks] // Create a new array
-    });
-  };
+    updatedColumns[columnIndex].cards[cardIndex].subtasks = updatedSubtasks;
+    setColumns(updatedColumns);
 
-  // Function to update subtask priority
-  const handleUpdateSubtaskPriority = (subtaskIndex, priority) => {
-    if (!selectedCard) return;
-
-    const { columnIndex, cardIndex } = selectedCard;
-    if (columnIndex < 0 || columnIndex >= columns.length) return;
-    if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-
-    const updated = [...columns];
-    // Ensure subtasks is an array before accessing it
-    const subtasks = updated[columnIndex].cards[cardIndex].subtasks || [];
-
-    if (subtaskIndex >= 0 && subtaskIndex < subtasks.length) {
-      subtasks[subtaskIndex].priority = priority;
-    }
-
-    setColumns(updated);
-
-    // Update the selected card state
-    const updatedSubtasks = [...(selectedCard.subtasks || [])]; // Create a new array, handle null
-    if (subtaskIndex >= 0 && subtaskIndex < updatedSubtasks.length) {
-      updatedSubtasks[subtaskIndex].priority = priority;
-    }
+    // Update the selectedCard state
     setSelectedCard({
       ...selectedCard,
       subtasks: updatedSubtasks
     });
   };
 
+  const handleUpdateSubtaskPriorityInCard = (subtaskId, newPriority) => {
+      if (!selectedCard) return;
 
-  const deleteSubtask = (subtaskIndex) => {
+      const { columnIndex, cardIndex } = selectedCard;
+      if (columnIndex < 0 || columnIndex >= columns.length) return;
+      if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
+
+      const updatedColumns = [...columns];
+      const subtasks = updatedColumns[columnIndex].cards[cardIndex].subtasks || [];
+
+      const updatedSubtasks = subtasks.map(st =>
+         st.id === subtaskId ? { ...st, priority: newPriority } : st
+      );
+
+      updatedColumns[columnIndex].cards[cardIndex].subtasks = updatedSubtasks;
+      setColumns(updatedColumns);
+
+      // Update the selectedCard state
+      setSelectedCard({
+         ...selectedCard,
+         subtasks: updatedSubtasks
+      });
+   };
+
+
+  const deleteSubtaskFromCard = (subtaskId) => {
     if (!selectedCard) return;
 
     const { columnIndex, cardIndex } = selectedCard;
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
 
-    const updated = [...columns];
+    const updatedColumns = [...columns];
+    const subtasks = updatedColumns[columnIndex].cards[cardIndex].subtasks || [];
 
-    // Ensure subtasks is an array before accessing it
-    const subtasks = updated[columnIndex].cards[cardIndex].subtasks || [];
-    if (subtaskIndex < 0 || subtaskIndex >= subtasks.length) return;
+    const updatedSubtasks = subtasks.filter(st => st.id !== subtaskId);
 
-    updated[columnIndex].cards[cardIndex].subtasks.splice(subtaskIndex, 1);
-    setColumns(updated);
+    updatedColumns[columnIndex].cards[cardIndex].subtasks = updatedSubtasks;
+    setColumns(updatedColumns);
 
-    // Update the selected card to reflect changes
-    const updatedSubtasks = [...(selectedCard.subtasks || [])]; // Create a new array, handle null
-    updatedSubtasks.splice(subtaskIndex, 1);
-
+    // Update the selectedCard state
     setSelectedCard({
       ...selectedCard,
       subtasks: updatedSubtasks
     });
   };
+  // --- End of Subtask Management within Card Modal ---
+
 
   const handleUpdateCardDescription = (description) => {
     if (!selectedCard) return;
@@ -413,8 +459,8 @@ const Kanban = () => {
     });
   };
 
-  // Updated to handle multiple user assignments
-  const toggleUserAssignment = (userId) => {
+  // Updated to handle multiple user assignments (within Card Modal)
+  const toggleUserAssignmentInCard = (userId) => {
     if (!selectedCard) return;
 
     const { columnIndex, cardIndex } = selectedCard;
@@ -440,7 +486,7 @@ const Kanban = () => {
     });
   };
 
-  // Find a team member by ID
+  // Find a team member by ID (used in both AddTaskPopup and Kanban)
   const getTeamMember = (userId) => {
     if (!userId) return null;
     return teamMembers.find(member => member.id === userId);
@@ -461,7 +507,7 @@ const Kanban = () => {
       return;
     }
 
-     // If we're dragging subtasks
+     // If we're dragging subtasks (within the card modal)
      if (type === "subtask" && selectedCard) {
         // Ensure the destination droppableId matches the source droppableId for subtasks
         // and that the destination is within the same card's subtask list
@@ -566,6 +612,7 @@ const Kanban = () => {
   };
 
   // Multi-avatar component that shows up to 3 avatars + count for extras
+  // This component is used in the Card component render
   const MultiAvatar = ({ assignedUsers }) => {
     if (!assignedUsers || assignedUsers.length === 0) return null;
 
@@ -577,7 +624,7 @@ const Kanban = () => {
       <div className="flex -space-x-2 items-center">
         {displayUsers.map((user, index) => (
           <div key={user.id} className="z-10" style={{ zIndex: 10 - index }}>
-            <Avatar user={user} />
+            <Avatar user={user} /> {/* Avatar is now defined in this file */}
           </div>
         ))}
         {extraCount > 0 && (
@@ -589,50 +636,12 @@ const Kanban = () => {
     );
   };
 
-  // Avatar component with fallback to initials
-  const Avatar = ({ user, size = "small" }) => {
-    if (!user) return null;
+  // Avatar component with fallback to initials (commented out as it's now above)
+  // const Avatar = ({ user, size = "small" }) => { ... };
 
-    const sizeClass = size === "small" ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm";
+  // Generate a color based on a string (name) (commented out as it's now above)
+  // const stringToColor = (str) => { ... };
 
-    return (
-      <div className={`relative rounded-full overflow-hidden ${sizeClass} flex items-center justify-center`}>
-        {user.avatar ? (
-          <img
-            src={user.avatar}
-            alt={user.name}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
-          />
-        ) : null}
-        <div
-          className={`absolute inset-0 bg-blue-500 text-white flex items-center justify-center ${user.avatar ? 'hidden' : ''}`}
-          style={{ backgroundColor: stringToColor(user.name) }}
-        >
-          {user.initials}
-        </div>
-      </div>
-    );
-  };
-
-  // Generate a color based on a string (name)
-  const stringToColor = (str) => {
-    if (!str) return '#000000';
-
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    let color = '#';
-    for (let i = 0; i < 3; i++) {
-      const value = (hash >> (i * 8)) & 0xFF;
-      color += ('00' + value.toString(16)).substr(-2);
-    }
-    return color;
-  };
 
   return (
     <div>
@@ -779,20 +788,8 @@ const Kanban = () => {
 
                                         {/* Assigned User Avatars on the right */}
                                         <div className="flex items-center ml-auto">
-                                          {card.assignedTo && card.assignedTo.length > 0 && (
-                                            <div className="flex -space-x-2">
-                                              {card.assignedTo.slice(0, 3).map((userId, index) => (
-                                                <div key={userId} className="z-10" style={{ zIndex: 10 - index }}>
-                                                  <Avatar user={getTeamMember(userId)} />
-                                                </div>
-                                              ))}
-                                              {card.assignedTo.length > 3 && (
-                                                <div className="z-0 flex items-center justify-center w-6 h-6 text-xs bg-gray-200 rounded-full border-2 border-white">
-                                                  +{card.assignedTo.length - 3}
-                                                </div>
-                                              )}
-                                            </div>
-                                          )}
+                                          {/* Using the MultiAvatar component here */}
+                                          <MultiAvatar assignedUsers={card.assignedTo} />
                                         </div>
                                       </div>
 
@@ -813,20 +810,13 @@ const Kanban = () => {
                           )}
                         </Droppable>
 
-                        {/* Add Card UI */}
-                        {showCardInput === columnIndex ? (
-                          <AddTaskPopup
-                            onAdd={(cardData) => addCard(columnIndex, cardData)}
-                            onCancel={() => setShowCardInput(null)}
-                          />
-                        ) : (
-                          <button
-                            onClick={() => setShowCardInput(columnIndex)}
-                            className="mt-2 text-sm text-gray-500 hover:text-blue-600 w-full py-1 bg-[var(--background-secondary)] rounded"
-                          >
-                            + Add Task
-                          </button>
-                        )}
+                        {/* Button to open the AddTaskPopup */}
+                        <button
+                          onClick={() => openAddTaskPopup(columnIndex)}
+                          className="mt-2 text-sm text-gray-500 hover:text-blue-600 w-full py-1 bg-[var(--background-secondary)] rounded"
+                        >
+                          + Add Task
+                        </button>
                       </div>
                     )}
                   </Draggable>
@@ -858,6 +848,16 @@ const Kanban = () => {
             )}
           </Droppable>
         </DragDropContext>
+
+        {/* Render the reusable AddTaskPopup */}
+        <AddTaskPopup
+          show={showAddTaskPopup}
+          onAddTask={handleAddTaskFromPopup} // Pass the handler that adds to the correct column
+          onCancel={() => {
+            setShowAddTaskPopup(false);
+            setAddTaskColumnIndex(null); // Reset the column index when cancelled
+          }}
+        />
 
 
         {/* Card Detail Modal */}
@@ -921,26 +921,16 @@ const Kanban = () => {
                   </div>
                 </div>
 
-                {/* Assignment Section - Multiple with search */}
+                {/* Assignment Section - Multiple with search (within Card Modal) */}
                 <div className="w-1/2">
                   <h3 className="text-sm font-semibold mb-2">Assigned To</h3>
-                  <div className="flex items-center flex-wrap gap-2">
+                  <div className="flex items-center flex-wrap gap-2 relative"> {/* Added relative */}
                     {/* Display assigned members */}
-                    {selectedCard.assignedTo && selectedCard.assignedTo.map(userId => (
+                    {(selectedCard.assignedTo || []).map(userId => (
                       <div key={userId} className="flex items-center bg-gray-50 rounded-full border border-gray-200 p-1">
-                        <Avatar user={getTeamMember(userId)} />
+                        <Avatar user={getTeamMember(userId)} /> {/* Avatar is now defined in this file */}
                         <button
-                          onClick={() => {
-                            const newAssignees = selectedCard.assignedTo.filter(id => id !== userId);
-                            const updated = [...columns];
-                            const { columnIndex, cardIndex } = selectedCard;
-                            updated[columnIndex].cards[cardIndex].assignedTo = newAssignees;
-                            setColumns(updated);
-                            setSelectedCard({
-                              ...selectedCard,
-                              assignedTo: newAssignees
-                            });
-                          }}
+                          onClick={() => toggleUserAssignmentInCard(userId)} // Use the _InCard version
                           className="ml-1 text-gray-400 hover:text-red-500 text-xs"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -962,7 +952,7 @@ const Kanban = () => {
 
                     {/* Member search panel */}
                     {showMemberSearch && (
-                      <div className="absolute mt-24 bg-white shadow-lg rounded p-2 border">
+                      <div className="absolute top-full mt-2 bg-white shadow-lg rounded p-2 border w-full max-w-xs">
                         <div className="mb-2">
                           <input
                             type="text"
@@ -977,30 +967,37 @@ const Kanban = () => {
                           {teamMembers
                             .filter(member =>
                               member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
-                              !(selectedCard.assignedTo || []).includes(member.id)
+                              !(selectedCard.assignedTo || []).includes(member.id) // Filter out already assigned members
                             )
                             .map(member => (
                               <div
                                 key={member.id}
                                 className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded cursor-pointer"
                                 onClick={() => {
-                                  const newAssignees = [...(selectedCard.assignedTo || []), member.id];
-                                  const updated = [...columns];
-                                  const { columnIndex, cardIndex } = selectedCard;
-                                  updated[columnIndex].cards[cardIndex].assignedTo = newAssignees;
-                                  setColumns(updated);
-                                  setSelectedCard({
-                                    ...selectedCard,
-                                    assignedTo: newAssignees
-                                  });
+                                  toggleUserAssignmentInCard(member.id); // Use the _InCard version
                                   setSearchMember("");
-                                  setShowMemberSearch(false);
+                                  // setShowMemberSearch(false); // Keep open for multiple selections
                                 }}
                               >
-                                <Avatar user={member} />
+                                <Avatar user={member} size="small" /> {/* Avatar is now defined in this file */}
                                 <span className="text-sm">{member.name}</span>
                               </div>
                             ))}
+                             {teamMembers.filter(member =>
+                              member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
+                              !(selectedCard.assignedTo || []).includes(member.id)
+                            ).length === 0 && (
+                                <div className="text-center text-sm text-gray-500">No members found</div>
+                             )}
+                        </div>
+                        {/* Close search button */}
+                        <div className="mt-2 text-right">
+                           <button
+                               onClick={() => { setShowMemberSearch(false); setSearchMember(''); }}
+                               className="text-xs text-blue-600 hover:underline"
+                           >
+                               Close
+                           </button>
                         </div>
                       </div>
                     )}
@@ -1029,7 +1026,7 @@ const Kanban = () => {
                 )}
               </div>
 
-              {/* Subtasks Section */}
+              {/* Subtasks Section (within Card Modal) */}
               <div className="mb-4">
                  <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-semibold">Subtasks ({selectedCard.subtasks?.filter(st => st.completed).length || 0}/{selectedCard.subtasks?.length || 0})</h3>
@@ -1063,7 +1060,7 @@ const Kanban = () => {
                                      >
                                        {/* Improved checkbox button with better visibility for the checkmark */}
                                        <button
-                                         onClick={() => toggleSubtask(index)}
+                                         onClick={() => toggleSubtaskCompletionInCard(subtask.id)} // Use the _InCard version
                                          className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
                                          style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
                                        >
@@ -1075,7 +1072,7 @@ const Kanban = () => {
                                        </button>
 
                                        <span
-                                         onClick={() => toggleSubtask(index)}
+                                         onClick={() => toggleSubtaskCompletionInCard(subtask.id)} // Use the _InCard version
                                          className={`text-sm flex-1 cursor-pointer mr-1 ${subtask.completed ? "line-through text-gray-400" : ""}`}
                                        >
                                          {subtask.title}
@@ -1084,7 +1081,7 @@ const Kanban = () => {
                                         {/* Priority dropdown for each subtask */}
                                         <select
                                            value={subtask.priority || 'none'}
-                                           onChange={(e) => handleUpdateSubtaskPriority(index, e.target.value)}
+                                           onChange={(e) => handleUpdateSubtaskPriorityInCard(subtask.id, e.target.value)} // Use the _InCard version
                                            className="text-xs border rounded px-1 py-0.5 text-gray-700"
                                         >
                                            {priorityLevels.map(level => (
@@ -1096,7 +1093,7 @@ const Kanban = () => {
 
 
                                       <button
-                                        onClick={() => deleteSubtask(index)}
+                                        onClick={() => deleteSubtaskFromCard(subtask.id)} // Use the _InCard version
                                         className="ml-2 text-gray-400 hover:text-red-500 text-xs"
                                       >
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -1113,7 +1110,7 @@ const Kanban = () => {
                       </Droppable>
                    </DragDropContext>
                 )}
-                 {/* Input for adding new subtask */}
+                 {/* Input for adding new subtask (within Card Modal) */}
                  {showSubtasks && (
                    <div className="flex items-center mt-3"> {/* Added mt-3 for spacing below the list */}
                      <input
@@ -1123,7 +1120,7 @@ const Kanban = () => {
                        className="flex-1 border rounded px-2 py-1 text-sm"
                      />
                      <button
-                       onClick={addSubtask}
+                       onClick={addSubtaskToCard} // Use the _InCard version
                        className="ml-2 bg-blue-100 border border-blue-300 px-3 py-1 rounded text-blue-700 hover:bg-blue-200 text-sm"
                        disabled={!newSubtaskTitle.trim()}
                      >
