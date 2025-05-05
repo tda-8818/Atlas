@@ -61,7 +61,7 @@ const stringToColor = (str) => {
 };
 
 
-const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
+const AddTaskPopup = ({ show, onAddTask, onCancel, teamMembers = [], initialValues = null }) => {
   const [title, setTitle] = useState('');
   const [tag, setTag] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -73,18 +73,37 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
 
   const [showMemberSearch, setShowMemberSearch] = useState(false);
   const [searchMember, setSearchMember] = useState("");
+  
+  // Track if we're in edit mode
+  const [isEditing, setIsEditing] = useState(false);
 
   const modalRef = useRef(null);
 
+  // Handler to populate form with initialValues when editing an existing task
   useEffect(() => {
     if (show) {
-      setTitle('');
-      setTag('');
-      setDueDate('');
-      setAssignedTo([]);
-      setDescription('');
-      setSubtasks([]);
-      setPriority('none');
+      if (initialValues) {
+        // We're editing an existing task
+        setTitle(initialValues.title || '');
+        setTag(initialValues.tag || '');
+        setDueDate(initialValues.dueDate || '');
+        setAssignedTo(initialValues.assignedTo || []);
+        setDescription(initialValues.description || '');
+        setSubtasks(initialValues.subtasks || []);
+        setPriority(initialValues.priority || 'none');
+        setIsEditing(true);
+      } else {
+        // We're creating a new task
+        setTitle('');
+        setTag('');
+        setDueDate('');
+        setAssignedTo([]);
+        setDescription('');
+        setSubtasks([]);
+        setPriority('none');
+        setIsEditing(false);
+      }
+      
       setNewSubtaskTitle('');
       setShowMemberSearch(false);
       setSearchMember('');
@@ -101,7 +120,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [show, onCancel]);
+  }, [show, initialValues, onCancel]);
 
   if (!show) return null;
 
@@ -111,8 +130,8 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
       return;
     }
 
-    const newTask = {
-      id: generateId("card"),
+    const taskData = {
+      id: initialValues?.id || generateId("card"),
       title: title.trim(),
       tag: tag.trim() === '' ? null : tag.trim(),
       dueDate: dueDate || null,
@@ -122,7 +141,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
       priority: priority
     };
 
-    onAddTask(newTask);
+    onAddTask(taskData);
   };
 
   const addSubtask = () => {
@@ -155,7 +174,6 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
     ));
   };
 
-
   const toggleUserAssignment = (userId) => {
     setAssignedTo(prevAssignedTo =>
       prevAssignedTo.includes(userId)
@@ -175,11 +193,10 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
     }
   };
 
-
   return (
     <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
       <div ref={modalRef} className="bg-white rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Add New Task</h2>
+        <h2 className="text-xl font-bold mb-4">{isEditing ? 'Edit Task' : 'Add New Task'}</h2>
 
         {/* Task Title */}
         <div className="mb-4">
@@ -296,26 +313,25 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
                         <span className="text-sm">{member.name}</span>
                       </div>
                     ))}
-                     {teamMembers.filter(member =>
-                      member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
-                      !assignedTo.includes(member.id)
-                    ).length === 0 && (
-                        <div className="text-center text-sm text-gray-500">No members found</div>
-                     )}
+                  {teamMembers.filter(member =>
+                    member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
+                    !assignedTo.includes(member.id)
+                  ).length === 0 && (
+                    <div className="text-center text-sm text-gray-500">No members found</div>
+                  )}
                 </div>
-                 <div className="mt-2 text-right">
-                    <button
-                        onClick={() => { setShowMemberSearch(false); setSearchMember(''); }}
-                        className="text-xs text-blue-600 hover:underline"
-                    >
-                        Close
-                    </button>
-                 </div>
+                <div className="mt-2 text-right">
+                  <button
+                    onClick={() => { setShowMemberSearch(false); setSearchMember(''); }}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
-
 
         {/* Description */}
         <div className="mb-4">
@@ -331,68 +347,67 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
 
         {/* Subtasks Section */}
         <div className="mb-4">
-           <h3 className="text-sm font-semibold mb-2">Subtasks (Optional)</h3>
-           {subtasks.length > 0 && (
-              <div className="space-y-2 mb-3">
-                 {subtasks.map((subtask) => (
-                    <div key={subtask.id} className="flex items-center bg-gray-50 p-2 rounded">
-                       <button
-                         onClick={() => toggleSubtask(subtask.id)}
-                         className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
-                         style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
-                       >
-                         {subtask.completed && (
-                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
-                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                           </svg>
-                         )}
-                       </button>
-                       <span className={`text-sm flex-1 mr-2 ${subtask.completed ? "line-through text-gray-400" : ""}`}>
-                         {subtask.title}
-                       </span>
-                        <select
-                           value={subtask.priority || 'none'}
-                           onChange={(e) => handleUpdateSubtaskPriority(subtask.id, e.target.value)}
-                           className="text-xs border rounded px-1 py-0.5 text-gray-700"
-                        >
-                           {priorityLevels.map(level => (
-                              <option key={level} value={level}>
-                                 {level === 'none' ? 'Prio' : level}
-                              </option>
-                           ))}
-                        </select>
-                       <button
-                         onClick={() => deleteSubtask(subtask.id)}
-                         className="ml-2 text-gray-400 hover:text-red-500 text-xs"
-                       >
-                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                         </svg>
-                       </button>
-                    </div>
-                 ))}
-              </div>
-           )}
+          <h3 className="text-sm font-semibold mb-2">Subtasks (Optional)</h3>
+          {subtasks.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {subtasks.map((subtask) => (
+                <div key={subtask.id} className="flex items-center bg-gray-50 p-2 rounded">
+                  <button
+                    onClick={() => toggleSubtask(subtask.id)}
+                    className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
+                    style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
+                  >
+                    {subtask.completed && (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
+                  <span className={`text-sm flex-1 mr-2 ${subtask.completed ? "line-through text-gray-400" : ""}`}>
+                    {subtask.title}
+                  </span>
+                  <select
+                    value={subtask.priority || 'none'}
+                    onChange={(e) => handleUpdateSubtaskPriority(subtask.id, e.target.value)}
+                    className="text-xs border rounded px-1 py-0.5 text-gray-700"
+                  >
+                    {priorityLevels.map(level => (
+                      <option key={level} value={level}>
+                        {level === 'none' ? 'Prio' : level}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => deleteSubtask(subtask.id)}
+                    className="ml-2 text-gray-400 hover:text-red-500 text-xs"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
-           <div className="flex items-center">
-              <input
-                 type="text"
-                 value={newSubtaskTitle}
-                 onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                 placeholder="Add a subtask..."
-                 className="flex-1 border rounded px-3 py-2 text-sm mr-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSubtask(); } }}
-              />
-              <button
-                 onClick={addSubtask}
-                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                 disabled={!newSubtaskTitle.trim()}
-              >
-                 Add
-              </button>
-           </div>
+          <div className="flex items-center">
+            <input
+              type="text"
+              value={newSubtaskTitle}
+              onChange={(e) => setNewSubtaskTitle(e.target.value)}
+              placeholder="Add a subtask..."
+              className="flex-1 border rounded px-3 py-2 text-sm mr-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSubtask(); } }}
+            />
+            <button
+              onClick={addSubtask}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!newSubtaskTitle.trim()}
+            >
+              Add
+            </button>
+          </div>
         </div>
-
 
         {/* Buttons */}
         <div className="flex justify-end gap-2 mt-6">
@@ -407,7 +422,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel }) => {
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={!title.trim()}
           >
-            Add Task
+            {isEditing ? 'Save Changes' : 'Add Task'}
           </button>
         </div>
       </div>
