@@ -22,10 +22,11 @@ const Dashboard = () => {
       try {
         const [taskRes, memberRes] = await Promise.all([
           //FIX ROUTING TO MAKE DASHBOARD WORK
+        //////////////////////////////////////////////////////////////////////////////////
           axios.get(`/api/tasks?projectId=${currentProject._id}`),
-          axios.get(`/api/projects/${currentProject._id}/members`)
+          axios.get(`/api/projects/${currentProject._id}/`)
         ]);
-
+        //////////////////////////////////////////////////////////////////////////////////
         setTasks(taskRes.data);
         setTeamMembers(memberRes.data);
       } catch (err) {

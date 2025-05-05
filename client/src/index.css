@@ -35,6 +35,9 @@
   --border-color: var(--color-border-dark);
   --text-hover: var(--color-text-hover-dark);
   --text-active: var(--color-text-active-dark);
+  --border-color-accent: #7d7d7d;
+  --text-accent: black;
+  --today-active: #094d75;
 
   /* Use Dark Theme Colors */
   --primary-color: var(--color-primary);
@@ -55,6 +58,9 @@
   --border-color: #f5f5f7;
   --text-hover: #000000;
   --text-active: #000000;
+  --border-color-accent: #DDDDDD;
+  --text-accent:  #CBD5E1;
+  --today-active: #F7F2D7;
 
   /* Use Light Theme Colors */
   --primary-color: var(--color-primary);

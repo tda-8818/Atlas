@@ -17,7 +17,6 @@ const UserAvatar = () => {
     try {
       await logout().unwrap();
       // Force full page reload to clear all state
-      window.localStorage.clear(); 
       window.location.href = '/login';
     } catch (err) {
       console.error('Failed to logout:', err);

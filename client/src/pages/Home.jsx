@@ -166,7 +166,7 @@ const Home = () => {
                             {/* Delete Button */}
                             <button
                                 onClick={(e) => handleDeleteProject(e, project.id)}
-                                className="absolute p-1 top-2 right-2 text-gray-400 hover:text-red-500 z-10 cursor-pointer"
+                                className="absolute p-1 top-2 right-2 text-gray-400 hover:text-red-500 z-5 cursor-pointer"
                                 title="Delete Project"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

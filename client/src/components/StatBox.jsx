@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function StatBox({ title, value, icon, children }) {
   return (
-    <div className="flex flex-col items-start bg-[var(--background)] shadow-md rounded-lg p-4 h-full w-full border border-gray-200 hover:shadow-lg transition duration-300 ease-in-out">
+    <div className="flex flex-col items-start bg-[var(--background)] shadow-md rounded-lg p-4 h-full w-full border-1 border-[var(--border-color)] hover:shadow-lg transition duration-300 ease-in-out">
       {/* Header */}
       <div className="w-full flex items-center justify-center">
         <span className="text-[var(--text)] text-sm font-medium">{title}</span>

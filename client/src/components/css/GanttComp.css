@@ -1,176 +1,121 @@
-@import "../../index.css";
-/* GanttComp.css - Customized with #0288d1 as primary color */
-
-:root {
-  --gantt-primary-color: #0288d1;
-}
-
-.gantt-wrapper {
-  position: relative;
-  margin: 0 auto;
-  padding: 0;
-}
-
-.gantt-container {
-  background-color: #f9fafb;
-  font-family: 'Inter', sans-serif;
-  font-size: 11px; /* Reduced from 14px */
-  color: #1f2937;
-  padding: 0 10px;
-  margin-top: 50px;
-  height: calc(100vh - 70px);
-  overflow: auto;
-}
-
-.add-task-btn {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 6px 12px;
-  background-color: var(--gantt-primary-color);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 11px; /* Reduced from 14px */
-  transition: background-color 0.3s ease;
-}
-
-.add-task-btn:hover {
-  background-color: #0277bd;
-}
-
-/* Task styling */
-.gantt_task_line {
-  background-color: var(--gantt-primary-color);
-  border: none;
-  border-radius: 6px;
-  height: 20px; /* Adjusted height for smaller font */
-  color: #ffffff;
-}
-
-.gantt_task_line .gantt_task_progress {
-  background-color: #4fc3f7;
-  border-radius: 6px;
-}
-
-/* Grid and timeline headers */
-.gantt_grid_head_cell,
-.gantt_task_scale .gantt_scale_cell {
-  background-color: #f3f4f6;
-  color: #1f2937;
-  font-weight: 500;
-  font-size: 11px; /* Reduced from 14px */
-  border-bottom: 1px solid #e5e7eb;
-  justify-content: space-between;
-}
-
-.gantt_row.odd {
-  background-color: #f9fafb;
-}
-
-/* Week number styling */
-.gantt_scale_cell .week {
-  font-size: 10.5px;
-  color: var(--gantt-primary-color);
-}
-
-/* Tooltip styling */
-.gantt_tooltip {
-  background-color: white;
-  color: #111827;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 11px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* High-priority tasks */
-.high-priority-task {
-  background-color: #ef4444 !important;
-  color: #ffffff !important;
-}
-
-.gantt-task-line {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-}
-
-
-.gantt_row {
-  height: 32px;
-}
-
-.gantt_grid_head_cell,
-.gantt_task_scale .gantt_scale_cell {
-  font-size: 11px;
-}
-
-.gantt_grid_data .gantt_cell,
-.gantt_task_row .gantt_task_cell {
-  padding: 4px 6px;
-}
-
-/* Add these to your existing CSS file */
-
-/* Ensure the Gantt container supports scrolling */
-.gantt-wrapper {
-  position: relative;
-  margin: 0 auto;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto; /* Allow both horizontal and vertical scrolling */
-}
-
-/* If you want to add custom scrollbar styles */
-.gantt-container::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.gantt-container::-webkit-scrollbar-thumb {
-  background-color: #0288d1;
-  border-radius: 4px;
-}
-
-.gantt-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.gantt_tree_content{
-  font-size: x-small;
-  padding: 0 0 0 0;
-}
-/* .gantt_grid_head_cell {
-  background-color: #187cb4;
-} */
-  /* gantt_grid_head_add gantt_last_cell  */
-
-  .dark .gantt-container,
-.dark .gantt_task_bg,
-.dark .gantt_grid_data,
-.dark .gantt_task_data,
-.dark .gantt_data_area,
-.dark .gantt_task_line,
-.dark .gantt_row,
-.dark .gantt_task_row,
-.dark .gantt_grid_row,
-.dark .gantt_task_cell,
-.dark .gantt_cell,
-.dark .gantt_scale_cell,
-.dark .gantt_grid_head,
-.dark .gantt_grid_head_cell,
-.dark .gantt_task_scale,
-.dark .gantt_task_scale .gantt_scale_cell {
+/* === DARK MODE: GLOBAL CONTAINER STYLES === */
+.gantt-wrapper,
+.gantt-container,
+.gantt_task_bg,
+.gantt_grid_data,
+.gantt_task_data,
+.gantt_data_area,
+.gantt_task_row,
+.gantt_grid_row,
+.gantt_task_cell,
+.gantt_cell,
+.gantt_row,
+.gantt_tree_content {
   background-color: var(--background) !important;
   color: var(--text) !important;
-  border-color: var(--border-color) !important;
+  border-color: var(--border-color-accent) !important;
+  font-size: 0.6rem;
 }
 
+/* === TIMELINE TASK BARS — KEEP ORIGINAL COLOR === */
+/* No override for .gantt_task_line background — keep default/custom project color */
+.gantt_task_line {
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Progress bar inside tasks — use a light blue for dark contrast */
+.gantt_task_line .gantt_task_progress {
+  background-color: #03a9f4 !important;
+  border-radius: 6px;
+}
+.gantt_task_line{
+  background-color: #187CB4;
+}
+
+/* === GRID HEADER & TIMELINE HEADER === */
+.gantt_grid_head,
+.gantt_grid_head_cell,
+.gantt_task_scale,
+.gantt_task_scale .gantt_scale_cell {
+  background-color: var(--background-primary) !important;
+  color: var(--text) !important;
+  border-color: var(--border-color-accent) !important;
+  font-weight: 500;
+}
+
+/* === TOOLTIP === */
+.gantt_tooltip {
+  background-color: var(--background-primary) !important;
+  color: var(--text) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* === SCROLLBAR === */
+.gantt-container::-webkit-scrollbar-thumb {
+  background-color: var(--border-color-accent);
+}
+.gantt-container::-webkit-scrollbar-track {
+  background: var(--background-primary);
+}
 .gantt_layout_cell .gantt_hor_scroll{
-  background-color: var(--background) !important;
+  background: var(--background-primary);
+
 }
 
+/* === HIGH PRIORITY TASK === */
+.high-priority-task {
+  background-color: #ef4444 !important;
+  color: white !important;
+}
 
+/* === OUTER BORDER ENFORCEMENT === */
+.gantt-container *,
+.gantt-wrapper *,
+.gantt_task_cell,
+.gantt_cell,
+.gantt_grid_head_cell,
+.gantt_task_scale .gantt_scale_cell,
+.gantt_grid_data .gantt_cell,
+.gantt_task_row .gantt_task_cell,
+.gantt_task_bg,
+.gantt_data_area,
+.gantt_task_data {
+  border-color: var(--border-color-accent) !important;
+  font-size: 0.6rem;
+}
+/* === OUTER WRAPPER + LAYOUT STRUCTURE BORDERS === */
+.gantt_layout_cell,
+.gantt_layout_cell_border,
+.gantt_grid,
+.gantt_task,
+.gantt_splitter,
+.gantt_ver_scroll,
+.gantt_hor_scroll,
+.gantt_task_data,
+.gantt_task_bg,
+.gantt_grid_data,
+.gantt_grid_head,
+.gantt_task_scale,
+.gantt_data_area {
+  border-color: var(--border-color-accent) !important;
+  background-color: inherit;
+}
 
+/* Force splitter bar and layout cell dividers to use dark borders */
+.gantt_splitter {
+  background-color: var(--border-color-accent) !important;
+  width: 1px !important;
+}
+
+/* Scroll container frames */
+.gantt_layout_cell .gantt_ver_scroll,
+.gantt_layout_cell .gantt_hor_scroll {
+  border: 1px solid var(--border-color-accent) !important;
+}
+
+/* Optional: subtle outer border for the entire gantt chart */
+.gantt-wrapper {
+  border: 1px solid var(--border-color-accent);
+  box-sizing: border-box;
+}

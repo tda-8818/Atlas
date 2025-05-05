@@ -51,8 +51,10 @@
 
 /* Today's date styling */
 .fc .fc-day-today {
-  background-color: #F7F2D7 !important;
+  background-color: var(--today-active) !important;
+  color: var(--text);
 }
+
 
 /* Day cell base styling */
 .fc .fc-daygrid-day:not(.fc-day-today){
@@ -85,6 +87,7 @@
   font-size: 0.65rem !important;
   line-height: 1 !important;
   border-radius: 2px !important;
+  
 }
 
 .fc .fc-daygrid-event-harness {
@@ -126,4 +129,9 @@
 
 .fc-timegrid-slot-label {
   font-size: 0.7rem;
+}
+.fc,
+.fc * {
+  border-color: var(--border-color-accent) !important;
+ 
 }
