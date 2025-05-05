@@ -2,7 +2,7 @@ import { Menu, Transition, MenuButton, MenuItems, MenuItem } from '@headlessui/r
 import { Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LuSettings, LuUser, LuCircleArrowOutUpLeft } from 'react-icons/lu';
-import { useLogoutMutation, useGetCurrentUserQuery } from '../redux/slices/apiSlice';
+import { useLogoutMutation, useGetCurrentUserQuery } from '../redux/slices/userSlice';
 import { getInitials } from '../utils/userUtils';
 
 const UserAvatar = () => {

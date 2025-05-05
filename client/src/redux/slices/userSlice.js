@@ -3,9 +3,9 @@
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const API_URL = "http://localhost:5001/api";
+const API_URL = import.meta.env.VITE_API_URL;
 
-export const apiSlice = createApi({
+export const userApiSlice = createApi({
     reducerPath: 'api',
     baseQuery: fetchBaseQuery({
         baseUrl: API_URL,
@@ -39,44 +39,14 @@ export const apiSlice = createApi({
             query: () => '/users/me',
             providesTags: ['User']
         }),
-
-        // Task endpoints
-        getTasks: builder.query({
-            query: () => '/tasks',
-        }),
-        addTask: builder.mutation({
-            query: (newTask) => ({
-                url: '/tasks',
-                method: 'POST',
-                body: newTask,
-            }),
-        }),
-        updateTask: builder.mutation({
-            query: ({ id, ...updatedTask }) => ({
-                url: `/tasks/${id}`,
-                method: 'PUT',
-                body: updatedTask,
-            }),
-        }),
-        deleteTask: builder.mutation({
-            query: (id) => ({
-                url: `/tasks/${id}`,
-                method: 'DELETE',
-            }),
-        }),
     }),
 });
 
 export const {
     useLoginMutation,
     useLogoutMutation,
-    useGetCurrentUserQuery,
-    useGetTasksQuery,
-    useAddTaskMutation,
-    useUpdateTaskMutation,
-    useDeleteTaskMutation,
-    useGetProjectsQuery,
+    useGetCurrentUserQuery
 
-} = apiSlice;
+} = userApiSlice;
 
-export default apiSlice;
+export default userApiSlice;

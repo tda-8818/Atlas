@@ -11,7 +11,7 @@ import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
 import ProjectLayout from "./layouts/ProjectLayout.jsx";
 import { useEffect, useState } from "react";
-import { useGetCurrentUserQuery } from './redux/slices/apiSlice.js';
+import { useGetCurrentUserQuery } from './redux/slices/userSlice.js';
 
 
 // The main App component that defines the routes for the application

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, Link } from 'react-router-dom';
-import { useLoginMutation, useGetCurrentUserQuery } from '../redux/slices/apiSlice';
+import { useLoginMutation, useGetCurrentUserQuery } from '../redux/slices/userSlice';
 import logo from '../assets/logo.png';
 import Textbox from '../components/Textbox';
 import { Button } from '@headlessui/react';

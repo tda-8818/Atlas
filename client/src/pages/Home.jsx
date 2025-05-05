@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-import { useGetCurrentUserQuery } from '../redux/slices/apiSlice';
+import { useGetCurrentUserQuery } from '../redux/slices/userSlice';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import UserAvatar from "../components/UserAvatar";
