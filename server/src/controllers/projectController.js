@@ -126,39 +126,35 @@ export const selectProject = async (req, res) => {
 
 };
 
+// TODO: check if function is useful
 export const getUserProjects = async (req, res) => {
-    /*
-    Gets the user from the cookie and returns their projects 
-    */
     try {
-
         console.log("getUserProjects Executed");
-
-        // receive user cookie
-        const userCookie = req.user;
-
-        console.log("userId", userCookie);
-
-        // get user from database
+    
+        // Ensure that a valid user is attached to the request
         if (!req.user) {
-            console.error({ message: "token user undefined" });
-            return;
+          console.error("User token undefined");
+          return res.status(401).json({ message: "User not authenticated" });
         }
-
+    
+        // Retrieve the user from the database and populate the "projects" field
         const user = await UserModel.findById(req.user._id).populate("projects");
-
-        // get user's Projects
+    
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+    
+        // Return the user's projects as JSON
         const projects = user.projects;
-        console.log("user projects: ", projects);
-
+        console.log("User projects:", projects);
         res.status(200).json(projects);
-
-    } catch (error) {
+      } catch (error) {
         console.error("Error in getUserProjects:", error);
         res.status(500).json({ success: false, message: error.message });
-    }
+      }
 };
 
+// TODO: check this function works
 export const addUserToProject = async (req, res) => {
     try {
 
@@ -217,34 +213,30 @@ export const addUserToProject = async (req, res) => {
     }
 }
 
+// Deletes a project; RTK Query will later use the response to invalidate its cache.
 export const deleteProject = async (req, res) => {
-    /**Deletes a project
-     * After deletion, it should clear the project from any instance in
-     * other components such as the UserModel.
-     * 
-     * 
-     */
     try {
-        const { id } = req.params
+        const { id } = req.params;
+        console.log("deleteProject executed with id:", id);
 
-        console.log('deleteProject has been executed');
-
-        console.log("recieved token: ", req.user);
-        const email = req.user.email;
-        console.log(email);
-
+        // Optionally, you can check if req.user is allowed to delete the project.
         const projectToDelete = await Project.findByIdAndDelete(id);
-
         if (!projectToDelete) {
             return res.status(404).json({ message: "Project not found" });
         }
-        res.status(200).json({ message: "Project deleted successfully", projectToDelete })
+        res.status(200).json({ message: "Project deleted successfully", project: projectToDelete });
     } catch (error) {
-        console.error("Error in deleteProject: ", error);
-        res.status(500).json({ message: "Error in deleteProject" });
+        console.error("Error in deleteProject:", error);
+        res.status(500).json({ message: "Error in deleteProject", error });
     }
-}
+};
 
+/**
+ * Returns a single project by ID.
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
 export const getProjectById = async (req, res) => {
     try {
       const { id } = req.params;

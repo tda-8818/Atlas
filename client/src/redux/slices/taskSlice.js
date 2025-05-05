@@ -17,13 +17,7 @@ export const taskApiSlice = createApi({
     // Fetch tasks by project ID
     getTasksByProject: builder.query({
       query: (projectId) => `/tasks?projectId=${projectId}`,
-      providesTags: (result, error, projectId) =>
-        result
-          ? [
-              ...result.map((task) => ({ type: 'Task', id: task._id })),
-              { type: 'Task', id: 'LIST' },
-            ]
-          : [{ type: 'Task', id: 'LIST' }],
+      providesTags: (result, error, projectId) => [{ type: 'Task', id: projectId }],
     }),
 
     // Create a new task

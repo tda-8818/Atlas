@@ -3,42 +3,42 @@ import Navbar from '../components/Navbar';
 import StatBox from '../components/StatBox';
 import ProjectHeader from '../components/ProjectHeader';
 import { useOutletContext } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useGetProjectByIdQuery } from '../redux/slices/projectSlice';
+import { useGetTasksByProjectQuery } from '../redux/slices/taskSlice';
 
 const Dashboard = () => {
   const { currentProject } = useOutletContext();
 
-  const [tasks, setTasks] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [loadingTasks, setLoadingTasks] = useState(true);
-  const [loadingMembers, setLoadingMembers] = useState(true);
+  // Use RTK Query to fetch tasks by projectId.
+  const {
+    data: tasks = [],
+    isLoading: loadingTasks,
+    error: tasksError,
+  } = useGetTasksByProjectQuery(currentProject?._id, {
+    skip: !currentProject?._id,
+  });
 
-  // Fetch project tasks
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!currentProject?._id) return;
+  // Use RTK Query to fetch project details (assuming team members are part of the project data).
+  const {
+    data: projectDetails,
+    isLoading: loadingProject,
+    error: projectError,
+  } = useGetProjectByIdQuery(currentProject?._id, {
+    skip: !currentProject?._id,
+  });
 
-      try {
-        const [taskRes, memberRes] = await Promise.all([
-          //FIX ROUTING TO MAKE DASHBOARD WORK
-        //////////////////////////////////////////////////////////////////////////////////
-          axios.get(`/api/tasks?projectId=${currentProject._id}`),
-          axios.get(`/api/projects/${currentProject._id}/`)
-        ]);
-        //////////////////////////////////////////////////////////////////////////////////
-        setTasks(taskRes.data);
-        setTeamMembers(memberRes.data);
-      } catch (err) {
-        console.error("Error fetching dashboard data:", err);
-      } finally {
-        setLoadingTasks(false);
-        setLoadingMembers(false);
-      }
-    };
+  if (loadingTasks || loadingProject) {
+    return <div>Loading dashboard data...</div>;
+  }
 
-    fetchData();
-  }, [currentProject]);
+  if (tasksError || projectError) {
+    return (
+      <div className="error">
+        Error loading dashboard data: {tasksError?.error || projectError?.error || 'Unknown error'}
+      </div>
+    );
+  }
+
   const completedCount = currentProject.tasks.filter(task => task.status?.toLowerCase() === 'completed').length;
   const inProgressCount = currentProject.tasks.filter(task => task.status?.toLowerCase() === 'in progress').length;
   const overdueCount = currentProject.tasks.filter(task => new Date(task.dueDate) < new Date() && task.status?.toLowerCase() !== 'completed').length;

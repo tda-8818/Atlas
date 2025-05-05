@@ -3,35 +3,28 @@ import Task from '../models/TaskModel.js';
 import { selectProject } from './projectController.js';
 import jwt from 'jsonwebtoken';
 
-export const getTask = async (req, res) => {
+/**
+ * Gets task details based on the projectId query parameter.
+ * If no projectId is provided, it fetches all tasks.
+ * @param {G} req 
+ * @param {*} res 
+ */
+export const getTasksByProject = async (req, res) => {
     try {
-        // Check if a projectId query parameter is provided
+        // If a projectId query parameter is provided, filter by it
         const filter = req.query.projectId ? { projectId: req.query.projectId } : {};
-
+        
         // Fetch tasks for a specific project if provided, or all tasks otherwise
         const tasks = await Task.find(filter)
-            .populate('assignedTo', 'name')
-            .populate('projectId', 'name');
-
-        // You can either return the raw tasks or map them to your desired output shape.
-        // Here we're still mapping them to calendar events.
-        const calendarEvents = tasks.map(task => ({
-            id: task._id,
-            title: task.title,
-            start: task.startDate || task.start_date,
-            end: task.dueDate || task.due_date,
-            allDay: true,
-            description: task.description,
-            status: task.status,
-            priority: task.priority,
-            assignedTo: task.assignedTo.map(user => user.name).join(', '),
-            projectName: task.projectId?.name || "Unassigned"
-        }));
-
-        res.status(200).json(calendarEvents);
-    } catch (error) {
+          .populate('assignedTo', 'firstName lastName')  // Return user names as needed
+          .populate('projectId', 'title');  // Populate project details like title
+    
+        // Optionally, you can transform these tasks for specific UI needs
+        // or simply return the raw tasks.
+        res.status(200).json(tasks);
+      } catch (error) {
         res.status(500).json({ message: 'Error fetching tasks', error });
-    }
+      }
 };
 
 export const createTask = async (req, res) => {
@@ -57,7 +50,11 @@ export const createTask = async (req, res) => {
             due_date: end,
         });
 
+        console.log("New task created:", newTask);
+
         const savedTask = await newTask.save();
+
+        console.log("Saved task:", savedTask);
 
         // Optionally link the task back to the project
         project.tasks.push(savedTask._id);
@@ -79,6 +76,8 @@ export const updateTask = async (req, res) => {
             req.body,
             { new: true }
         ).populate('projectId').populate('assignedTo');
+
+        console.log("Updated task:", updatedTask);
 
         if (!updatedTask) {
             return res.status(404).json({ error: 'Task not found' });
@@ -175,7 +174,6 @@ export const editTask = async (req, res) => {
     }
 };
 
-// TODO: add jwt verification
 export const deleteTask = async (req, res) => {
     try {
         const { id } = req.params
