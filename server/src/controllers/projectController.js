@@ -68,7 +68,12 @@ export const createProject = async (req, res) => {
     }
 }
 
-// This function selects a project from the homepage and sets it as the current project in a cookie
+/*
+    This endpoint selects a project from the homepage.
+    It verifies that the project exists in the database,
+    then clears any existing "selectedProject" cookie, creates a new JWT,
+    and sets it in its own cookie using the projectCookieOptions.
+  */
 export const selectProject = async (req, res) => {
     /*
     Selecting a project in from the homepage directs a user to the dashboard
@@ -76,46 +81,40 @@ export const selectProject = async (req, res) => {
     ONLY ONE PROJECT SHOULD BE STORED IN THE COOKIE
     */
     try {
-        const tokenPayload = { projectId: id };
-         // 2. generate token
-        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.cookie('selectedProject', token, cookieOptions);
-
-        // const { projectId: id } = req.body;
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ message: "No projectId provided" });
+        }
 
         console.log("recieved projectId:", id);
 
+        // 1. Check if project is valid in DB
+        const existingProject = await Project.findById(id);
 
-        // // 1. Check if project is valid in DB
-        // const existingProject = await Project.findById(projectId);
+        if (!existingProject) {
+            console.log("project not found for id:", id);
+            return res.status(400).json({
+                message: "Project data not found"
+            })
+        }
 
-        // // testing logs
-        // console.log("found project:", existingProject);
+        // testing logs
+        console.log("found project:", existingProject);
 
-        // if (!existingProject) {
-        //     return res.status(400).json({
-        //         message: "Project data not found"
-        //     })
-        // }
+        // Clear any existing project cookie
+        res.clearCookie("selectedProject");
 
-        // // 1.5 clear existing project cookie
-        // res.clearCookie("selectedProject");
+        // 2. generate token representing selected project
+        const tokenPayload = { projectId: id };
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-       
-        // const token = jwt.sign(
-        //     { id },
-        //     process.env.JWT_SECRET,
-        //     { expiresIn: '1h' }
-        // );
+        res.cookie('selectedProject', token, cookieOptions);
 
-        // // 3. set http-only cookie
-        // res.cookie('selectedProject', token, cookieOptions);
-
-        // // 4. send response
-        // res.status(200).json({
-        //     success: true,
-        //     message: 'Project selected successfully',
-        // });
+        // 3. send response
+        res.status(200).json({
+            success: true,
+            message: 'Project selected successfully',
+        });
 
 
     } catch (error) {
@@ -239,7 +238,7 @@ export const deleteProject = async (req, res) => {
         if (!projectToDelete) {
             return res.status(404).json({ message: "Project not found" });
         }
-        res.status(200).json({ message: "Project deleted successfully", task_to_delete })
+        res.status(200).json({ message: "Project deleted successfully", projectToDelete })
     } catch (error) {
         console.error("Error in deleteProject: ", error);
         res.status(500).json({ message: "Error in deleteProject" });

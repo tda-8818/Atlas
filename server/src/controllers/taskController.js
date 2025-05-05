@@ -42,60 +42,60 @@ export const createTask = async (req, res) => {
         // 1. Extract token from the cookie
         const token = req.cookies?.selectedProject;
         if (!token) {
-          return res.status(401).json({ message: 'Project not selected. Token missing.' });
+            return res.status(401).json({ message: 'Project not selected. Token missing.' });
         }
-    
+
         // 2. Verify and decode the JWT token
         let decoded;
         try {
-          decoded = jwt.verify(token, process.env.JWT_SECRET);
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
         } catch (error) {
-          console.error("JWT verification error:", error);
-          return res.status(401).json({ message: 'Invalid project token' });
+            console.error("JWT verification error:", error);
+            return res.status(401).json({ message: 'Invalid project token' });
         }
-        
+
         // 3. Extract projectId from the decoded token payload
         // Ensure that when you set the cookie, you used { projectId: id } as payload
         const projectId = decoded.projectId;
         if (!projectId) {
-          return res.status(400).json({ message: 'Project ID missing in token' });
+            return res.status(400).json({ message: 'Project ID missing in token' });
         }
-    
+
         console.log("Decoded projectId:", projectId);
-    
+
         // 4. Find the project by projectId in the database
         const project = await Project.findById(projectId);
         if (!project) {
-          return res.status(404).json({ message: "Project not found" });
+            return res.status(404).json({ message: "Project not found" });
         }
-    
+
         // 5. Extract task information from the request body
         const { title, description, start, end } = req.body;
         console.log("Creating task with:", title, start, end);
-    
+
         // 6. Create the new task object (make sure your schema keys are used consistently)
         const newTask = new Task({
-          projectId: project._id, // associate the valid project ObjectId
-          title,
-          description,
-          start_date: start,
-          due_date: end
+            projectId: project._id, // associate the valid project ObjectId
+            title,
+            description,
+            start_date: start,
+            due_date: end
         });
-    
+
         // 7. Save the new task document to the database
         const savedTask = await newTask.save();
-    
+
         // 8. Optionally update the project with the new task reference
         project.tasks.push(savedTask._id);
         await project.save();
-    
+
         // 9. Return the saved task to the client with a 201 status code
         res.status(201).json(savedTask);
-    
-      } catch (error) {
+
+    } catch (error) {
         console.error("Error creating task:", error);
         res.status(500).json({ message: "Error creating task", error });
-      }
+    }
 };
 
 
@@ -209,40 +209,57 @@ export const updateTask = async (req, res) => {
 };
 
 export const editTask = async (req, res) => {
-    const { id } = req.params;
-    const {
-        title,
-        description,
-        status,
-        priority,
-        assignedTo,
-        dueDate,
-        startDate
-    } = req.body;
-
     try {
-        const updatedTask = await Task.findByIdAndUpdate(
-            id,
-            {
-                title,
-                description,
-                status,
-                priority,
-                assignedTo,
-                dueDate,
-                startDate
-            },
-            { new: true }
-        );
+        // 1. Extract token from the cookie
+        const token = req.cookies?.selectedProject;
+        if (!token) {
+            return res.status(401).json({ message: "Project not selected. Token missing." });
+        }
 
-        if (!updatedTask) {
+        // 2. Verify and decode the JWT token
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (error) {
+            console.error("JWT verification error:", error);
+            return res.status(401).json({ message: "Invalid project token" });
+        }
+
+        // 3. Extract projectId from the decoded token payload
+        const projectId = decoded.projectId;
+        if (!projectId) {
+            return res.status(400).json({ message: "Project ID missing in token" });
+        }
+
+        // 4. Get the task ID from URL parameters
+        const taskId = req.params.id;
+
+        // 5. Find the task ensuring it belongs to the current project
+        const task = await Task.findOne({ _id: taskId, projectId });
+        if (!task) {
             return res.status(404).json({ message: "Task not found" });
         }
 
-        res.status(200).json(updatedTask);
+        // 6. Extract new task data from the request body
+        const { title, description, start, end } = req.body;
+
+        // 7. Update the task fields if provided
+        if (title !== undefined) task.title = title;
+        if (description !== undefined) task.description = description;
+        if (start !== undefined) task.start_date = start;
+        if (end !== undefined) task.due_date = end;
+
+        // 8. Save the updated task
+        const updatedTask = await task.save();
+
+        // 9. Return a response with updated task data
+        res.status(200).json({
+            message: "Task updated successfully",
+            task: updatedTask
+        });
     } catch (error) {
-        console.error("Error updating task:", error);
-        res.status(500).json({ message: "Error updating task", error });
+        console.error("Error editing task:", error);
+        res.status(500).json({ message: "Error editing task", error });
     }
 };
 

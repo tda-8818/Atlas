@@ -56,6 +56,31 @@ const Home = () => {
         deadline: ""
     });
 
+    // const handleProjectClick = async (project) => {
+    //     /**
+    //      * Switches the view to the dashboard and sets the cookie for the selected project.
+    //      */
+    //     console.log("Clicked Project:", project);
+        
+    //     const projectId = project.id;
+    //     // 1. Clear the project cookie if not null. 
+    //     // set the current clicked project to be the new project cookie. 
+
+    //     // 2. selectedProject is the name of the cookie i defined in projectController.js
+    //     console.log("sending projectID from home:", projectId);
+    //     const response = await axios.post(`http://localhost:5001/home/${projectId}`, {}, {
+    //         withCredentials: true
+    //     });
+
+    //     if (response.status === 200) {
+    //         console.log("Project cookie set");
+    //          // 3. redirect to project dashboard
+    //         navigate('/dashboard'); // Only redirect if request is successful
+    //     } else {
+    //         console.error("Error in handleProjectClick:", error);
+    //     }
+    // };
+
     const handleProjectClick = async (project) => {
         try {
             console.log("Clicked Project:", project);
@@ -71,7 +96,7 @@ const Home = () => {
         } catch (error) {
             console.error("Error in handleProjectClick:", error);
         }
-    };
+      };
 
     //handles delete project when user chooses to delete
     const handleDeleteProject = async (e, projectId) => {
