@@ -187,22 +187,20 @@ const Home = () => {
     setEditingProject(null);
   };
 
-  // Helper to format date string
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     try {
-        const date = new Date(dateString);
-        if (isNaN(date)) {
-            console.error("Invalid date string:", dateString);
-            return dateString;
-        }
-        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return date.toLocaleDateString(undefined, options);
+      const date = new Date(dateString);
+      if (isNaN(date)) return dateString;
+  
+      const options = { day: 'numeric', month: 'short', year: 'numeric' };
+      return date.toLocaleDateString(undefined, options).replace(/(\d+) (\w+) (\d{4})/, '$1 $2, $3');
     } catch (error) {
-        console.error("Error formatting date:", dateString, error);
-        return dateString;
+      console.error("Error formatting date:", dateString, error);
+      return dateString;
     }
   };
+  
 
   // Function to get combined unique team member and owner IDs for display
   // Added sorting to put owner first if they exist
@@ -269,14 +267,7 @@ const Home = () => {
                     </button>
                 </div>
 
-                {/* Display Dates */}
-                {(project.startDate || project.dueDate) && (
-                    <div className="text-sm text-gray-600 mb-3">
-                        <span>{formatDate(project.startDate)}</span>
-                        {project.startDate && project.dueDate && <span> - </span>}
-                        <span>{formatDate(project.dueDate)}</span>
-                    </div>
-                )}
+                
 
                 {/* Progress Bar (If you want to keep it) */}
                 {/* Remove this div if you only want title, dates, and avatars */}
@@ -293,33 +284,36 @@ const Home = () => {
                   </div>
                 </div>
               </div>
+                {/* Bottom row: Date and Avatars on the same line */}
+                <div className="flex items-center justify-between text-sm text-gray-600 mt-3">
+                    {/* Date */}
+                    <div>
+                        {project.startDate || project.dueDate ? (
+                        <>
+                            <span>{formatDate(project.startDate)}</span>
+                            {project.startDate && project.dueDate && <span> - </span>}
+                            <span>{formatDate(project.dueDate)}</span>
+                        </>
+                        ) : (
+                        <span>No dates</span>
+                        )}
+                    </div>
 
-              {/* Bottom section with Team Avatars */}
-              {/* You can add Days Left back here if needed */}
-              <div className="flex items-center text-xs text-gray-500 mt-3">
-                  {/* Days Left (Optional) */}
-                  {/* {project.dueDate && (
-                     <div className="flex items-center gap-1 mr-auto">
-                       <i className="far fa-clock"></i>
-                       <span>{project.daysLeft} Days Left</span>
-                     </div>
-                   )} */}
-
-                  <div className="flex -space-x-1 overflow-hidden ml-auto">
-                    {/* Map unique team member and owner IDs to Avatar components */}
-                    {getUniqueTeamMemberIds(project).map((userId) => {
-                       const member = getTeamMemberDetails(userId);
-                       return member ? (
-                           <Avatar
-                             key={userId}
-                             user={member}
-                             size="small"
-                             className="w-6 h-6 rounded-full border-2 border-white flex-shrink-0"
-                           />
-                       ) : null;
-                    })}
-                  </div>
-              </div>
+                    {/* Avatars */}
+                    <div className="flex -space-x-1 overflow-hidden">
+                        {getUniqueTeamMemberIds(project).map((userId) => {
+                        const member = getTeamMemberDetails(userId);
+                        return member ? (
+                            <Avatar
+                            key={userId}
+                            user={member}
+                            size="small"
+                            className="w-6 h-6 rounded-full border-2 border-white flex-shrink-0"
+                            />
+                        ) : null;
+                        })}
+                    </div>
+                </div>
             </div>
           ))}
 
