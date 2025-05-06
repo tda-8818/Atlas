@@ -18,6 +18,7 @@ const Projects = () => {
         isError: projectsError,
         refetch,
     } = useGetUserProjectsQuery();
+    
 
     const [createProject] = useCreateProjectMutation();
     const [deleteProject] = useDeleteProjectMutation();

@@ -87,7 +87,7 @@ export const getUserProjects = async (req, res) => {
     
         // Return the user's projects as JSON
         const projects = user.projects;
-        //console.log("User projects:", projects);
+        console.log("User projects:", projects);
         res.status(200).json(projects);
       } catch (error) {
         console.error("Error in getUserProjects:", error);

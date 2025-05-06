@@ -16,7 +16,7 @@ const Navbar = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await axios.get("http://localhost:5001/projects", {
+        const response = await axios.get("http://localhost:5001/api/projects", {
           withCredentials: true
         });
 
