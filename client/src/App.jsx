@@ -2,7 +2,7 @@ import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import Presignup from "./pages/Presignup";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
-import Home from "./pages/Home";
+import Projects from "./pages/Projects.jsx";
 import Dashboard from "./pages/Dashboard";
 import Calendar from "./pages/Calendar";
 import Kanban from "./pages/Kanban";
@@ -39,13 +39,13 @@ function App() {
     <div className={theme}>
       <Routes>
         {/* Public routes */}
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/home" replace />} />
-        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/home" replace />} />
+        <Route path="/login" element={!user ? <Login /> : <Navigate to="/projects" replace />} />
+        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/projects" replace />} />
         <Route path="/Presignup" element={<Presignup />} />
         {/* Protected routes */}
-        <Route path="/" element={user ? <Outlet /> : <Navigate to="/signup" replace />}>
+        <Route path="/" element={user ? <Outlet /> : <Navigate to="/login" replace />}>
           <Route index element={<Navigate to="/home" replace />} />
-          <Route path="home" element={<Home />} />
+          <Route path="projects" element={<Projects />} />
           <Route path="settings" element={<Settings setTheme={setTheme} />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="kanban" element={<Kanban />} />
@@ -54,7 +54,7 @@ function App() {
         </Route>
 
         {/* Project Routes */}
-        <Route path="/project/:id" element={<ProjectLayout />}>
+        <Route path="/projects/:id" element={<ProjectLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="kanban" element={<Kanban />} />
           <Route path="calendar" element={<Calendar />} />
@@ -63,7 +63,7 @@ function App() {
         </Route>
 
         {/* Catch-all route */}
-        <Route path="*" element={<Navigate to={user ? "/home" : "/login"} replace />} />
+        <Route path="*" element={<Navigate to={user ? "/projects" : "/login"} replace />} />
       </Routes>
     </div>
   );

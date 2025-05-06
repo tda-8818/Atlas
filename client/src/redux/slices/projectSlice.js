@@ -7,7 +7,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 const PROJECT_API_URL = import.meta.env.VITE_API_URL;
 
 export const projectApiSlice = createApi({
-  reducerPath: 'projectsApi', // unique key for the projects slice
+  reducerPath: 'api', // unique key for the projects slice
   baseQuery: fetchBaseQuery({
     baseUrl: PROJECT_API_URL,
     credentials: 'include',
@@ -21,7 +21,7 @@ export const projectApiSlice = createApi({
     }),
 
     // Fetch all projects (if needed, e.g., for listing user's projects)
-    getProjects: builder.query({
+    getUserProjects: builder.query({
       query: () => '/projects',
       providesTags: (result = [], error, arg) =>
         result
@@ -68,7 +68,7 @@ export const projectApiSlice = createApi({
 // Export hooks for usage in functional components
 export const {
   useGetProjectByIdQuery,
-  useGetProjectsQuery,
+  useGetUserProjectsQuery,
   useCreateProjectMutation,
   useUpdateProjectMutation,
   useDeleteProjectMutation,

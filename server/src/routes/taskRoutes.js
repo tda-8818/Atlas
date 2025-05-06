@@ -4,7 +4,7 @@ import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/calendar', authMiddleware, getTasksByProject);
+router.get('/', authMiddleware, getTasksByProject);
 
 router.post('/', authMiddleware, createTask);
 

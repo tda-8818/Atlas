@@ -1,6 +1,4 @@
-import Project from '../models/ProjectModel.js';
 import Task from '../models/TaskModel.js';
-import { selectProject } from './projectController.js';
 import jwt from 'jsonwebtoken';
 
 /**

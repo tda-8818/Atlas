@@ -38,7 +38,7 @@ const Login = () => {
       console.log('Document cookies:', document.cookie);
 
       // 3. Redirect to home
-      navigate('/home');
+      navigate('/projects');
 
     } catch (err) {
       console.error('Login failed:', err);

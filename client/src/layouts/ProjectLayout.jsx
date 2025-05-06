@@ -1,4 +1,5 @@
 import { useParams, Outlet } from 'react-router-dom';
+import { useGetProjectByIdQuery } from '../redux/slices/projectSlice'; // Adjust the import path as necessary
 
 const ProjectLayout = () => {
   const { id } = useParams(); // Get :id from URL

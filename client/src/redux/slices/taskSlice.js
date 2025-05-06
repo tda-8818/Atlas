@@ -7,7 +7,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 const TASK_API_URL = import.meta.env.VITE_API_URL;
 
 export const taskApiSlice = createApi({
-  reducerPath: 'tasksApi', // Unique key for the tasks slice
+  reducerPath: 'api', // Unique key for the tasks slice
   baseQuery: fetchBaseQuery({
     baseUrl: TASK_API_URL,
     credentials: 'include',

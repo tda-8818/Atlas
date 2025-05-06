@@ -68,65 +68,6 @@ export const createProject = async (req, res) => {
     }
 }
 
-/*
-    This endpoint selects a project from the homepage.
-    It verifies that the project exists in the database,
-    then clears any existing "selectedProject" cookie, creates a new JWT,
-    and sets it in its own cookie using the projectCookieOptions.
-  */
-export const selectProject = async (req, res) => {
-    /*
-    Selecting a project in from the homepage directs a user to the dashboard
-    It also set the cookie to the current project so that the rest of the app can access and render project-specific content like tasks 
-    ONLY ONE PROJECT SHOULD BE STORED IN THE COOKIE
-    */
-    try {
-        const { id } = req.params;
-        if (!id) {
-            return res.status(400).json({ message: "No projectId provided" });
-        }
-
-        console.log("recieved projectId:", id);
-
-        // 1. Check if project is valid in DB
-        const existingProject = await Project.findById(id);
-
-        if (!existingProject) {
-            console.log("project not found for id:", id);
-            return res.status(400).json({
-                message: "Project data not found"
-            })
-        }
-
-        // testing logs
-        console.log("found project:", existingProject);
-
-        // Clear any existing project cookie
-        res.clearCookie("selectedProject");
-
-        // 2. generate token representing selected project
-        const tokenPayload = { projectId: id };
-        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-        res.cookie('selectedProject', token, cookieOptions);
-
-        // 3. send response
-        res.status(200).json({
-            success: true,
-            message: 'Project selected successfully',
-        });
-
-
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
-    }
-
-};
-
-// TODO: check if function is useful
 export const getUserProjects = async (req, res) => {
     try {
         console.log("getUserProjects Executed");
@@ -146,7 +87,7 @@ export const getUserProjects = async (req, res) => {
     
         // Return the user's projects as JSON
         const projects = user.projects;
-        console.log("User projects:", projects);
+        //console.log("User projects:", projects);
         res.status(200).json(projects);
       } catch (error) {
         console.error("Error in getUserProjects:", error);
@@ -242,7 +183,7 @@ export const getProjectById = async (req, res) => {
       const { id } = req.params;
       console.log(id);
       const project = await Project.findById(id);
-      console.log("project found: ",project)
+      console.log("projectById found: ",project)
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }

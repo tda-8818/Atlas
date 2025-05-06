@@ -1,54 +1,28 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-import { useGetCurrentUserQuery } from '../redux/slices/userSlice';
+import { useGetUserProjectsQuery } from '../redux/slices/projectSlice';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import UserAvatar from "../components/UserAvatar";
 import { LuClock } from "react-icons/lu";
 
-const Home = () => {
+const Projects = () => {
 
     const navigate = useNavigate();
+    
 
-    // homepage contents
-    const [projects, setProjects] = useState([]);
+    // Use RTK Query hook to fetch projects
+    const {
+        data: projectsData = [],
+        isLoading: projectsLoading,
+        isError: projectsError,
+        refetch,
+    } = useGetUserProjectsQuery();
 
-    // Get current user's first name to display on homepage
-    const [firstName, setFirstName] = useState('');
-    const { data: currentUser, isLoading, isError } = useGetCurrentUserQuery();
+    const [createProject] = useCreateProjectMutation();
+    const [deleteProject] = useDeleteProjectMutation();
 
-    useEffect(() => {
-        // Call this function to load projects from database
-        const getUserProjects = async () => {
-            try {
-                console.log("cast on load");
-                const response = await axios.get(`http://localhost:5001/home`, {
-                    withCredentials: true
-                });
-                console.log("project data:", response.data);
-
-                if (response.status === 200 && Array.isArray(response.data)) {
-                    const projectJson = response.data.map((project) => ({
-                        id: project._id,
-                        title: project.title,
-                        description: project.description,
-                        progress: project.progress,
-                        daysLeft: project.daysLeft,
-                        team: ["/avatars/avatar1.png"],
-                    }));
-                    setProjects(projectJson);
-                    setFirstName(currentUser.user.firstName);
-                }
-            } catch (error) {
-                console.error("Error in useEffect in Home.jsx:", error);
-            }
-        }
-        getUserProjects();
-    }, [currentUser]);
-
-    if (isLoading) return <div>Loading...</div>;
-    if (isError) return <div>Error loading user data</div>;
-
+    // Local UI state to handle modal visibility and new project form inputs.
     const [showModal, setShowModal] = useState(false);
     const [newProject, setNewProject] = useState({
         title: "",
@@ -56,67 +30,49 @@ const Home = () => {
         deadline: ""
     });
 
-    // const handleProjectClick = async (project) => {
-    //     /**
-    //      * Switches the view to the dashboard and sets the cookie for the selected project.
-    //      */
-    //     console.log("Clicked Project:", project);
-        
-    //     const projectId = project.id;
-    //     // 1. Clear the project cookie if not null. 
-    //     // set the current clicked project to be the new project cookie. 
+    // If either current user or projects are loading, display a loading state.
+    if (userLoading || projectsLoading) return <div>Loading...</div>;
+    if (userError || projectsError) return <div>Error loading data</div>;
 
-    //     // 2. selectedProject is the name of the cookie i defined in projectController.js
-    //     console.log("sending projectID from home:", projectId);
-    //     const response = await axios.post(`http://localhost:5001/home/${projectId}`, {}, {
-    //         withCredentials: true
-    //     });
+    // Optional: Transform projectsData if needed. For example, if your API returns data with _id etc.
+    const projects = Array.isArray(projectsData)
+        ? projectsData.map((project) => ({
+            id: project._id,
+            title: project.title,
+            description: project.description,
+            progress: project.progress,
+            daysLeft: project.daysLeft,
+            team: ["/avatars/avatar1.png"],
+        }))
+        : [];
 
-    //     if (response.status === 200) {
-    //         console.log("Project cookie set");
-    //          // 3. redirect to project dashboard
-    //         navigate('/dashboard'); // Only redirect if request is successful
-    //     } else {
-    //         console.error("Error in handleProjectClick:", error);
-    //     }
-    // };
 
     const handleProjectClick = async (project) => {
         try {
-            console.log("Clicked Project:", project);
-            const projectId = project.id;
-            const response = await axios.post(`http://localhost:5001/home/${projectId}`, project, {
-                withCredentials: true
-            });
-            if (response.status === 200) {
-                console.log("Project cookie set");
-            }
+            // console.log("Clicked Project:", project);
+            // const response = await axios.post(`http://localhost:5001/projects/${project.id}`, project, {
+            //     withCredentials: true
+            // });
+            
             // Redirect to project-specific dashboard
-            navigate(`/project/${projectId}/dashboard`);
+            navigate(`/projects/${project.id}/dashboard`);
         } catch (error) {
             console.error("Error in handleProjectClick:", error);
         }
-      };
+    };
 
     //handles delete project when user chooses to delete
     const handleDeleteProject = async (e, projectId) => {
         e.stopPropagation(); // prevent triggering navigation
 
-        const confirmDelete = window.confirm("Are you sure you want to delete this project?");
-        if (!confirmDelete) return;
-
-        try {
-            const response = await axios.delete(`http://localhost:5001/home/${projectId}`, {
-                withCredentials: true
-            });
-
-            if (response.status === 200) {
-                setProjects((prev) => prev.filter((p) => p.id !== projectId));
-            } else {
-                alert("Failed to delete project.");
+        if (window.confirm("Are you sure you want to delete this project?")) {
+            try {
+                await deleteProject(projectId).unwrap();
+                // RTK Query auto-invalidates or you can call refetch
+                refetch();
+            } catch (error) {
+                console.error("Error deleting project", error);
             }
-        } catch (error) {
-            console.error("Error deleting project:", error);
         }
     };
 
@@ -132,53 +88,48 @@ const Home = () => {
     //function for creating a project one user completes modal inputs
     const handleCreateProject = async () => {
         if (!newProject.title || !newProject.description || !newProject.deadline) {
-            alert("Please fill all fields!");
-            return;
+          alert("Please fill all fields!");
+          return;
         }
-
+      
+        // Calculate daysLeft
         const today = new Date();
         const deadline = new Date(newProject.deadline);
         const daysLeft = Math.max(
-            Math.ceil((deadline - today) / (1000 * 60 * 60 * 24)),
-            0
+          Math.ceil((deadline - today) / (1000 * 60 * 60 * 24)),
+          0
         );
-
+      
         const projectData = {
-            title: newProject.title,
-            description: newProject.description,
-            progress: 0,
-            daysLeft,
-            team: ["/avatars/avatar1.png"]
+          title: newProject.title,
+          description: newProject.description,
+          progress: 0,
+          daysLeft,
+          team: ["/avatars/avatar1.png"]
         };
-
-        // Send project object to database
-        const response = await axios.post("http://localhost:5001/home", projectData, { withCredentials: true });
-        
-        if (response.data) {
-            const savedProject = response.data;
-            const createdProject = {
-                id: savedProject._id,
-                ...projectData
-            }
-            console.log("Received mongoID of project:", savedProject._id);
-            setProjects((prev) => [...prev, createdProject]);
-            setNewProject({ title: "", description: "", deadline: "" });
-            setShowModal(false);
+      
+        try {
+          // createProject RTK Query mutation hook
+          await createProject(projectData).unwrap();
+      
+          // Clear the form inputs after successful creation
+          setNewProject({ title: "", description: "", deadline: "" });
+      
+          // Refresh the list if needed
+          refetch();
+        } catch (error) {
+          console.error("Error creating project", error);
         }
-        else {
-            alert("Bad Response when creating project.")
-            return;
-        }
-    };
+      };
 
     return (
         <div className="flex h-screen bg-[var(--background-primary)]">
             <Navbar />
             <div className="flex-grow p-10 ml-[240px] overflow-y-auto">
-            <div className="flex justify-between items-center mb-8 pr-5">
-  <h1 className="text-3xl font-bold text-[var(--text)]">Projects</h1>
-  <UserAvatar />
-</div>
+                <div className="flex justify-between items-center mb-8 pr-5">
+                    <h1 className="text-3xl font-bold text-[var(--text)]">Projects</h1>
+                    <UserAvatar />
+                </div>
 
                 <div className="flex flex-wrap gap-5">
                     {projects.map((project, index) => (
@@ -219,7 +170,7 @@ const Home = () => {
 
                                 <div className="flex justify-between items-center text-xs text-[var(--text)] mt-3">
                                     <div className="flex items-center gap-1">
-                                        <LuClock/>
+                                        <LuClock />
                                         <span>{project.daysLeft} Days Left</span>
                                     </div>
                                     <div className="flex -space-x-2">
@@ -288,4 +239,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default Projects;

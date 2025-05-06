@@ -54,9 +54,11 @@ mongoose.connect(mongoURI)
 // Import routes
 app.use('/api/users', userRoutes);
 app.use('/settings', userRoutes);
-app.use('/home', projectRoutes);
-app.use("/calendar", taskRoutes);  // Now all "/calendar" requests go to calendarRoutes
-app.use('/gantt', taskRoutes);
+//app.use('/home', projectRoutes);
+// app.use("/calendar", taskRoutes);  // Now all "/calendar" requests go to calendarRoutes
+// app.use('/gantt', taskRoutes);
+app.use('/tasks', taskRoutes);
+app.use('/projects', projectRoutes);
 
 
 
