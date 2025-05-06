@@ -14,8 +14,17 @@ const Dashboard = () => {
     data: tasks = [],
     isLoading: loadingTasks,
     error: tasksError,
-  } = useGetTasksByProjectQuery(currentProject?._id, {
-    skip: !currentProject?._id,
+  } = useGetTasksByProjectQuery(currentProject?.projectId, {
+    skip: !currentProject?.projectId,
+  });
+
+  // Use RTK Query to fetch users by projectId
+  const {
+    data: users = [],
+    isLoading: loadingUsers,
+    error: userError,
+  } = useGetTasksByProjectQuery(currentProject?.projectId, {
+    skip: !currentProject?.projectId,
   });
 
   // Use RTK Query to fetch project details (assuming team members are part of the project data).
@@ -112,7 +121,7 @@ const Dashboard = () => {
             <div className="h-full min-h-[35vh]">
               <StatBox title="Team Members">
                 <ul className="space-y-1 text-xs">
-                  {teamMembers.map(member => (
+                  {users.map(member => (
                     <li key={member.id} className="p-2 rounded-md bg-[var(--background-primary)] justify-between flex items-center text-[var(--text)]">
                       <strong>{member.firstName} {member.lastName}</strong> <p className='text-[var(--text-muted)]'>{member.role}</p>
                     </li>

@@ -9,21 +9,23 @@ import jwt from 'jsonwebtoken';
  */
 export const getTasksByProject = async (req, res) => {
     try {
-        // If a projectId query parameter is provided, filter by it
-        const filter = req.query.projectId ? { projectId: req.query.projectId } : {};
-        
-        // Fetch tasks for a specific project if provided, or all tasks otherwise
-        const tasks = await Task.find(filter)
-          .populate('assignedTo', 'firstName lastName')  // Return user names as needed
-          .populate('projectId', 'title');  // Populate project details like title
-    
-        // Optionally, you can transform these tasks for specific UI needs
-        // or simply return the raw tasks.
-        res.status(200).json(tasks);
-      } catch (error) {
-        res.status(500).json({ message: 'Error fetching tasks', error });
+      const projectId = req.params.id;
+  
+      if (!projectId) {
+        return res.status(400).json({ message: 'Project ID is required in URL params' });
       }
-};
+  
+      // Fetch tasks for the given project ID
+      const tasks = await Task.find({ projectId })
+        .populate('assignedTo', 'firstName lastName')
+        .populate('projectId', 'title');
+  
+      res.status(200).json(tasks);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      res.status(500).json({ message: 'Error fetching tasks', error });
+    }
+  };
 
 export const createTask = async (req, res) => {
     try {

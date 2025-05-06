@@ -57,7 +57,7 @@ app.use('/settings', userRoutes);
 //app.use('/home', projectRoutes);
 // app.use("/calendar", taskRoutes);  // Now all "/calendar" requests go to calendarRoutes
 // app.use('/gantt', taskRoutes);
-app.use('/tasks', taskRoutes);
+app.use('/api/tasks', taskRoutes);
 app.use('/api/projects', projectRoutes);
 
 
