@@ -44,7 +44,7 @@ function App() {
         <Route path="/Presignup" element={<Presignup />} />
         {/* Protected routes */}
         <Route path="/" element={user ? <Outlet /> : <Navigate to="/login" replace />}>
-          <Route index element={<Navigate to="/home" replace />} />
+          <Route index element={<Navigate to="/projects" replace />} />
           <Route path="projects" element={<Projects />} />
           <Route path="settings" element={<Settings setTheme={setTheme} />} />
           <Route path="dashboard" element={<Dashboard />} />
