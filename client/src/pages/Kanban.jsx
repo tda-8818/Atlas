@@ -246,27 +246,37 @@ const Kanban = () => {
       {
         id: generateId("column"),
         title: newColumnName,
-        cards: []
-      }
+        cards: [],
+      },
     ]);
     setNewColumnName("");
   };
 
   const handleAddTaskFromPopup = (cardData) => {
-    if (addTaskColumnIndex === null || addTaskColumnIndex < 0 || addTaskColumnIndex >= columns.length) {
-       console.error("Attempted to add task to invalid column index.");
-       setShowAddTaskPopup(false);
-       setAddTaskColumnIndex(null);
-       return;
+    // Ensure card has a valid id for drag-and-drop
+    if (!cardData.id) {
+      cardData.id = generateId("card");
     }
-
+  
+    if (
+      addTaskColumnIndex === null ||
+      addTaskColumnIndex < 0 ||
+      addTaskColumnIndex >= columns.length
+    ) {
+      console.error("Attempted to add task to invalid column index.");
+      setShowAddTaskPopup(false);
+      setAddTaskColumnIndex(null);
+      return;
+    }
+  
     const updated = [...columns];
     updated[addTaskColumnIndex].cards.push(cardData);
     setColumns(updated);
-
+  
     setShowAddTaskPopup(false);
     setAddTaskColumnIndex(null);
   };
+  
 
   const openAddTaskPopup = (columnIndex) => {
     setAddTaskColumnIndex(columnIndex);
@@ -282,7 +292,7 @@ const Kanban = () => {
       index: columnIndex
     });
   };
-
+  
   const deleteColumn = () => {
     if (!confirmDelete || confirmDelete.type !== 'column') return;
     if (columns.length <= 1) return;
@@ -354,22 +364,21 @@ const Kanban = () => {
 
   const addSubtaskToCard = () => {
     if (!newSubtaskTitle.trim() || !selectedCard) return;
-
+  
     const newSubtask = {
-      id: generateId("subtask"),
+      id: generateId("subtask"), // Ensure draggableId exists
       title: newSubtaskTitle.trim(),
       completed: false,
-      priority: 'none'
+      priority: "none",
     };
-
+  
     setSelectedCard({
       ...selectedCard,
-      subtasks: [...(selectedCard.subtasks || []), newSubtask]
+      subtasks: [...(selectedCard.subtasks || []), newSubtask],
     });
-
-    setNewSubtaskTitle(''); // Clear input field for subtask
+  
+    setNewSubtaskTitle("");
   };
-
   const toggleSubtaskCompletionInCard = (subtaskId) => {
     if (!selectedCard) return;
 
