@@ -7,7 +7,10 @@ const taskSchema = new mongoose.Schema(
        description: {type: String},
        status: {type: String},
        priority: {type: String},
-       assignedTo: [{type: mongoose.Schema.Types.ObjectId, ref: 'user'}],
+       assignedTo: [{
+        user: {type: mongoose.Schema.Types.ObjectId, ref: 'user'},
+        assignedDueDate: {type: Date},
+        }],
        dueDate: {type: Date},
        startDate: {type: Date},
        subtasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],

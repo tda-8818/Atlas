@@ -45,13 +45,16 @@ export const userApiSlice = createApi({
             query: () => '/users/me',
             providesTags: ['User']
         }),
+
+        
     }),
 });
 
 export const {
     useLoginMutation,
     useLogoutMutation,
-    useGetCurrentUserQuery
+    useGetCurrentUserQuery,
+    useGetUsersByProjectQuery,
 
 } = userApiSlice;
 

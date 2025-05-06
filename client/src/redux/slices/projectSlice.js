@@ -21,7 +21,7 @@ export const projectApiSlice = createApi({
     }),
 
     // Fetch all projects (if needed, e.g., for listing user's projects)
-    getUserProjects: builder.query({
+    getCurrentUserProjects: builder.query({
       query: () => '/projects',
       providesTags: (result = [], error, arg) =>
         result
@@ -62,16 +62,57 @@ export const projectApiSlice = createApi({
       }),
       invalidatesTags: (result, error, projectId) => [{ type: 'Project', id: projectId }],
     }),
+
+    /** USER-PROJECT RELATED QUERIES */
+    // Get all users in a project
+    getProjectUsers: builder.query({
+      query: (projectId) => `/users/${projectId}`,                       
+      providesTags: (result, error, projectId) => [{ type: 'User', id: projectId }],
+    }),
+
+    addTeamMember: builder.mutation({
+      query: ({ projectId, userId }) => ({
+        url: `/projects/${projectId}/users`,
+        method: 'POST',
+        body: { userId }
+      }),
+      invalidatesTags: (result, error, { projectId }) => [{ type: 'Project', id: projectId }]
+    }),
+
+    // If you need to update owner
+    updateProjectOwner: builder.mutation({
+      query: ({ projectId, ownerId }) => ({
+        url: `/projects/${projectId}/owner`,
+        method: 'PUT',
+        body: { ownerId }
+      }),
+      invalidatesTags: (result, error, { projectId }) => [
+        { type: 'Project', id: projectId }
+      ]
+    }),
+    
+    removeTeamMember: builder.mutation({
+      query: ({ projectId, userId }) => ({
+        url: `/projects/${projectId}/users/${userId}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: (result, error, { projectId }) => [{ type: 'Project', id: projectId }]
+    })
+
   }),
 });
 
 // Export hooks for usage in functional components
 export const {
   useGetProjectByIdQuery,
-  useGetUserProjectsQuery,
+  useGetCurrentUserProjectsQuery,
   useCreateProjectMutation,
   useUpdateProjectMutation,
   useDeleteProjectMutation,
+  useGetProjectUsersQuery,
+  useAddTeamMemberMutation,
+  useUpdateProjectOwnerMutation,
+  useRemoveTeamMemberMutation,
 } = projectApiSlice;
 
 export default projectApiSlice;

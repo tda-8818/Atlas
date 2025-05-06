@@ -50,6 +50,37 @@ export const taskApiSlice = createApi({
       }),
       invalidatesTags: (result, error, id) => [{ type: 'Task', id }],
     }),
+
+    /** USER-TASK RELATED QUERIES */
+    // Task assignment endpoints
+    addUserToTask: builder.mutation({
+      query: ({ taskId, userId }) => ({
+        url: `/tasks/${taskId}/assign`,
+        method: 'POST',
+        body: { userId }
+      }),
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: 'Task', id: taskId }
+      ]
+    }),
+    
+    removeUserFromTask: builder.mutation({
+      query: ({ taskId, userId }) => ({
+        url: `/tasks/${taskId}/assign/${userId}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: 'Task', id: taskId }
+      ]
+    }),
+    
+    // Get users assigned to a task
+    getTaskUsers: builder.query({
+      query: (taskId) => `/tasks/${taskId}/assignees`,
+      providesTags: (result, error, taskId) => [
+        { type: 'Task', id: taskId }
+      ]
+    }),
   }),
 });
 
@@ -59,6 +90,9 @@ export const {
   useAddTaskMutation,
   useUpdateTaskMutation,
   useDeleteTaskMutation,
+  useAddUserToTaskMutation,
+  useRemoveUserFromTaskMutation,
+  useGetTaskUsersQuery,
 } = taskApiSlice;
 
 export default taskApiSlice;

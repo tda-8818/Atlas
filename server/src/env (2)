@@ -1,8 +1,0 @@
-
-# JWT config
-JWT_SECRET=ezmLyAL81ji5mXPMRTa1VILYZeidmVaUISYgp4a3GK4=
-JWT_EXPIRES_IN=1h 
-
-MONGO_URI=mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/users?retryWrites=true&w=majority&appName=CS02TaskManagementSystem
-PORT=5001  
-NODE_ENV=development  # changes to "production" when deployed
