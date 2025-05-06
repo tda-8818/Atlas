@@ -7,7 +7,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 const PROJECT_API_URL = import.meta.env.VITE_API_URL;
 
 export const projectApiSlice = createApi({
-  reducerPath: 'api', // unique key for the projects slice
+  reducerPath: 'projectApi', // unique key for the projects slice
   baseQuery: fetchBaseQuery({
     baseUrl: PROJECT_API_URL,
     credentials: 'include',

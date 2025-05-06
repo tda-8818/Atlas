@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-import { useGetUserProjectsQuery } from '../redux/slices/projectSlice';
+import { useGetUserProjectsQuery, useCreateProjectMutation, useDeleteProjectMutation } from '../redux/slices/projectSlice';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import UserAvatar from "../components/UserAvatar";
@@ -31,8 +31,8 @@ const Projects = () => {
     });
 
     // If either current user or projects are loading, display a loading state.
-    if (userLoading || projectsLoading) return <div>Loading...</div>;
-    if (userError || projectsError) return <div>Error loading data</div>;
+    //if (userLoading || projectsLoading) return <div>Loading...</div>;
+    //if (userError || projectsError) return <div>Error loading data</div>;
 
     // Optional: Transform projectsData if needed. For example, if your API returns data with _id etc.
     const projects = Array.isArray(projectsData)

@@ -16,7 +16,7 @@ const Navbar = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await axios.get("http://localhost:5001/home", {
+        const response = await axios.get("http://localhost:5001/projects", {
           withCredentials: true
         });
 
@@ -77,7 +77,7 @@ const Navbar = () => {
         {projects.map((project) => (
           <li key={project.id} className="w-full">
             <button
-              onClick={() => navigate(`/project/${project.id}/dashboard`)}
+              onClick={() => navigate(`/projects/${project.id}/dashboard`)}
               className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg
                 bg-[var(--background)] text-[var(--nav-text)]
                 hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)]

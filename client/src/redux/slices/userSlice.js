@@ -6,7 +6,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const userApiSlice = createApi({
-    reducerPath: 'api',
+    reducerPath: 'userApi',
     baseQuery: fetchBaseQuery({
         baseUrl: API_URL,
         credentials: 'include',
@@ -24,7 +24,9 @@ export const userApiSlice = createApi({
                 method: 'POST',
                 body: credentials
             }),
-            invalidatesTags: ['User']
+            invalidatesTags: (result, error, arg) => {
+                return result?.user ? ['User'] : [];
+              }
         }),
 
         logout: builder.mutation({
@@ -33,7 +35,9 @@ export const userApiSlice = createApi({
                 method: 'POST',
                 
             }),
-            invalidatesTags: ['User']
+            invalidatesTags: (result, error, arg) => {
+                return result?.user ? ['User'] : [];
+              }
         }),
 
         // Current user endpoint
