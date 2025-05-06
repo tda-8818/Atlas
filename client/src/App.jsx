@@ -33,7 +33,7 @@ function App() {
     }
   }, [user, isLoading, isError]);
 
-  if (isLoading) return <div>buh...</div>;
+  //if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className={theme}>
