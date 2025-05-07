@@ -1,6 +1,6 @@
 import Task from '../models/TaskModel.js';
 import jwt from 'jsonwebtoken';
-
+import Project from '../models/ProjectModel.js'
 /**
  * Gets task details based on the projectId query parameter.
  * If no projectId is provided, it fetches all tasks.
@@ -30,7 +30,9 @@ export const getTasksByProject = async (req, res) => {
 export const createTask = async (req, res) => {
     try {
         // Optionally remove reliance on the cookie if the client includes projectId in the body.
-        const { projectId, title, description, start, end } = req.body;
+        const { title, description, start, end } = req.body;
+        
+        console.log("createTask Executed", projectId);
 
         if (!projectId) {
             return res.status(400).json({ message: 'Project ID is required' });

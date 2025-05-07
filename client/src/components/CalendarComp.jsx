@@ -107,7 +107,7 @@ const CalendarComp = ({ project }) => {
 
     try {
       console.log("Deleting event id:", selectedEvent.id);
-      await axios.delete(`http://localhost:5001/calendar/${selectedEvent.id}`);
+      await deleteTask(selectedEvent.id).unwrap();
       selectedEvent.remove();
     } catch (error) {
       console.error("Error deleting task:", error);
