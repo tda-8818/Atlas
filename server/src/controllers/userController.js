@@ -211,9 +211,12 @@ export const updatePassword = async (req, res) => {
   }
 };
 
+
+
 export default {
   login,
   signup,
   logout,
-  getMe
+  getMe,
+  updatePassword,
 };

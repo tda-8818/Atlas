@@ -1,4 +1,0 @@
-models
-Each file in the models directory 
-Purpose: Define database entities, DTOs (Data Transfer Objects), and business models.
-These are representations of database tables or objects used in the application.

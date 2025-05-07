@@ -12,3 +12,8 @@ This project uses GitHub Actions for CI/CD pipeline. The workflows:
 - Run tests on both client and server
 - Build the client application
 - Deploy to AWS (when pushing to main)
+
+models
+Each file in the models directory 
+Purpose: Define database entities, DTOs (Data Transfer Objects), and business models.
+These are representations of database tables or objects used in the application.
