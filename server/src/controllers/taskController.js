@@ -1,65 +1,90 @@
+import Project from '../models/ProjectModel.js';
 import Task from '../models/TaskModel.js';
-import jwt from 'jsonwebtoken';
+import { selectProject } from './projectController.js';
 
-/**
- * Gets task details based on the projectId query parameter.
- * If no projectId is provided, it fetches all tasks.
- * @param {G} req 
- * @param {*} res 
- */
-export const getTasksByProject = async (req, res) => {
+export const getTask = async (req, res) => {
     try {
-      const projectId = req.params.id;
-  
-      if (!projectId) {
-        return res.status(400).json({ message: 'Project ID is required in URL params' });
-      }
-  
-      // Fetch tasks for the given project ID
-      const tasks = await Task.find({ projectId })
-        .populate('assignedTo', 'firstName lastName')
-        .populate('projectId', 'title');
-  
-      res.status(200).json(tasks);
+        const tasks = await Task.find().populate('assignedTo', 'name').populate('projectId', 'name');
+
+        const calendarEvents = tasks.map(task => ({
+            id: task._id,
+            title: task.title,
+            start: task.startDate,
+            end: task.dueDate,
+            allDay: true,
+            description: task.description,
+            status: task.status,
+            priority: task.priority,
+            assignedTo: task.assignedTo.map(user => user.name).join(', '),
+            projectName: task.projectId?.name || "Unassigned"
+        }));
+
+        res.status(200).json(calendarEvents);
     } catch (error) {
-      console.error('Error fetching tasks:', error);
-      res.status(500).json({ message: 'Error fetching tasks', error });
+        res.status(500).json({ message: 'Error fetching tasks', error });
     }
-  };
+};
+
+
+export const createEvent = async (req, res) => {
+    try {
+        console.log("Received event data:", req.body); // Debugging log
+        res.status(200).json({ message: "Event received successfully", event: req.body });
+    } catch (error) {
+        console.error("Error processing event:", error);
+        res.status(500).json({ message: "Error processing event", error });
+    }
+};
 
 export const createTask = async (req, res) => {
     try {
-        // Optionally remove reliance on the cookie if the client includes projectId in the body.
-        const { projectId, title, description, start, end } = req.body;
+        /**Creating a task 
+         * PLEASE -> Refer to Task schema blueprint to make sure data is consistent
+         * throughout the app. Make sure all datapoints are named exactly like the 
+         * property defined in TaskSchema to avoid confusion.
+         * 
+         * Creating a task should save it into the appropriate project.  
+         */
+        
+        // 1. Recieve HTML request data
+        const { title, description, start, end } = req.body;
+        console.log("created tasks has been executed:");
+        console.log(title, start, end);
 
-        if (!projectId) {
-            return res.status(400).json({ message: 'Project ID is required' });
+        // 2. Grab cookie which contains the projectId
+        const selectedProject = req.cookies?.selectedProject;
+        console.log("Selected project from cookie in createTask.js: ", selectedProject);
+
+        // 3. Fetch project document object from database
+        const project = await Project.findById(selectedProject);
+
+        // 4. Check if project is valid
+        if (!project){
+            return res.status(404).json({message: "Project not found createTask.js"});
         }
 
-        const project = await Project.findById(projectId);
-        if (!project) {
-            return res.status(404).json({ message: "Project not found" });
-        }
-
-        // Create the new task using the provided details
+        // 5. Create Task object
+        // Refer to TaskSchema data points required.
+        // Ensure the HTML request sends information which is congruent with the TaskSchema.
         const newTask = new Task({
-            projectId: project._id,
+            projectId: project,
             title,
             description,
-            start_date: start,
-            due_date: end,
-        });
+            start_date:start,
+            due_date:end
+           
+        })
 
-        console.log("New task created:", newTask);
+        // 6. Save task document in database
+        const savedTask = await newTask.save(); // savedTask is the JUST oid for the task object.
 
-        const savedTask = await newTask.save();
+        // 7. Append the task to the project. This stores the task in a project.tasks array
+        project.tasks.push(savedTask);
+        // 8. Save the project document
+        await project.save()
 
-        console.log("Saved task:", savedTask);
 
-        // Optionally link the task back to the project
-        project.tasks.push(savedTask._id);
-        await project.save();
-
+        // 9. Send the oid for the task back to the frontend.
         res.status(201).json(savedTask);
     } catch (error) {
         console.error("Error creating task:", error);
@@ -67,110 +92,41 @@ export const createTask = async (req, res) => {
     }
 };
 
-export const updateTask = async (req, res) => {
+export const editTask = async (req, res) => {
+    const { id } = req.params;
+    const {
+        title,
+        description,
+        status,
+        priority,
+        assignedTo,
+        dueDate,
+        startDate
+    } = req.body;
+
     try {
-
-        // 1. First update the task in database
         const updatedTask = await Task.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-        ).populate('projectId').populate('assignedTo');
-
-        console.log("Updated task:", updatedTask);
+            id,
+            {
+                title,
+                description,
+                status,
+                priority,
+                assignedTo,
+                dueDate,
+                startDate
+            },
+            { new: true } 
+        );
 
         if (!updatedTask) {
-            return res.status(404).json({ error: 'Task not found' });
-        }
-
-        // 2. Prepare WebSocket notification data
-        const notificationPayload = {
-            _id: updatedTask._id,
-            title: updatedTask.title,
-            status: updatedTask.status,
-            dueDate: updatedTask.dueDate,
-            projectId: updatedTask.projectId._id,
-            projectTitle: updatedTask.projectId.title
-        };
-
-        // 3. Notify all assigned users
-        updatedTask.assignedTo.forEach(user => {
-            req.app.get('io').to(`user_${user._id}`).emit('TASK_UPDATED', {
-                type: 'TASK_UPDATED',
-                data: notificationPayload,
-                updatedAt: new Date()
-            });
-        });
-
-        // 4. Also notify all project members (optional)
-        // req.app.get('io').to(`project_${updatedTask.projectId._id}`).emit('PROJECT_UPDATE', {
-        //     type: 'TASK_CHANGED',
-        //     taskId: updatedTask._id,
-        //     status: updatedTask.status
-        // });
-
-        // 5. Send normal HTTP response
-        res.status(200).json(updatedTask);
-
-    }
-    catch (error) {
-        console.error("Error updating task:", error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-};
-
-export const editTask = async (req, res) => {
-    try {
-        // 1. Extract token from the cookie
-        const token = req.cookies?.selectedProject;
-        if (!token) {
-            return res.status(401).json({ message: "Project not selected. Token missing." });
-        }
-
-        // 2. Verify and decode the JWT token
-        let decoded;
-        try {
-            decoded = jwt.verify(token, process.env.JWT_SECRET);
-        } catch (error) {
-            console.error("JWT verification error:", error);
-            return res.status(401).json({ message: "Invalid project token" });
-        }
-
-        // 3. Extract projectId from the decoded token payload
-        const projectId = decoded.projectId;
-        if (!projectId) {
-            return res.status(400).json({ message: "Project ID missing in token" });
-        }
-
-        // 4. Get the task ID from URL parameters
-        const taskId = req.params.id;
-
-        // 5. Find the task ensuring it belongs to the current project
-        const task = await Task.findOne({ _id: taskId, projectId });
-        if (!task) {
             return res.status(404).json({ message: "Task not found" });
         }
 
-        // 6. Extract new task data from the request body
-        const { title, description, start, end } = req.body;
-
-        // 7. Update the task fields if provided
-        if (title !== undefined) task.title = title;
-        if (description !== undefined) task.description = description;
-        if (start !== undefined) task.start_date = start;
-        if (end !== undefined) task.due_date = end;
-
-        // 8. Save the updated task
-        const updatedTask = await task.save();
-
-        // 9. Return a response with updated task data
-        res.status(200).json({
-            message: "Task updated successfully",
-            task: updatedTask
-        });
+        res.status(200).json(updatedTask);
     } catch (error) {
-        console.error("Error editing task:", error);
-        res.status(500).json({ message: "Error editing task", error });
+        console.error("Error updating task:", error);
+        res.status(500).json({ message: "Error updating task", error });
     }
 };
 
@@ -180,14 +136,64 @@ export const deleteTask = async (req, res) => {
         console.log('deleteTasks has been executed');
 
         const task_to_delete = await Task.findByIdAndDelete(id);
-
+        
         if (!task_to_delete) {
-            return res.status(404).json({ message: "Task not found" });
+            return res.status(404).json({ message: "Task not found"});
 
         }
-        res.status(200).json({ message: "Task deleted successfully", task_to_delete })
+        res.status(200).json({ message: "Task deleted successfully", task_to_delete})
     } catch (error) {
         console.error("Error deleting task: ", error);
-        res.status(500).json({ message: "Server error while deleting task" });
+        res.status(500).json({ message: "Server error while deleting task"});
     }
 };
+
+////////// USER-TASK RELATED QUERIES //////////
+
+// Assign users to a task
+export const assignUsersToTask = async (req, res) => {
+    try {
+      const { id: taskId } = req.params;
+      const { userIds } = req.body;
+      
+      if (!Array.isArray(userIds)) {
+        return res.status(400).json({ message: 'userIds must be an array' });
+      }
+      
+      const task = await Task.findById(taskId);
+      if (!task) {
+        return res.status(404).json({ message: 'Task not found' });
+      }
+      
+      // Replace existing assignees
+      task.assignedTo = userIds;
+      
+      const updatedTask = await task.save();
+      
+      // Populate assignedTo for the response
+      const populatedTask = await Task.findById(taskId).populate('assignedTo', 'firstName lastName');
+      
+      return res.status(200).json(populatedTask);
+    } catch (error) {
+      console.error('Error assigning users to task:', error);
+      return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  };
+  
+  // Get users assigned to a task
+  export const getTaskAssignees = async (req, res) => {
+    try {
+      const { id: taskId } = req.params;
+      
+      const task = await Task.findById(taskId).populate('assignedTo', 'firstName lastName email');
+      
+      if (!task) {
+        return res.status(404).json({ message: 'Task not found' });
+      }
+      
+      return res.status(200).json(task.assignedTo);
+    } catch (error) {
+      console.error('Error fetching task assignees:', error);
+      return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  };

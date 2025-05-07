@@ -15,7 +15,7 @@ export const userApiSlice = createApi({
         headers.set('Accept', 'application/json');
         return headers;
     },
-    tagTypes: ['User'], 
+    tagTypes: ['User'],
     endpoints: (builder) => ({
         // User endpoints
         login: builder.mutation({
@@ -26,18 +26,18 @@ export const userApiSlice = createApi({
             }),
             invalidatesTags: (result, error, arg) => {
                 return result?.user ? ['User'] : [];
-              }
+            }
         }),
 
         logout: builder.mutation({
             query: () => ({
                 url: '/users/logout',
                 method: 'POST',
-                
+
             }),
             invalidatesTags: (result, error, arg) => {
                 return result?.user ? ['User'] : [];
-              }
+            }
         }),
 
         // Current user endpoint
@@ -46,7 +46,13 @@ export const userApiSlice = createApi({
             providesTags: ['User']
         }),
 
-        
+        // Add to your userSlice.js if needed
+        getAllUsers: builder.query({
+            query: () => '/users',
+            providesTags: ['User']
+        }),
+
+
     }),
 });
 
@@ -55,6 +61,7 @@ export const {
     useLogoutMutation,
     useGetCurrentUserQuery,
     useGetUsersByProjectQuery,
+    useGetAllUsersQuery,
 
 } = userApiSlice;
 

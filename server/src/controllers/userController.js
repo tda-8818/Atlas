@@ -211,9 +211,22 @@ export const updatePassword = async (req, res) => {
   }
 };
 
+// Get all users (for selection in assignment UI)
+export const getAllUsers = async (req, res) => {
+  try {
+    // Only return necessary fields for user selection
+    const users = await UserModel.find({}, 'firstName lastName email');
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching all users:', error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 export default {
   login,
   signup,
   logout,
-  getMe
+  getMe,
+  getAllUsers
 };

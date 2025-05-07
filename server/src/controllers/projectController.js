@@ -172,6 +172,8 @@ export const deleteProject = async (req, res) => {
     }
 };
 
+////////// TASK-PROJECT RELATED QUERIES //////////
+
 /**
  * Returns a single project by ID.
  * @param {*} req 
@@ -199,4 +201,82 @@ export const getProjectById = async (req, res) => {
       res.status(500).json({ message: "Failed to get project", error });
     }
   };
+
+
+  ////////// USER-PROJECT RELATED QUERIES //////////
   
+  // Get all users in a project
+export const getProjectUsers = async (req, res) => {
+    try {
+      const { id: projectId } = req.params;
+      
+      const project = await Project.findById(projectId)
+        .populate('users', 'firstName lastName email')
+        .populate('owner', 'firstName lastName email');
+      
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+      
+      // Combine users with owner information
+      const users = project.users.map(user => ({
+        ...user._doc,
+        isOwner: user._id.toString() === project.owner._id.toString()
+      }));
+      
+      return res.status(200).json(users);
+    } catch (error) {
+      console.error('Error fetching project users:', error);
+      return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  };
+  
+  // Update project owner and/or team members in one call
+  export const updateProjectUsers = async (req, res) => {
+    try {
+      const { id: projectId } = req.params;
+      const { owner, users } = req.body;
+      
+      const project = await Project.findById(projectId);
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+      
+      // Update owner if provided
+      if (owner) {
+        project.owner = owner;
+      }
+      
+      // Update team members if provided
+      if (users && Array.isArray(users)) {
+        project.users = users;
+        
+        // Make sure owner is always in users array
+        if (!project.users.some(userId => userId.toString() === project.owner.toString())) {
+          project.users.push(project.owner);
+        }
+      }
+      
+      const updatedProject = await project.save();
+      
+      // Also update users' projects arrays
+      if (users && Array.isArray(users)) {
+        // Add project to new users' projects
+        await UserModel.updateMany(
+          { _id: { $in: users } },
+          { $addToSet: { projects: projectId } }
+        );
+        
+        // Remove project from users who were removed
+        await UserModel.updateMany(
+          { _id: { $nin: users }, projects: projectId },
+          { $pull: { projects: projectId } }
+        );
+      }
+      
+      return res.status(200).json(updatedProject);
+    } catch (error) {
+      console.error('Error updating project team:', error);
+      return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  };
