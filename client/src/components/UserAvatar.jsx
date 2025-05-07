@@ -58,7 +58,8 @@ const UserAvatar = () => {
       >
         <MenuItems className="absolute right-0 top-full mt-2 w-48 origin-top-right rounded-md bg-[var(--background)] shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
           <div className="px-2 py-2 rounded-md">
-            <MenuItem>
+            {/* SETTINGS NOT WORKING */}
+            {/* <MenuItem>
               {({ active }) => (
                 <button
                   onClick={() => navigate('/settings')}
@@ -72,7 +73,7 @@ const UserAvatar = () => {
                   Settings
                 </button>
               )}
-            </MenuItem>
+            </MenuItem> */}
 
             <MenuItem>
               {({ active }) => (
