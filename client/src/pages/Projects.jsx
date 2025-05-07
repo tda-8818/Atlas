@@ -99,7 +99,8 @@ const Projects = () => {
           title: newProject.title,
           description: newProject.description,
           progress: 0,
-          daysLeft,
+          endDate: deadline,
+          startDate: today,
           team: ["/avatars/avatar1.png"]
         };
       

@@ -4,13 +4,10 @@ const taskSchema = new mongoose.Schema(
     {
        projectId: {type: mongoose.Schema.Types.ObjectId, ref: 'project'},
        title: {type: String, required: true},
-       description: {type: String},
-       status: {type: String},
-       priority: {type: String},
-       assignedTo: [{
-        user: {type: mongoose.Schema.Types.ObjectId, ref: 'user'},
-        assignedDueDate: {type: Date},
-        }],
+       description: {type: String, default: ""},
+       status: {type: String, default: ""},
+       priority: {type: String, default: ""},
+       assignedTo: [{type: mongoose.Schema.Types.ObjectId, ref: 'user'}],
        dueDate: {type: Date},
        startDate: {type: Date},
        subtasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],

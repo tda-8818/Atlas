@@ -53,6 +53,26 @@ export const userApiSlice = createApi({
         }),
 
 
+
+        // Add the updatePassword mutation
+    updatePassword: builder.mutation({
+        query: (credentials) => ({
+          url: 'settings',
+          method: 'PUT',
+          body: credentials,
+        }),
+        invalidatesTags: ['User'],
+      }),
+      
+      // Add an updateProfile mutation (for future use)
+      updateProfile: builder.mutation({
+        query: (userData) => ({
+          url: 'profile',
+          method: 'PUT',
+          body: userData,
+        }),
+        invalidatesTags: ['User'],
+      }),
     }),
 });
 
@@ -61,7 +81,9 @@ export const {
     useLogoutMutation,
     useGetCurrentUserQuery,
     useGetUsersByProjectQuery,
-    useGetAllUsersQuery,
+    useGetAllUsersQuery,,
+    useUpdatePasswordMutation,
+    useUpdateProfileMutation
 
 } = userApiSlice;
 

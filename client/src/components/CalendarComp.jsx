@@ -7,7 +7,7 @@ import AddTaskPopup from "./AddTaskPopup";
 import ViewTaskModal from "./ViewTaskModal";
 import "./css/CalendarComp.css"
 import axios from "axios";
-
+import { useAddTaskMutation, useDeleteTaskMutation, useGetTasksByProjectQuery, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 
 const CalendarComp = ({ project }) => {
 
@@ -20,10 +20,17 @@ const CalendarComp = ({ project }) => {
 
   const [actionName, setActionName] = useState(""); //used to determine which action to take in the modal (add/edit/delete)
 
+
+  /// RTK QUERY FUNCTIONS ///
+  const [addTask] = useAddTaskMutation();
+  const [deleteTask] = useDeleteTaskMutation();
+  const [editTask] = useUpdateTaskMutation();
+  /// RTK QUERY FUNCTIONS ///
+
   //fetches tasks from database 
   useEffect(() => {
-    if (!project || !project.tasks) return;
 
+    if (!project || !project.tasks) return;
     const transformedTasks = project.tasks.map(task => ({
       id: task._id || task.id,
       title: task.title,
@@ -52,6 +59,7 @@ const CalendarComp = ({ project }) => {
     // Create a new event using the form data from the modal
     // and the date info from the calendar.
     const newEvent = {
+      projectId: project._id,
       title: formData.title, // from modal input
       start: selectedDateInfo.startStr,
       end: selectedDateInfo.endStr,
@@ -61,12 +69,16 @@ const CalendarComp = ({ project }) => {
     try {
       // Optionally save the new event to a server.
       //ROUTING ISSUE EXISTS
-      const response = await axios.post(`http://localhost:5001/calendar`, newEvent, {
-        withCredentials: true
-      }, { withCredentials: true });
+      // const response = await axios.post(`http://localhost:5001/calendar`, newEvent, {
+      //   withCredentials: true
+      // }, { withCredentials: true });
+
+      const response = await addTask(newEvent).unwrap(); // NOW USING RTK Query instead of axios
+      
       if (response.data) {
+
         const savedTask = response.data;
-        console.log("Task created:", savedTask);
+        console.log("Task created via RTK:", savedTask);
         calendarApi.addEvent({
           id: savedTask._id,
           ...newEvent
@@ -96,7 +108,7 @@ const CalendarComp = ({ project }) => {
 
     try {
       console.log("Deleting event id:", selectedEvent.id);
-      await axios.delete(`http://localhost:5001/calendar/${selectedEvent.id}`);
+      await deleteTask(selectedEvent.id).unwrap();
       selectedEvent.remove();
     } catch (error) {
       console.error("Error deleting task:", error);

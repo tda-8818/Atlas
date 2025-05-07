@@ -1,8 +1,14 @@
 import Project from '../models/ProjectModel.js';
 import Task from '../models/TaskModel.js';
-import { selectProject } from './projectController.js';
-
-export const getTask = async (req, res) => {
+import jwt from 'jsonwebtoken';
+import Project from '../models/ProjectModel.js'
+/**
+ * Gets task details based on the projectId query parameter.
+ * If no projectId is provided, it fetches all tasks.
+ * @param {G} req 
+ * @param {*} res 
+ */
+export const getTasksByProject = async (req, res) => {
     try {
         const tasks = await Task.find().populate('assignedTo', 'name').populate('projectId', 'name');
 
@@ -38,29 +44,16 @@ export const createEvent = async (req, res) => {
 
 export const createTask = async (req, res) => {
     try {
-        /**Creating a task 
-         * PLEASE -> Refer to Task schema blueprint to make sure data is consistent
-         * throughout the app. Make sure all datapoints are named exactly like the 
-         * property defined in TaskSchema to avoid confusion.
-         * 
-         * Creating a task should save it into the appropriate project.  
-         */
-        
-        // 1. Recieve HTML request data
-        const { title, description, start, end } = req.body;
-        console.log("created tasks has been executed:");
-        console.log(title, start, end);
+        // Optionally remove reliance on the cookie if the client includes projectId in the body.
+        const { projectId, title, description, start, end } = req.body;
 
-        // 2. Grab cookie which contains the projectId
-        const selectedProject = req.cookies?.selectedProject;
-        console.log("Selected project from cookie in createTask.js: ", selectedProject);
+        if (!projectId) {
+            return res.status(400).json({ message: 'Project ID is required' });
+        }
 
-        // 3. Fetch project document object from database
-        const project = await Project.findById(selectedProject);
-
-        // 4. Check if project is valid
-        if (!project){
-            return res.status(404).json({message: "Project not found createTask.js"});
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
         }
 
         // 5. Create Task object
@@ -83,6 +76,9 @@ export const createTask = async (req, res) => {
         // 8. Save the project document
         await project.save()
 
+        // Optionally link the task back to the project
+        project.tasks.push(savedTask._id);
+        await project.save();
 
         // 9. Send the oid for the task back to the frontend.
         res.status(201).json(savedTask);

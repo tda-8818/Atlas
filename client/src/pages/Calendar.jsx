@@ -1,6 +1,6 @@
 import React from 'react';
+import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
-import ProjectHeader from '../components/ProjectHeader';
 import CalendarComp from '../components/CalendarComp';
 import { useOutletContext } from 'react-router-dom';
 
@@ -197,53 +197,22 @@ const Calendar = () => {
   };
 
   return (
-    <div className="z-1 bg-[var(--background-primary)] h-[100vh] w-full">
-      <div>
-        <Navbar />
-      </div>
-      <div className="flex flex-col">
-        <div className="ml-[15%] w-[85%] h-[9vh]">
-          <ProjectHeader project={currentProject} />
-        </div>
-        <div className="z-10 ml-[15%] h-[91vh] w-[85%] p-4 bg-[var(--background-primary)] text-[var(--text)] overflow-y-auto">
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay",
-            }}
-            initialView="dayGridMonth"
-            editable={true}
-            selectable={true}
-            selectMirror={true}
-            dayMaxEvents={true}
-            weekends={true}
-            select={handleDateSelect}
-            eventClick={handleEventClick}
-            initialEvents={initialEvents}
-            height="auto"
-            eventContent={renderEventContent} // Use the custom render function
-            dayMaxEventRows={3}
-            eventBackgroundColor="transparent" // Ensure no background color
-            eventBorderColor="transparent" // Ensure no border color
-            eventClassNames="no-background-event" // Add a custom class for additional styling
-          />
+    <div className="flex">
+      {/* Navbar */}
+      <Sidebar />
 
-          {/* Add Task Popup */}
-          <AddTaskPopup
-            show={showAddTaskPopup}
-            onAddTask={handleAddTaskFromPopup}
-            onCancel={() => {
-              setShowAddTaskPopup(false);
-              setSelectedDateInfo(null);
-            }}
-            teamMembers={teamMembers}
-            {...(selectedDateInfo?.isEditing && selectedDateInfo?.taskData 
-              ? { initialValues: selectedDateInfo.taskData } 
-              : {})}
-          />
-        </div>
+      <div className="flex h-screen w-full ">
+        <main className="ml-[15%] w-[85%] flex flex-col bg-[var(--background-primary)]">
+          {/* Header Section */}
+          <div className="flex-none">
+            <Navbar project = {currentProject} />
+          </div>
+
+          {/* Content Section */}
+          <div className="flex-1 p-6 overflow-auto">
+            <CalendarComp project={currentProject} />
+          </div>
+        </main>
       </div>
     </div>
   );

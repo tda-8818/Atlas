@@ -1,8 +1,6 @@
-// src/pages/Dashboard.jsx
-import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
+import React from 'react';
+import Navbar from '../components/Sidebar';
 import StatBox from '../components/StatBox';
-import ProjectUsersModal from '../components/ProjectUsersModal';
 import ProjectHeader from '../components/ProjectHeader';
 import { useOutletContext } from 'react-router-dom';
 import { 

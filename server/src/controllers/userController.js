@@ -223,10 +223,13 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+
+
 export default {
   login,
   signup,
   logout,
   getMe,
-  getAllUsers
+  getAllUsers,
+  updatePassword,
 };

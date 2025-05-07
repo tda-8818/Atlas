@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
+import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
-import ProjectHeader from "../components/ProjectHeader";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import DeleteTaskPopup from '../components/DeleteTaskPopup';
 import AddTaskPopup from '../components/AddTaskPopup-1';
@@ -636,9 +636,9 @@ const Kanban = () => {
 
   return (
     <div>
-      <Navbar />
+      <Sidebar />
       <div className=" ml-[15%] w-[85%] h-[9vh]">
-        <ProjectHeader project={currentProject} />
+        <Navbar project={currentProject} />
       </div>
       <div className="p-4 ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
         {/* Kanban Board (Main DragDropContext) */}

@@ -10,15 +10,11 @@ const projectSchema = new mongoose.Schema({
     owner: {type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true},
     users: [{type: mongoose.Schema.Types.ObjectId, ref: 'user'}],
     tasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
-    daysLeft: {type: Number },
+    startDate: {type: Date},
+    endDate: {type: Date},
     progress: {type: Number, default: 0}
 }, {timestamps: true});
 
-const projectMemberSchema = new mongoose.Schema({
-    projectId: {type: mongoose.Schema.Types.ObjectId, ref: 'project'},
-    userId: {type: mongoose.Schema.Types.ObjectId, ref: 'user'},
-    role: {type: String, enum: ['owner', 'member'], default: 'member'}
-}, {timestamps: true});
 
 const Project = mongoose.model('project', projectSchema);
 
