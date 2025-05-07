@@ -10,7 +10,8 @@ const projectSchema = new mongoose.Schema({
     owner: {type: mongoose.Schema.Types.ObjectId, ref:'user',  required: true},
     users: [{type: mongoose.Schema.Types.ObjectId, ref:'user',  default: []}],
     tasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
-    daysLeft: {type: Number },
+    startDate: {type: Date},
+    endDate: {type: Date},
     progress: {type: Number, default: 0}
 }, {timestamps: true});
 

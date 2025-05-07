@@ -200,3 +200,33 @@ export const getProjectById = async (req, res) => {
     }
   };
   
+
+  /**
+   * Updates a project's details
+   * @param {*} req 
+   * @param {*} res
+   * @returns 
+   * 
+   */
+export const updateProject = async (req, res) => {
+    try {
+        const projectId = req.params.id;
+
+        const updatedProject = await Project.findOneAndUpdate(
+            {_id: projectId},
+            req.body,
+            { new: true}
+        )
+
+        // check if project exists 
+        if (!updatedProject){
+            return res.status(404).json({ error: 'Project not found'});
+        }
+
+        res.status(200).json(updatedProject);
+
+    } catch (error) {
+        console.error("Error updating project:", error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
