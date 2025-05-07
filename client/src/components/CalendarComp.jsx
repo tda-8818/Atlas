@@ -7,7 +7,7 @@ import AddTaskPopup from "./AddTaskPopup";
 import ViewTaskModal from "./ViewTaskModal";
 import "./css/CalendarComp.css"
 import axios from "axios";
-
+import { useAddTaskMutation, useDeleteTaskMutation, useGetTasksByProjectQuery, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 
 const CalendarComp = ({ project }) => {
 
@@ -19,6 +19,13 @@ const CalendarComp = ({ project }) => {
   const [currentEvents, setCurrentEvents] = useState([]);
 
   const [actionName, setActionName] = useState(""); //used to determine which action to take in the modal (add/edit/delete)
+
+
+  /// RTK QUERY FUNCTIONS ///
+  const [addTask] = useAddTaskMutation();
+  const [deleteTask] = useDeleteTaskMutation();
+  const [editTask] = useUpdateTaskMutation();
+  /// RTK QUERY FUNCTIONS ///
 
   //fetches tasks from database 
   useEffect(() => {
@@ -61,12 +68,16 @@ const CalendarComp = ({ project }) => {
     try {
       // Optionally save the new event to a server.
       //ROUTING ISSUE EXISTS
-      const response = await axios.post(`http://localhost:5001/calendar`, newEvent, {
-        withCredentials: true
-      }, { withCredentials: true });
+      // const response = await axios.post(`http://localhost:5001/calendar`, newEvent, {
+      //   withCredentials: true
+      // }, { withCredentials: true });
+
+      const response = await addTask(newEvent).unwrap(); // NOW USING RTK Query instead of axios
+
       if (response.data) {
+
         const savedTask = response.data;
-        console.log("Task created:", savedTask);
+        console.log("Task created via RTK:", savedTask);
         calendarApi.addEvent({
           id: savedTask._id,
           ...newEvent
