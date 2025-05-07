@@ -1,7 +1,10 @@
 // src/components/UserAvatar.jsx
 import { LuUser } from 'react-icons/lu';
-import { useGetCurrentUserQuery } from '../redux/slices/userSlice';
+import { useLogoutMutation, useGetCurrentUserQuery } from '../redux/slices/userSlice';
 import { getInitials } from '../utils/userUtils.jsx';
+import { useNavigate } from 'react-router-dom'
+import { Menu, MenuButton, MenuItems, MenuItem, Transition, } from '@headlessui/react'
+import { Fragment } from 'react'
 
 const UserAvatar = () => {
   const navigate = useNavigate();

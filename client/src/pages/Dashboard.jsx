@@ -1,7 +1,7 @@
-import React from 'react';
-import Navbar from '../components/Sidebar';
+import React, { useState } from 'react';
+import Sidebar from '../components/Sidebar';
 import StatBox from '../components/StatBox';
-import ProjectHeader from '../components/ProjectHeader';
+import Navbar from '../components/Navbar';
 import { useOutletContext } from 'react-router-dom';
 import { 
   useGetProjectByIdQuery, 
@@ -106,9 +106,9 @@ const Dashboard = () => {
 
   return (
     <>
-      <Navbar />
+      <Sidebar />
       <div className="ml-[15%] w-[85%] min-h-screen bg-[var(--background-primary)]">
-        <ProjectHeader project={currentProject} />
+        <Navbar project={currentProject} />
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 auto-rows-fr">
           {/* Top Stats */}

@@ -1,11 +1,10 @@
-// ProjectHeader.js
 import React from 'react';
 import { RxDashboard, RxCalendar } from "react-icons/rx";
 import { LuChartGantt, LuSquareKanban } from "react-icons/lu";
 import { useLocation, useNavigate } from 'react-router-dom';
 import UserAvatar from './UserAvatar';
 
-const ProjectHeader = ({ project }) => {
+const Navbar = ({ project }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -55,4 +54,4 @@ const ProjectHeader = ({ project }) => {
   );
 };
 
-export default ProjectHeader;
+export default Navbar;
