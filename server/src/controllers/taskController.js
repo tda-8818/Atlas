@@ -30,7 +30,7 @@ export const getTasksByProject = async (req, res) => {
 export const createTask = async (req, res) => {
     try {
         // Optionally remove reliance on the cookie if the client includes projectId in the body.
-        const { title, description, start, end } = req.body;
+        const { projectId, title, description, start, end } = req.body;
         
         console.log("createTask Executed", projectId);
 
@@ -58,7 +58,7 @@ export const createTask = async (req, res) => {
 
         console.log("Saved task:", savedTask);
 
-        // Optionally link the task back to the project
+        // link the task back to the project
         project.tasks.push(savedTask._id);
         await project.save();
 

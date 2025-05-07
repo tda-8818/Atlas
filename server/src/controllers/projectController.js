@@ -16,7 +16,7 @@ export const createProject = async (req, res) => {
     try {
         console.log("create project executed");
 
-        const { title, description, daysLeft } = req.body;
+        const { title, description, startDate, endDate } = req.body;
         console.log("Received Data:", req.body);
 
         // grab the email of the user who created the project
@@ -46,16 +46,22 @@ export const createProject = async (req, res) => {
             owner: user._id,
             title: title,
             description: description,
-            daysLeft: daysLeft,
+            startDate: startDate,
+            endDate: endDate,
+            users: [],
         })
         // insert the user who created the project as a member of that project
         projectData.users.push(user._id);
+
+        console.log(projectData);
 
         // save project in db
         const savedProject = await projectData.save();
 
         // add the project to that user's list of projects
         user.projects.push(savedProject._id);
+
+        console.log("USER DETAILS AFTER PROJECT PUSH:", user);
 
         // save updated user document
         await user.save();
@@ -87,7 +93,7 @@ export const getUserProjects = async (req, res) => {
     
         // Return the user's projects as JSON
         const projects = user.projects;
-        console.log("User projects:", projects);
+        //console.log("User projects:", projects);
         res.status(200).json(projects);
       } catch (error) {
         console.error("Error in getUserProjects:", error);

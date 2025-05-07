@@ -29,8 +29,8 @@ const CalendarComp = ({ project }) => {
 
   //fetches tasks from database 
   useEffect(() => {
-    if (!project || !project.tasks) return;
 
+    if (!project || !project.tasks) return;
     const transformedTasks = project.tasks.map(task => ({
       id: task._id || task.id,
       title: task.title,
@@ -59,6 +59,7 @@ const CalendarComp = ({ project }) => {
     // Create a new event using the form data from the modal
     // and the date info from the calendar.
     const newEvent = {
+      projectId: project._id,
       title: formData.title, // from modal input
       start: selectedDateInfo.startStr,
       end: selectedDateInfo.endStr,
@@ -73,7 +74,7 @@ const CalendarComp = ({ project }) => {
       // }, { withCredentials: true });
 
       const response = await addTask(newEvent).unwrap(); // NOW USING RTK Query instead of axios
-
+      
       if (response.data) {
 
         const savedTask = response.data;
