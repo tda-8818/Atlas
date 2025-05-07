@@ -1,6 +1,6 @@
 import React from 'react';
+import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
-import ProjectHeader from '../components/ProjectHeader';
 import CalendarComp from '../components/CalendarComp';
 import { useOutletContext } from 'react-router-dom';
 
@@ -9,13 +9,13 @@ const { currentProject } = useOutletContext();
   return (
     <div className="flex">
       {/* Navbar */}
-      <Navbar />
+      <Sidebar />
 
       <div className="flex h-screen w-full ">
         <main className="ml-[15%] w-[85%] flex flex-col bg-[var(--background-primary)]">
           {/* Header Section */}
           <div className="flex-none">
-            <ProjectHeader project = {currentProject} />
+            <Navbar project = {currentProject} />
           </div>
 
           {/* Content Section */}
