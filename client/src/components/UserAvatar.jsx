@@ -3,7 +3,7 @@ import { Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LuSettings, LuUser, LuCircleArrowOutUpLeft } from 'react-icons/lu';
 import { useLogoutMutation, useGetCurrentUserQuery } from '../redux/slices/userSlice';
-import { getInitials } from '../utils/userUtils';
+import { getInitials } from '../utils/userUtils.jsx';
 
 const UserAvatar = () => {
   const navigate = useNavigate();

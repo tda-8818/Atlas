@@ -1,30 +1,8 @@
 // src/components/UserAssignmentModal.jsx
 import React, { useState, useEffect, useRef } from 'react';
 
-// You might need to pass this list or fetch it here
-// For now, using the same static list as Home.jsx
-const allTeamMembers = [
-  { id: "user-1", name: "Alex Johnson", avatar: "/avatars/avatar1.png", initials: "AJ" },
-  { id: "user-2", name: "Sarah Wilson", avatar: "/avatars/avatar2.png", initials: "SW" },
-  { id: "user-3", name: "David Chen", avatar: "/avatars/avatar3.png", initials: "DC" },
-  { id: "user-4", name: "Emma Rodriguez", avatar: "/avatars/avatar4.png", initials: "ER" },
-  { id: "user-5", name: "Michael Brown", avatar: "/avatars/avatar5.png", initials: "MB" },
-];
-
-// Helper to get initials from name
-const getInitialsFromName = (name = '') => {
-    if (!name) return '';
-    const parts = name.split(' ');
-    if (parts.length > 1) {
-        return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-    } else if (name.length > 0) {
-        return name[0].toUpperCase();
-    }
-    return '';
-};
-
 // Receive currentProjectOwnerId to prevent removing the owner from the list
-const UserAssignmentModal = ({ show, initialSelectedMemberIds, currentProjectOwnerId, onSave, onCancel }) => {
+const ProjectUsersModal = ({ show, initialSelectedMemberIds, currentProjectOwnerId, onSave, onCancel }) => {
   // State for selected team members
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -231,4 +209,4 @@ const UserAssignmentModal = ({ show, initialSelectedMemberIds, currentProjectOwn
   );
 };
 
-export default UserAssignmentModal;
+export default ProjectUsersModal;

@@ -63,41 +63,33 @@ export const projectApiSlice = createApi({
       invalidatesTags: (result, error, projectId) => [{ type: 'Project', id: projectId }],
     }),
 
+     // Fetch tasks by project ID
+    getProjectTasks: builder.query({
+      query: (projectId) => `/tasks/${projectId}`,                        // change task route to fetch project tasks
+      providesTags: (result, error, projectId) => [{ type: 'Task', id: projectId }],
+    }),
+
     /** USER-PROJECT RELATED QUERIES */
     // Get all users in a project
     getProjectUsers: builder.query({
-      query: (projectId) => `/users/${projectId}`,                       
-      providesTags: (result, error, projectId) => [{ type: 'User', id: projectId }],
+      query: (projectId) => `/projects/${projectId}/users`,                       
+      providesTags: (result, error, projectId) => [
+        { type: 'User', id: projectId },
+        { type: 'Project', id: projectId }
+      ],
     }),
 
-    addTeamMember: builder.mutation({
-      query: ({ projectId, userId }) => ({
+    updateProjectUsers: builder.mutation({
+      query: ({ projectId, owner, users }) => ({
         url: `/projects/${projectId}/users`,
-        method: 'POST',
-        body: { userId }
-      }),
-      invalidatesTags: (result, error, { projectId }) => [{ type: 'Project', id: projectId }]
-    }),
-
-    // If you need to update owner
-    updateProjectOwner: builder.mutation({
-      query: ({ projectId, ownerId }) => ({
-        url: `/projects/${projectId}/owner`,
         method: 'PUT',
-        body: { ownerId }
+        body: { owner, users }
       }),
       invalidatesTags: (result, error, { projectId }) => [
+        { type: 'User', id: projectId },
         { type: 'Project', id: projectId }
       ]
     }),
-    
-    removeTeamMember: builder.mutation({
-      query: ({ projectId, userId }) => ({
-        url: `/projects/${projectId}/users/${userId}`,
-        method: 'DELETE'
-      }),
-      invalidatesTags: (result, error, { projectId }) => [{ type: 'Project', id: projectId }]
-    })
 
   }),
 });
@@ -110,9 +102,8 @@ export const {
   useUpdateProjectMutation,
   useDeleteProjectMutation,
   useGetProjectUsersQuery,
-  useAddTeamMemberMutation,
-  useUpdateProjectOwnerMutation,
-  useRemoveTeamMemberMutation,
+  useGetProjectTasksQuery,
+  useUpdateProjectUsersMutation,
 } = projectApiSlice;
 
 export default projectApiSlice;

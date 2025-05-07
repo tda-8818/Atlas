@@ -7,10 +7,8 @@ import Task from "./TaskModel.js";
 const projectSchema = new mongoose.Schema({
     title: {type: String, required: true},
     description: {type: String, required: true},
-    users: [{
-        user: {type: mongoose.Schema.Types.ObjectId, ref: 'user'},
-        role: {type: String, enum: ['owner', 'member'], default: 'member'}
-    }],
+    owner: {type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true},
+    users: [{type: mongoose.Schema.Types.ObjectId, ref: 'user'}],
     tasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
     daysLeft: {type: Number },
     progress: {type: Number, default: 0}
