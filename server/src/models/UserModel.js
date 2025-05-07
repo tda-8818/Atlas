@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
     lastName: {type: String, required: true},
     password: {type: String, required: true},
     email: {type: String, unique: true, required: true},
+    profilePicture: {type:String, default: null}, 
     projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}],
     favourite_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}],
     recent_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}]
