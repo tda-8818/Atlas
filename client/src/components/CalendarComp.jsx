@@ -25,23 +25,30 @@ const CalendarComp = ({ project }) => {
   const [addTask] = useAddTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
   const [editTask] = useUpdateTaskMutation();
+
+  const {data: projectTasks, isLoading, isError} = useGetTasksByProjectQuery(project._id);
   /// RTK QUERY FUNCTIONS ///
+
 
   //fetches tasks from database 
   useEffect(() => {
 
-    if (!project || !project.tasks) return;
-    const transformedTasks = project.tasks.map(task => ({
-      id: task._id || task.id,
+    if (!project || !projectTasks) return;
+
+    console.log("Got these tasks:", projectTasks);
+    
+    const transformedTasks = projectTasks.map(task => ({
+      id: task._id,
+      projectId: task.projectId,
       title: task.title,
-      start: task.start,
-      end: task.end,
-      allDay: task.allDay || false,
+      start: task.startDate,
+      end: task.dueDate,
+      allDay: task.allDay,
       description: task.description
     }));
 
     setCurrentEvents(transformedTasks);
-  }, [project]);
+  }, [project, projectTasks]);
 
 
   // handles date selection via click and opens modal when clicked
@@ -74,11 +81,12 @@ const CalendarComp = ({ project }) => {
       // }, { withCredentials: true });
 
       const response = await addTask(newEvent).unwrap(); // NOW USING RTK Query instead of axios
-      
-      if (response.data) {
+      console.log("RESPONSE FROM SERVER: TASK RECEIVED -> ", response);
+      if (response) {
 
-        const savedTask = response.data;
+        const savedTask = response;
         console.log("Task created via RTK:", savedTask);
+        //console.log("Task ID:", savedTask._id);
         calendarApi.addEvent({
           id: savedTask._id,
           ...newEvent

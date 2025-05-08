@@ -9,8 +9,13 @@ import Project from '../models/ProjectModel.js'
  */
 export const getTasksByProject = async (req, res) => {
     try {
-      const projectId = req.params.id;
-  
+
+    // req.param is the json object {id: abc123} => destructure it 
+      const id_param = req.params;
+
+      const projectId = id_param.id;
+      console.log("getTasksByProject FETCH. RECEIVED PROJECTID:", projectId);
+
       if (!projectId) {
         return res.status(400).json({ message: 'Project ID is required in URL params' });
       }
@@ -19,7 +24,9 @@ export const getTasksByProject = async (req, res) => {
       const tasks = await Task.find({ projectId })
         .populate('assignedTo', 'firstName lastName')
         .populate('projectId', 'title');
-  
+      
+      console.log("SENDING TASKS:", tasks);
+
       res.status(200).json(tasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -48,8 +55,8 @@ export const createTask = async (req, res) => {
             projectId: project._id,
             title,
             description,
-            start_date: start,
-            due_date: end,
+            startDate: start,
+            dueDate: end,
         });
 
         console.log("New task created:", newTask);
