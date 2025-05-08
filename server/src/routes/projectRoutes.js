@@ -1,15 +1,8 @@
 import express from 'express';
-import { createProject, getUserProjects, deleteProject, addUserToProject, getProjectById, updateProject} from "../controllers/projectController.js";
+import { createProject, getUserProjects, deleteProject, getProjectById, getProjectUsers, updateProjectUsers} from "../controllers/projectController.js";
 import authMiddleware from '../middleware/authMiddleware.js';
-import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // Limit each IP to 20 requests per window
-  message: 'Too many attempts, please try again later'
-});
 
 console.log('project routes loaded');  // Should appear when server starts
 
@@ -17,13 +10,12 @@ console.log('project routes loaded');  // Should appear when server starts
 router.post('/', authMiddleware, createProject);
 
 router.get('/', authMiddleware, getUserProjects);
-
 router.get('/:id', authMiddleware, getProjectById)
+router.get('/:id/users', authMiddleware, getProjectUsers);
 
-router.put('/', authMiddleware, addUserToProject);
+router.put('/:id/users', authMiddleware, updateProjectUsers);
 
 router.delete('/:id', authMiddleware, deleteProject);
 
-router.put('/:id', authMiddleware, updateProject);
 
 export default router;

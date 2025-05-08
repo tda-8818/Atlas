@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
+import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
-import ProjectHeader from "../components/ProjectHeader";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import DeleteTaskPopup from '../components/DeleteTaskPopup';
 import AddTaskPopup from '../components/AddTaskPopup-1';
@@ -265,31 +265,41 @@ const Kanban = () => {
       {
         id: columnId,
         title: newColumnName,
-        cards: []
-      }
+        cards: [],
+      },
     ]);
     console.log(columnId, typeof(columnId));
     setNewColumnName("");
   };
 
-  // Add Tasks 
-  const handleAddTaskFromPopup = async (cardData) => {
-    if (addTaskColumnIndex === null || addTaskColumnIndex < 0 || addTaskColumnIndex >= columns.length) {
-       console.error("Attempted to add task to invalid column index.");
-       setShowAddTaskPopup(false);
-       setAddTaskColumnIndex(null);
-       return;
+  const handleAddTaskFromPopup = (cardData) => {
+    // Ensure card has a valid id for drag-and-drop
+    if (!cardData.id) {
+      cardData.id = generateId("card");
+    }
+  
+    if (
+      addTaskColumnIndex === null ||
+      addTaskColumnIndex < 0 ||
+      addTaskColumnIndex >= columns.length
+    ) {
+      console.error("Attempted to add task to invalid column index.");
+      setShowAddTaskPopup(false);
+      setAddTaskColumnIndex(null);
+      return;
     }
     console.log("attempting to cardData: ", cardData);
     //const response = await addTask().unwrap(); 
 
+  
     const updated = [...columns];
     updated[addTaskColumnIndex].cards.push(cardData);
     setColumns(updated);
-
+  
     setShowAddTaskPopup(false);
     setAddTaskColumnIndex(null);
   };
+  
 
   const openAddTaskPopup = (columnIndex) => {
     setAddTaskColumnIndex(columnIndex);
@@ -305,7 +315,7 @@ const Kanban = () => {
       index: columnIndex
     });
   };
-
+  
   const deleteColumn = () => {
     if (!confirmDelete || confirmDelete.type !== 'column') return;
     if (columns.length <= 1) return;
@@ -377,22 +387,21 @@ const Kanban = () => {
 
   const addSubtaskToCard = () => {
     if (!newSubtaskTitle.trim() || !selectedCard) return;
-
+  
     const newSubtask = {
-      id: generateId("subtask"),
+      id: generateId("subtask"), // Ensure draggableId exists
       title: newSubtaskTitle.trim(),
       completed: false,
-      priority: 'none'
+      priority: "none",
     };
-
+  
     setSelectedCard({
       ...selectedCard,
-      subtasks: [...(selectedCard.subtasks || []), newSubtask]
+      subtasks: [...(selectedCard.subtasks || []), newSubtask],
     });
-
-    setNewSubtaskTitle(''); // Clear input field for subtask
+  
+    setNewSubtaskTitle("");
   };
-
   const toggleSubtaskCompletionInCard = (subtaskId) => {
     if (!selectedCard) return;
 
@@ -650,9 +659,9 @@ const Kanban = () => {
 
   return (
     <div>
-      <Navbar />
+      <Sidebar />
       <div className=" ml-[15%] w-[85%] h-[9vh]">
-        <ProjectHeader project={currentProject} />
+        <Navbar project={currentProject} />
       </div>
       <div className="p-4 ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
         {/* Kanban Board (Main DragDropContext) */}

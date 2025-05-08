@@ -156,13 +156,6 @@ export const getMe = async (req, res) => {
   }
 };
 
-export const createDummyUser = async (params) => {
-  /*
-  This function exists for testing purposes until multiple users aare fully integrated
-  
-  */
-}
-
 // user password controller
 export const updatePassword = async (req, res) => {
   try {
@@ -211,6 +204,33 @@ export const updatePassword = async (req, res) => {
   }
 };
 
+// Get all users in the database
+export const getAllUsers = async (req, res) => {
+  try {
+    // Extract the 'search' query parameter (if present)
+    const { search } = req.query;
+
+    // Build a filter if there is a search query
+    let filter = {};
+    if (search && search.trim() !== '') {
+      // Using regex to match names that start with the search term (case-insensitive)
+      filter = {
+        $or: [
+          { firstName: { $regex: `^${search}`, $options: 'i' } },
+          { lastName: { $regex: `^${search}`, $options: 'i' } }
+        ]
+      };
+    }
+
+    // Only return necessary fields for user selection
+    const users = await UserModel.find(filter, 'firstName lastName email');
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching all users:', error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 
 
 export default {
@@ -218,5 +238,6 @@ export default {
   signup,
   logout,
   getMe,
+  getAllUsers,
   updatePassword,
 };

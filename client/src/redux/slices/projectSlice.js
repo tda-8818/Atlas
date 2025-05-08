@@ -21,7 +21,7 @@ export const projectApiSlice = createApi({
     }),
 
     // Fetch all projects (if needed, e.g., for listing user's projects)
-    getUserProjects: builder.query({
+    getCurrentUserProjects: builder.query({
       query: () => '/projects',
       providesTags: (result = [], error, arg) =>
         result
@@ -62,16 +62,48 @@ export const projectApiSlice = createApi({
       }),
       invalidatesTags: (result, error, projectId) => [{ type: 'Project', id: projectId }],
     }),
+
+     // Fetch tasks by project ID
+    getProjectTasks: builder.query({
+      query: (projectId) => `/tasks/${projectId}`,                        // change task route to fetch project tasks
+      providesTags: (result, error, projectId) => [{ type: 'Task', id: projectId }],
+    }),
+
+    /** USER-PROJECT RELATED QUERIES */
+    // Get all users in a project
+    getProjectUsers: builder.query({
+      query: (id) => `/projects/${id}/users`,
+      providesTags: (result, error, id) => [
+        { type: 'User', id },
+        { type: 'Project', id }
+      ],
+    }),
+
+    updateProjectUsers: builder.mutation({
+      query: ({ id, owner, users }) => ({
+        url: `/projects/${id}/users`,
+        method: 'PUT',
+        body: { owner, users }
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'User', id},
+        { type: 'Project', id}
+      ]
+    }),
+
   }),
 });
 
 // Export hooks for usage in functional components
 export const {
   useGetProjectByIdQuery,
-  useGetUserProjectsQuery,
+  useGetCurrentUserProjectsQuery,
   useCreateProjectMutation,
   useUpdateProjectMutation,
   useDeleteProjectMutation,
+  useGetProjectUsersQuery,
+  useGetProjectTasksQuery,
+  useUpdateProjectUsersMutation,
 } = projectApiSlice;
 
 export default projectApiSlice;

@@ -4,10 +4,8 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import AddTaskPopup from "./AddTaskPopup";
-import ViewTaskModal from "./ViewTaskModal";
 import "./css/CalendarComp.css"
-import axios from "axios";
-import { useAddTaskMutation, useDeleteTaskMutation, useGetTasksByProjectQuery, useUpdateTaskMutation } from "../redux/slices/taskSlice";
+import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 
 const CalendarComp = ({ project }) => {
 

@@ -1,6 +1,5 @@
 import Project from "../models/ProjectModel.js";
 import UserModel from "../models/UserModel.js";
-import jwt from 'jsonwebtoken';
 
 const cookieOptions = {
     httpOnly: true,
@@ -20,7 +19,7 @@ export const createProject = async (req, res) => {
         console.log("Received Data:", req.body);
 
         // grab the email of the user who created the project
-        console.log("Authenticated user in createProject:", req.user);
+        console.log("Authenticated user creates Project:", req.user);
 
         // check if user exists
         if (!req.user) {
@@ -38,8 +37,6 @@ export const createProject = async (req, res) => {
         if (!user) {
             return res.status(400).json({ message: "user not found in database." });
         }
-
-        console.log("MongoId of user is:", user._id);
 
         // create new project
         const projectData = new Project({
@@ -74,91 +71,7 @@ export const createProject = async (req, res) => {
     }
 }
 
-export const getUserProjects = async (req, res) => {
-    try {
-        console.log("getUserProjects Executed");
-    
-        // Ensure that a valid user is attached to the request
-        if (!req.user) {
-          console.error("User token undefined");
-          return res.status(401).json({ message: "User not authenticated" });
-        }
-    
-        // Retrieve the user from the database and populate the "projects" field
-        const user = await UserModel.findById(req.user._id).populate("projects");
-    
-        if (!user) {
-          return res.status(404).json({ message: "User not found" });
-        }
-    
-        // Return the user's projects as JSON
-        const projects = user.projects;
-        //console.log("User projects:", projects);
-        res.status(200).json(projects);
-      } catch (error) {
-        console.error("Error in getUserProjects:", error);
-        res.status(500).json({ success: false, message: error.message });
-      }
-};
 
-// TODO: check this function works
-export const addUserToProject = async (req, res) => {
-    try {
-
-        // 1. receive user email
-        const { email } = req.body;
-
-        console.log(email);
-
-        // 2. fetch user from database
-        // May need to force toLowerCase() if not done on the front-end
-        const userToAdd = await UserModel.findOne({ email });
-
-        console.log(userToAdd);
-
-        // 3. Check if user exists
-        if (!userToAdd) {
-            console.error({ message: "Unable to add user to project. User not found" })
-            return res.status(404).json({ message: "User not found when adding to project." });
-        }
-
-        // 4. Get projectId from selectedProject token.
-        const selectedProject = req.cookies?.selectedProject;
-        console.log("Selected project from cookie:", selectedProject);
-
-        // 5. Check if projectId is valid
-        if (!selectedProject) {
-            console.error({ message: "Error selected project not found" })
-            return res.status(404).json({ message: "selectedProject token not found" });
-        }
-
-        // 6. Fetch the project from the database
-        const project = await Project.findById(selectedProject);
-
-        // 6.5 Check if project is null
-        if (!project) {
-            return res.status(404).json({ message: "Project not found" });
-        }
-
-        // 7. add the user to project's list of users and vice-versa
-        // Make sure to check that you're not adding duplicate copies of projects/users to each other.
-        if (!project.users.includes(userToAdd._id)) {
-            project.users.push(userToAdd._id);
-        }
-
-        if (!userToAdd.projects.includes(project._id)) {
-            userToAdd.projects.push(project._id)
-        }
-
-        // 8. Save the project and user document
-        await project.save();
-        await userToAdd.save();
-
-        return res.status(200).json({ message: "User added to project successfully" });
-    } catch (error) {
-        console.error("Error in addUserToProject in projectController.js:", error);
-    }
-}
 
 // Deletes a project; RTK Query will later use the response to invalidate its cache.
 export const deleteProject = async (req, res) => {
@@ -177,6 +90,35 @@ export const deleteProject = async (req, res) => {
         res.status(500).json({ message: "Error in deleteProject", error });
     }
 };
+
+export const getUserProjects = async (req, res) => {
+    try {
+        console.log("getUserProjects Executed");
+
+        // Ensure that a valid user is attached to the request
+        if (!req.user) {
+            console.error("User token undefined");
+            return res.status(401).json({ message: "User not authenticated" });
+        }
+
+        // Retrieve the user from the database and populate the "projects" field
+        const user = await UserModel.findById(req.user._id).populate("projects");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+    
+        // Return the user's projects as JSON
+        const projects = user.projects;
+        console.log("User projects:", projects);
+        res.status(200).json(projects);
+      } catch (error) {
+        console.error("Error in getUserProjects:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+////////// TASK-PROJECT RELATED QUERIES //////////
 
 /**
  * Returns a single project by ID.
@@ -201,38 +143,83 @@ export const getProjectById = async (req, res) => {
   
       res.status(200).json(project);
     } catch (error) {
-      console.error("Error in getProjectById:", error);
-      res.status(500).json({ message: "Failed to get project", error });
+        console.error("Error in getProjectById:", error);
+        res.status(500).json({ message: "Failed to get project", error });
     }
   };
+
+  ////////// PROJECT-USER RELATED QUERIES
   
-
   /**
-   * Updates a project's details
+   * Fetch a project's users
    * @param {*} req 
-   * @param {*} res
+   * @param {*} res 
    * @returns 
-   * 
    */
-export const updateProject = async (req, res) => {
+  export const getProjectUsers = async (req, res) => {
     try {
-        const projectId = req.params.id;
-
-        const updatedProject = await Project.findOneAndUpdate(
-            {_id: projectId},
-            req.body,
-            { new: true}
-        )
-
-        // check if project exists 
-        if (!updatedProject){
-            return res.status(404).json({ error: 'Project not found'});
-        }
-
-        res.status(200).json(updatedProject);
-
+      // Depending on your route declaration, you might extract the parameter as either "id" or "id".
+      const { id } = req.params; // This works if your route is defined as '/:id/users'
+      console.log("Fetching users for project with id:", id);
+  
+      // Find the project and populate the users field
+      const project = await Project.findById(id).populate('users');
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+  
+      // Return the project's users array
+      return res.status(200).json(project.users);
     } catch (error) {
-        console.error("Error updating project:", error);
-        res.status(500).json({ error: 'Internal server error' });
+      console.error('Error fetching project users:', error);
+      return res.status(500).json({ message: 'Failed to fetch project users', error });
     }
-}
+  };
+
+/**
+ * Controller to update project users and owner.
+ *
+ * Expects:
+ *   - req.params.id: the ID of the project to update.
+ *   - req.body.owner: the new owner ID.
+ *   - req.body.users: an array of user IDs.
+ *
+ * Returns the updated project.
+ */
+export const updateProjectUsers = async (req, res) => {
+    const { id } = req.params;
+    const { owner, users } = req.body;
+  
+    try {
+      // Validate incoming data
+      if (!owner || !Array.isArray(users)) {
+        return res.status(400).json({ error: 'Invalid request data. Provide both owner and users (as an array).' });
+      }
+  
+      // Find the project by its ID
+      const project = await Project.findById(id);
+      if (!project) {
+        return res.status(404).json({ error: 'Project not found.' });
+      }
+  
+      // Optional: Check if the current user (from req.user or session) has permission
+      // to update this project. This logic depends on how you've implemented authentication.
+      // For example:
+      // if (req.user.id !== project.owner.toString()) {
+      //   return res.status(403).json({ error: 'Unauthorized: Only the owner may update project users.' });
+      // }
+  
+      // Update the project's owner and users
+      project.owner = owner;
+      project.users = users;
+  
+      // Save the updated project
+      const updatedProject = await project.save();
+  
+      // Return the updated project data
+      res.status(200).json(updatedProject);
+    } catch (error) {
+      console.error('Error updating project users:', error);
+      res.status(500).json({ error: 'Server error updating project users' });
+    }
+  };

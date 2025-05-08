@@ -2,15 +2,15 @@ import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema(
     {
-       projectId: {type: mongoose.Schema.Types.ObjectId, ref: 'project'},
+       projectId: {type: mongoose.Schema.Types.ObjectId, ref: 'Project'},
        title: {type: String, required: true},
        description: {type: String, default: ""},
        status: {type: String, default: ""},
        priority: {type: String, default: ""},
-       assignedTo: [{type: mongoose.Schema.Types.ObjectId, ref: 'user'}],
+       assignedTo: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
        dueDate: {type: Date},
        startDate: {type: Date},
-       subtasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
+       subtasks: [{type: mongoose.Schema.Types.ObjectId, ref:'Task',  default: []}],
     }, {timestamps: true}
 );
 

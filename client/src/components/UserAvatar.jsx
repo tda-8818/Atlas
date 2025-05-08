@@ -1,9 +1,10 @@
-import { Menu, Transition, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
-import { Fragment } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { LuSettings, LuUser, LuCircleArrowOutUpLeft } from 'react-icons/lu';
+// src/components/UserAvatar.jsx
+import { LuUser, LuCircleArrowOutUpLeft } from 'react-icons/lu';
 import { useLogoutMutation, useGetCurrentUserQuery } from '../redux/slices/userSlice';
-import { getInitials } from '../utils/userUtils';
+import { getInitials } from '../utils/userUtils.jsx';
+import { useNavigate } from 'react-router-dom'
+import { Menu, MenuButton, MenuItems, MenuItem, Transition, } from '@headlessui/react'
+import { Fragment } from 'react'
 
 const UserAvatar = () => {
   const navigate = useNavigate();
@@ -58,7 +59,8 @@ const UserAvatar = () => {
       >
         <MenuItems className="absolute right-0 top-full mt-2 w-48 origin-top-right rounded-md bg-[var(--background)] shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
           <div className="px-2 py-2 rounded-md">
-            <MenuItem>
+            {/* SETTINGS NOT WORKING */}
+            {/* <MenuItem>
               {({ active }) => (
                 <button
                   onClick={() => navigate('/settings')}
@@ -72,7 +74,7 @@ const UserAvatar = () => {
                   Settings
                 </button>
               )}
-            </MenuItem>
+            </MenuItem> */}
 
             <MenuItem>
               {({ active }) => (
@@ -96,6 +98,5 @@ const UserAvatar = () => {
     </Menu>
   );
 };
-
 
 export default UserAvatar;

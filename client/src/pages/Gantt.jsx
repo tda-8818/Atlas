@@ -1,7 +1,7 @@
 import React from 'react';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/Sidebar';
 import GanttComp from '../components/GanttComp';
-import ProjectHeader from '../components/ProjectHeader';
+import ProjectHeader from '../components/Navbar';
 import { useOutletContext } from 'react-router-dom';
 import {
   useAddTaskMutation,

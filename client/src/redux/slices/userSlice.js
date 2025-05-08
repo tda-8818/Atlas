@@ -15,7 +15,7 @@ export const userApiSlice = createApi({
         headers.set('Accept', 'application/json');
         return headers;
     },
-    tagTypes: ['User'], 
+    tagTypes: ['User'],
     endpoints: (builder) => ({
         // User endpoints
         login: builder.mutation({
@@ -26,18 +26,18 @@ export const userApiSlice = createApi({
             }),
             invalidatesTags: (result, error, arg) => {
                 return result?.user ? ['User'] : [];
-              }
+            }
         }),
 
         logout: builder.mutation({
             query: () => ({
                 url: '/users/logout',
                 method: 'POST',
-                
+
             }),
             invalidatesTags: (result, error, arg) => {
                 return result?.user ? ['User'] : [];
-              }
+            }
         }),
 
         // Current user endpoint
@@ -46,25 +46,33 @@ export const userApiSlice = createApi({
             providesTags: ['User']
         }),
 
+        // Add to your userSlice.js if needed
+        getAllUsers: builder.query({
+            query: () => '/users',
+            providesTags: ['User']
+        }),
+
+
+
         // Add the updatePassword mutation
-    updatePassword: builder.mutation({
-        query: (credentials) => ({
-          url: 'settings',
-          method: 'PUT',
-          body: credentials,
+        updatePassword: builder.mutation({
+            query: (credentials) => ({
+                url: 'settings',
+                method: 'PUT',
+                body: credentials,
+            }),
+            invalidatesTags: ['User'],
         }),
-        invalidatesTags: ['User'],
-      }),
-      
-      // Add an updateProfile mutation (for future use)
-      updateProfile: builder.mutation({
-        query: (userData) => ({
-          url: 'profile',
-          method: 'PUT',
-          body: userData,
+
+        // Add an updateProfile mutation (for future use)
+        updateProfile: builder.mutation({
+            query: (userData) => ({
+                url: 'profile',
+                method: 'PUT',
+                body: userData,
+            }),
+            invalidatesTags: ['User'],
         }),
-        invalidatesTags: ['User'],
-      }),
     }),
 });
 
@@ -72,6 +80,8 @@ export const {
     useLoginMutation,
     useLogoutMutation,
     useGetCurrentUserQuery,
+    useGetUsersByProjectQuery,
+    useGetAllUsersQuery,
     useUpdatePasswordMutation,
     useUpdateProfileMutation
 

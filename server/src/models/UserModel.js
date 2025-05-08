@@ -8,9 +8,9 @@ const userSchema = new mongoose.Schema({
     password: {type: String, required: true},
     email: {type: String, unique: true, required: true},
     profilePic: { type: String, default: '' },
-    projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}],
-    favourite_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}],
-    recent_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}]
+    projects: [{type: mongoose.Schema.Types.ObjectId, ref:'Project',  default: []}],
+    favourite_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'Project',  default: []}],
+    recent_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'Project',  default: []}]
 }, {timestamps: true});
 
 /*

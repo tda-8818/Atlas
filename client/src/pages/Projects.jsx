@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-import { useGetUserProjectsQuery, useCreateProjectMutation, useDeleteProjectMutation } from '../redux/slices/projectSlice';
-import axios from "axios";
+import { useGetCurrentUserProjectsQuery, useCreateProjectMutation, useDeleteProjectMutation } from '../redux/slices/projectSlice';
 import { useNavigate } from "react-router-dom";
 import UserAvatar from "../components/UserAvatar";
 import { LuClock } from "react-icons/lu";
@@ -17,7 +16,7 @@ const Projects = () => {
         isLoading: projectsLoading,
         isError: projectsError,
         refetch,
-    } = useGetUserProjectsQuery();
+    } = useGetCurrentUserProjectsQuery();
     
 
     const [createProject] = useCreateProjectMutation();
@@ -50,11 +49,6 @@ const Projects = () => {
 
     const handleProjectClick = async (project) => {
         try {
-            // console.log("Clicked Project:", project);
-            // const response = await axios.post(`http://localhost:5001/projects/${project.id}`, project, {
-            //     withCredentials: true
-            // });
-            
             // Redirect to project-specific dashboard
             navigate(`/projects/${project.id}/dashboard`);
         } catch (error) {
