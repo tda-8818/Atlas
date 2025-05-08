@@ -4,6 +4,7 @@ import { gantt } from 'dhtmlx-gantt';
 import React, { Component } from 'react';
 import 'dhtmlx-gantt/codebase/dhtmlxgantt.css';
 import "./css/GanttComp.css";
+import { useAddTaskMutation, useDeleteTaskMutation, useGetTasksByProjectQuery, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 
 export default class GanttComp extends Component {
   constructor(props) {
@@ -14,6 +15,17 @@ export default class GanttComp extends Component {
   }
 
   componentDidMount() {
+
+    
+      /// RTK QUERY FUNCTIONS ///
+      const [addTask] = useAddTaskMutation();
+      const [deleteTask] = useDeleteTaskMutation();
+      const [editTask] = useUpdateTaskMutation();
+    
+      const {data: projectTasks, isLoading, isError} = useGetTasksByProjectQuery(project._id);
+      /// RTK QUERY FUNCTIONS ///
+    
+    //adding task to database
     this.initGantt();
     // Initial parse
     console.log("Got tasks in GanttComp:", this.props.tasks); 
@@ -115,30 +127,26 @@ export default class GanttComp extends Component {
     // --- Attach CRUD events to call parent callbacks ---
     // Attach these events only once
     if (!this.eventAttached) {
+      gantt.attachEvent("onAfterTaskAdd", async (id, task) => {
+        try {
+          const newTask = {
+            id: id,
+            title: task.text,
+            start: task.start_date,
+            duration: task.duration,
+            progress: task.progress,
+          };
 
-      // This fires after a task is updated (e.g., dragged, resized, or updated via gantt.updateTask)
-      gantt.attachEvent("onAfterTaskUpdate", (id, task) => {
-           console.log("Gantt onAfterTaskUpdate:", id, task);
-           // Call the parent component's handler to update React state
-           // Pass the task ID and the updated task object from Gantt
-           // This will contain the new start_date and end_date/duration after a drag/resize
-           if (onGanttTaskUpdate && typeof onGanttTaskUpdate === 'function') {
-               onGanttTaskUpdate(id, task);
-           }
-           // Backend integration logic here (optional) - could be in the parent or here
+          const response = await axios.post("http://localhost:5001/Gantt", newTask);
+          if (response.data) {
+            const savedTask = response.data;
+            gantt.changeTaskId(newTask.id, savedTask._id);
+          }
+        } catch (error) {
+          console.error("Error creating task:", error);
+        }
       });
-
-       // This fires after a task is deleted (e.g., using Gantt's delete key)
-       gantt.attachEvent("onAfterTaskDelete", (id) => {
-           console.log("Gantt onAfterTaskDelete:", id);
-           // Call the parent component's handler to update React state
-           if (onGanttTaskDelete && typeof onGanttTaskDelete === 'function') {
-               onGanttTaskDelete(id);
-           }
-           // Backend integration logic here (optional)
-       });
-
-      this.eventAttached = true; // Set flag after attaching CRUD events
+      this.eventAttached = true;
     }
 
 
