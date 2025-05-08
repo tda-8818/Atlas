@@ -5,6 +5,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import DeleteTaskPopup from '../components/DeleteTaskPopup';
 import AddTaskPopup from '../components/AddTaskPopup-1';
 import { useOutletContext } from "react-router-dom";
+import { useAddTaskMutation, useDeleteTaskMutation, useGetTasksByProjectQuery, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 
 // Sample team members data
 const teamMembers = [
@@ -24,7 +25,7 @@ const sampleTags = ['Design', 'Development', 'Marketing', 'Research', 'Bug'];
 const defaultColumns = [
   {
     id: "column-1",
-    title: "Tasks",
+    title: "Unsorted Tasks",
     cards: [
       {
         id: "card-1",
@@ -113,8 +114,25 @@ const Kanban = () => {
 
   const { currentProject } = useOutletContext();
 
+  /// RTK QUERY FUNCTIONS ///
+  const [addTask] = useAddTaskMutation();
+  const [deleteTask] = useDeleteTaskMutation();
+  const [editTask] = useUpdateTaskMutation();
+
+  const { data: projectTasks, isLoading, isError} = useGetTasksByProjectQuery(currentProject._id);
   // Effect to handle click outside and keydown for the card detail modal
   useEffect(() => {
+
+    if (!currentProject || !projectTasks) return;
+
+    console.log("current Project", currentProject);
+    
+    console.log("Got tasks:", projectTasks);
+
+    const groupedTasks = {
+
+    }
+
     if (selectedCard) {
       const handleClickOutside = (event) => {
         // Check if the click is outside the modal content AND not within the member assignment area
@@ -164,7 +182,7 @@ const Kanban = () => {
      };
 
 
-  }, [selectedCard, columns]); // Added columns to dependencies because handleSaveChanges uses it
+  }, [selectedCard, columns, currentProject, projectTasks]); // Added columns to dependencies because handleSaveChanges uses it
 
 
   // Helper function to generate IDs
@@ -241,24 +259,29 @@ const Kanban = () => {
 
   const addColumn = () => {
     if (!newColumnName.trim()) return;
+    const columnId = generateId("column")
     setColumns([
       ...columns,
       {
-        id: generateId("column"),
+        id: columnId,
         title: newColumnName,
         cards: []
       }
     ]);
+    console.log(columnId, typeof(columnId));
     setNewColumnName("");
   };
 
-  const handleAddTaskFromPopup = (cardData) => {
+  // Add Tasks 
+  const handleAddTaskFromPopup = async (cardData) => {
     if (addTaskColumnIndex === null || addTaskColumnIndex < 0 || addTaskColumnIndex >= columns.length) {
        console.error("Attempted to add task to invalid column index.");
        setShowAddTaskPopup(false);
        setAddTaskColumnIndex(null);
        return;
     }
+    console.log("attempting to cardData: ", cardData);
+    //const response = await addTask().unwrap(); 
 
     const updated = [...columns];
     updated[addTaskColumnIndex].cards.push(cardData);
