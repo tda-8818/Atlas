@@ -1,21 +1,26 @@
 /**
- * Sign up page.
+ * Sign up page with updated display to match login page.
  */
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
-import { Transition, Button, Input } from '@headlessui/react';
+import { Transition, Button } from '@headlessui/react';
 import ErrorMessage from '../components/ErrorMessage';
+import Textbox from '../components/Textbox';
+import logo from '../assets/logo.png';
 
 const Signup = () => {
    const [error, setError] = useState(""); // Error message state
    const [success, setSuccess] = useState(""); // Success message state
-    const {
+   const navigate = useNavigate();
+    
+   const {
         register,
         handleSubmit,
         formState: { errors },
         watch,
+        reset
     } = useForm(); // Use react-hook-form
 
     const password = watch("password", ""); // Watch password input
@@ -84,109 +89,130 @@ const Signup = () => {
     };
     
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100"> {/* centres signup form */}
-            <div className="bg-white p-8 rounded shadow-md w-96">
-                <h2 className="text-2xl font-semibold mb-6">Sign Up</h2>
-                <form onSubmit={handleSubmit(onSubmit)}> {/* calls handle submit here */}
-                    
-                    <Input
-                        type="text"
-                        id="firstName"
-                        placeholder="First Name"
-                        {...register("firstName", {
-                            required: "First name is required!",
-                        })}
-                        className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
-                    />
-                    <ErrorMessage message={errors.firstName?.message} />
+        <div className='w-full min-h-screen flex items-center justify-center flex-col lg:flex-row bg-[#F4F9F9]'>
+            <div className='w-full md:w-auto flex gap-0 md:gap-40 flex-col md:flex-row items-center justify-center'>
+                {/* Left side - logo and app name */}
+                <div className='h-full w-full lg:w-2/3 flex flex-col items-center justify-center'>
+                    <div className='w-full md:max-w-lg 2xl:max-w-3xl flex flex-col items-center justify-center gap-5 md:gap-y-10 2xl:-mt-20'>
+                        <img src={logo} alt="Logo" className="rounded-full w-32 h32" />
+                        <p className='flex flex-col gap-0 md:gap-4 text-4xl md:text-6xl 2xl:text-7xl font-black text-center text-[#1B4965]'>
+                            <span>UniFlow</span>
+                        </p>
+                    </div>
+                </div>
 
-                    
-                        <Input
-                            type="text"
-                            id="lastName"
-                            placeholder="Last Name"
-                            {...register("lastName", {
-                                required: "Last name is required!",
-                            })}
-                            className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
-                        />
-                        <ErrorMessage message={errors.lastName?.message} />
-                   
-                        <Input
-                            type="email"
-                            id="email"
-                            placeholder="Email"
-                            {...register("email", {
-                                required: "Email is required!",
-                            })}
-                            className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
-                        />
-                        <ErrorMessage message={errors.email?.message} />
-                   
-                        <Input
-                            type="password"
-                            id="password"
-                            placeholder="New Password"
-                            {...register("password", {
-                                minLength: { value: 8, message: "Password must be at least 8 characters long" },
-                                pattern: { value: /^(?=.*[A-Z])(?=.*\d).+$/, message: "Password must contain at least one upper case letter and one number" },
-                            })}
-                            className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
-                        />
-                        <ErrorMessage message={errors.password?.message} />
+                {/* Right side - form */}
+                <div className='w-full md:w-1/3 p-4 md:p-1 flex flex-col justify-center items-center'>
+                    <form
+                        onSubmit={handleSubmit(onSubmit)}
+                        className='form-container w-full md:w-[400px] flex flex-col gap-y-5 bg-white px-10 pt-10 pb-10'
+                    >
+                        <div className='mb-2'>
+                            <p className='text-[#1B4965] text-2xl font-bold text-center'>
+                                Sign Up
+                            </p>
+                        </div>
 
-                        <Input
-                        type="password"
-                        id="confirmPassword"
-                        placeholder="Confirm Password"
-                        {...register('confirmPassword', {
-                            validate: (value) => value === password || 'Passwords do not match.',
-                        })}
-                        className="w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 relative"
-                        />
-                        <ErrorMessage message={errors.confirmPassword?.message} />
-                        
-                    
-                    
-                        
-                    {error && (
-                        <Transition
-                            show={!!error}
-                            enter="transition-opacity duration-75"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="transition-opacity duration-150"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <p className="text-red-500">{error}</p>
-                        </Transition>
-                    )}
+                        <div className='flex flex-col gap-y-3'>
+                            <div className='flex gap-x-2'>
+                                <div className='w-1/2'>
+                                    <Textbox
+                                        placeholder='First Name'
+                                        type='text'
+                                        name='firstName'
+                                        register={register("firstName", {
+                                            required: "Required"
+                                        })}
+                                        error={errors.firstName ? errors.firstName.message : ""}
+                                        className='w-full rounded-full text-sm'
+                                    />
+                                </div>
+                                <div className='w-1/2'>
+                                    <Textbox
+                                        placeholder='Last Name'
+                                        type='text'
+                                        name='lastName'
+                                        register={register("lastName", {
+                                            required: "Required"
+                                        })}
+                                        error={errors.lastName ? errors.lastName.message : ""}
+                                        className='w-full rounded-full text-sm'
+                                    />
+                                </div>
+                            </div>
+                            
+                            <Textbox
+                                placeholder='Email'
+                                type='email'
+                                name='email'
+                                register={register("email", {
+                                    required: "Email required",
+                                    pattern: {
+                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                        message: "Invalid email"
+                                    }
+                                })}
+                                error={errors.email ? errors.email.message : ""}
+                                className='w-full rounded-full text-sm'
+                            />
+                            
+                            <Textbox
+                                placeholder='Password'
+                                type='password'
+                                name='password'
+                                register={register("password", {
+                                    required: "Password required",
+                                    minLength: {
+                                        value: 8,
+                                        message: "Min 8 chars with uppercase & number"
+                                    },
+                                    pattern: {
+                                        value: /^(?=.*[A-Z])(?=.*\d).+$/,
+                                        message: "Need uppercase & number"
+                                    }
+                                })}
+                                error={errors.password ? errors.password.message : ""}
+                                className='w-full rounded-full text-sm'
+                            />
+                            
+                            <Textbox
+                                placeholder='Confirm Password'
+                                type='password'
+                                name='confirmPassword'
+                                register={register("confirmPassword", {
+                                    validate: (value) => value === password || 'Passwords do not match'
+                                })}
+                                error={errors.confirmPassword ? errors.confirmPassword.message : ""}
+                                className='w-full rounded-full text-sm'
+                            />
+                            
+                            <Button
+                                type='submit'
+                                className='w-full h-9 bg-blue-700 text-white rounded-full text-sm mt-1'
+                            >
+                                Sign Up
+                            </Button>
 
-                    {success && ( // Display success message
-                        <Transition
-                            show={!!success}
-                            enter="transition-opacity duration-75"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="transition-opacity duration-150"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <p className="text-green-500">{success}</p>
-                        </Transition>
-                    )}
+                            {(error || success) && (
+                                <div className={`text-${error ? 'red' : 'green'}-500 text-center text-xs mt-1`}>
+                                    {error || success}
+                                </div>
+                            )}
 
-
-                    <Button type="submit" className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600">Sign Up</Button>
-                </form>
-                <p>
-                    Already have an account? <Link to="/login" className="hover:underline">Login</Link>
-                </p>
+                            <div className="text-center text-xs text-gray-600 mt-1">
+                                Already have an account?{' '}
+                                <Link
+                                    to="/login"
+                                    className="text-blue-600 hover:underline font-medium"
+                                >
+                                    Login
+                                </Link>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-
         </div>
-
     );
 };
 
