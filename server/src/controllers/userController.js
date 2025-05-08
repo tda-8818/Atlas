@@ -231,6 +231,38 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+// In userController.js
+
+// Update profile picture
+export const updateProfilePicture = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+    console.log('req.file:', req.file);
+    console.log('req.body:', req.body);
+    // Get the URL of the uploaded image from Cloudinary
+    const profileImageUrl = req.file.path;
+
+    // Update the user's profile with the new image URL
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      req.user.id,
+      { profilePic: profileImageUrl },
+      { new: true } // Return the updated user
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile picture updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error('Error updating profile picture:', error);
+    res.status(500).json({ message: 'Failed to update profile picture' });
+  }
+};
+
+
 
 
 export default {
@@ -240,4 +272,5 @@ export default {
   getMe,
   getAllUsers,
   updatePassword,
+  updateProfilePicture,
 };

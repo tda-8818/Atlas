@@ -73,6 +73,15 @@ export const userApiSlice = createApi({
             }),
             invalidatesTags: ['User'],
         }),
+      uploadProfilePic: builder.mutation({
+        query: (formData) => ({
+          url: '/users/profile-pic',
+          method: 'PUT',
+          body: formData,
+        }),
+        invalidatesTags: ['User'],
+      }),
+      
     }),
 });
 
@@ -83,7 +92,8 @@ export const {
     useGetUsersByProjectQuery,
     useGetAllUsersQuery,
     useUpdatePasswordMutation,
-    useUpdateProfileMutation
+    useUpdateProfileMutation,
+    useUploadProfilePicMutation
 
 } = userApiSlice;
 

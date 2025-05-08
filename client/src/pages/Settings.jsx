@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  useUploadProfilePicMutation,
+  useUpdateProfileMutation,
+} from "../redux/slices/userSlice";
 import axios from "axios";
 
 const Settings = ({ setTheme }) => {
@@ -9,18 +13,58 @@ const Settings = ({ setTheme }) => {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [profileImage, setProfileImage] = useState(null);
   const [currentPassword, setCurrentPassword] = useState("");
+
+  const [profileImagePreview, setProfileImagePreview] = useState(null);
+  const [profileImageFile, setProfileImageFile] = useState(null);
+
+  const [uploadProfilePic] = useUploadProfilePicMutation();
+  const [updateProfile] = useUpdateProfileMutation();
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setProfileImage(URL.createObjectURL(file));
+      setProfileImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImagePreview(reader.result); // Sets preview URL for UI
+      };
+      reader.readAsDataURL(file);
     }
   };
+  
 
-  const handleSaveGeneral = () => {
-    alert("Profile updated!");
+  const handleProfilePictureChange = async () => {
+    try {
+      if (!profileImageFile) {
+        alert("No profile image selected!");
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append("profilePic", profileImageFile);  // Ensure this key matches the backend field name
+  
+      // Trigger the upload API call
+      await uploadProfilePic(formData).unwrap();
+      
+      alert("Profile picture updated!");
+    } catch (error) {
+      console.error("Profile picture update failed:", error);
+      alert("Failed to update profile picture.");
+    }
+  };
+  
+  
+
+  const handleNameEmailChange = async () => {
+    try {
+      const updatedData = { firstName, lastName, email };
+      await updateProfile(updatedData).unwrap();
+      alert("Name and email updated!");
+    } catch (error) {
+      console.error("Profile info update failed:", error);
+      alert("Failed to update name or email.");
+    }
   };
 
   const handlePasswordChange = async () => {
@@ -36,9 +80,7 @@ const Settings = ({ setTheme }) => {
           currentPassword,
           confirmPassword,
         },
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
       alert("Password updated successfully!");
     } catch (error) {
@@ -49,7 +91,6 @@ const Settings = ({ setTheme }) => {
 
   return (
     <div className="p-8 bg-[var(--background-primary)] min-h-screen">
-      {/* Back Button */}
       <div className="mb-6">
         <button
           onClick={() => navigate("/")}
@@ -61,21 +102,19 @@ const Settings = ({ setTheme }) => {
 
       <h1 className="text-[2rem] font-bold text-[var(--text)] mb-8">Settings</h1>
 
-      {/* General Info Section */}
       <div className="bg-[var(--background)] rounded-2xl p-6 mb-12 shadow-sm">
         <h2 className="text-xl font-semibold text-[var(--text)] mb-6">General</h2>
 
         <div className="flex flex-col gap-6">
-          {/* Profile Image */}
           <div>
             <label className="text-[0.9rem] text-gray-500 mb-2 block">Your Profile Picture</label>
             <label
               htmlFor="upload-photo"
               className="w-[120px] h-[120px] border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer bg-[var(--background-primary)] text-[var(--text)]"
             >
-              {profileImage ? (
+              {profileImagePreview ? (
                 <img
-                  src={profileImage}
+                  src={profileImagePreview}
                   alt="Profile"
                   className="w-full h-full object-cover rounded-xl"
                 />
@@ -85,6 +124,7 @@ const Settings = ({ setTheme }) => {
             </label>
             <input
               id="upload-photo"
+              
               type="file"
               accept="image/*"
               onChange={handleImageUpload}
@@ -92,7 +132,6 @@ const Settings = ({ setTheme }) => {
             />
           </div>
 
-          {/* Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-[0.9rem] text-gray-500 mb-2 block">First Name</label>
@@ -126,18 +165,23 @@ const Settings = ({ setTheme }) => {
             </div>
           </div>
 
-          <div>
+          <div className="flex gap-4 mt-4">
             <button
-              onClick={handleSaveGeneral}
-              className="mt-4 bg-[#187cb4] hover:bg-[#12547a] text-white py-3 px-6 text-sm font-medium rounded-lg cursor-pointer"
+              onClick={handleProfilePictureChange}
+              className="bg-[#187cb4] hover:bg-[#12547a] text-white py-3 px-6 text-sm font-medium rounded-lg"
             >
-              Save Changes
+              Save Profile Picture
+            </button>
+            <button
+              onClick={handleNameEmailChange}
+              className="bg-[#187cb4] hover:bg-[#12547a] text-white py-3 px-6 text-sm font-medium rounded-lg"
+            >
+              Save Name & Email
             </button>
           </div>
         </div>
       </div>
 
-      {/* Password Section */}
       <div className="bg-[var(--background)] rounded-2xl p-6 mb-12 shadow-sm">
         <h2 className="text-xl font-semibold text-[var(--text)] mb-6">Change Password</h2>
 
@@ -187,7 +231,6 @@ const Settings = ({ setTheme }) => {
         </div>
       </div>
 
-      {/* Theme Selection */}
       <div className="bg-[var(--background)] rounded-2xl p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-[var(--text)] mb-6">Display</h2>
         <div className="flex gap-4">
