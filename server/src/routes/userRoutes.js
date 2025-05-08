@@ -12,12 +12,11 @@ const authLimiter = rateLimit({
 });
 
 console.log('User routes loaded');  // Should appear when server starts
-
+// pass authMiddleware as an argument if you are wanting to deal with cookie data
 router.post('/login', authLimiter, login);
 router.post('/signup', authLimiter, signup);
 router.post('/logout', authMiddleware, logout);
 router.get('/me', authMiddleware, getMe);
-
-// pass authMiddleware as an argument if you are wanting to deal with cookie data
 router.put('/', authMiddleware, updatePassword);
+
 export default router;

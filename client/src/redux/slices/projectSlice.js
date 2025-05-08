@@ -72,22 +72,22 @@ export const projectApiSlice = createApi({
     /** USER-PROJECT RELATED QUERIES */
     // Get all users in a project
     getProjectUsers: builder.query({
-      query: (projectId) => `/projects/${projectId}/users`,                       
-      providesTags: (result, error, projectId) => [
-        { type: 'User', id: projectId },
-        { type: 'Project', id: projectId }
+      query: (id) => `/projects/${id}/users`,
+      providesTags: (result, error, id) => [
+        { type: 'User', id },
+        { type: 'Project', id }
       ],
     }),
 
     updateProjectUsers: builder.mutation({
-      query: ({ projectId, owner, users }) => ({
-        url: `/projects/${projectId}/users`,
+      query: ({ id, owner, users }) => ({
+        url: `/projects/${id}/users`,
         method: 'PUT',
         body: { owner, users }
       }),
-      invalidatesTags: (result, error, { projectId }) => [
-        { type: 'User', id: projectId },
-        { type: 'Project', id: projectId }
+      invalidatesTags: (result, error, id) => [
+        { type: 'User', id},
+        { type: 'Project', id}
       ]
     }),
 

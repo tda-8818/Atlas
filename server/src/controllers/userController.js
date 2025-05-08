@@ -156,13 +156,6 @@ export const getMe = async (req, res) => {
   }
 };
 
-export const createDummyUser = async (params) => {
-  /*
-  This function exists for testing purposes until multiple users aare fully integrated
-  
-  */
-}
-
 // user password controller
 export const updatePassword = async (req, res) => {
   try {

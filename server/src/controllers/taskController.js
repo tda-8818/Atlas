@@ -1,7 +1,5 @@
 import Project from '../models/ProjectModel.js';
 import Task from '../models/TaskModel.js';
-import jwt from 'jsonwebtoken';
-import Project from '../models/ProjectModel.js'
 /**
  * Gets task details based on the projectId query parameter.
  * If no projectId is provided, it fetches all tasks.

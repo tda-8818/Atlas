@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTasksByProject, createTask, updateTask, deleteTask } from "../controllers/taskController.js";
+import { getTasksByProject, createTask, deleteTask } from "../controllers/taskController.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -10,7 +10,7 @@ router.post('/', authMiddleware, createTask);
 
 router.delete('/:id', authMiddleware, deleteTask);
 
-router.put('/:id', authMiddleware, updateTask);
+//router.put('/:id', authMiddleware, updateTask);
 
 export default router;
 

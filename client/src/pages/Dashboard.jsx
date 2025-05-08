@@ -2,59 +2,68 @@ import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import StatBox from '../components/StatBox';
 import Navbar from '../components/Navbar';
-import { useOutletContext } from 'react-router-dom';
-import { 
-  useGetProjectByIdQuery, 
-  useGetProjectUsersQuery, 
-  useUpdateProjectUsersMutation, 
-  useGetProjectTasksQuery 
+import ProjectUsersModal from '../components/ProjectUsersModal';
+import { useOutletContext, useParams } from 'react-router-dom';
+import {
+  useGetProjectByIdQuery,
+  useGetProjectUsersQuery,
+  useUpdateProjectUsersMutation
 } from '../redux/slices/projectSlice';
 import { getInitials } from '../utils/userUtils';
 import { isProjectOwner } from '../utils/projectUtils';
 import { getTaskStats } from '../utils/taskUtils';
+import { useGetCurrentUserQuery } from '../redux/slices/userSlice';
 // If available, import current user (adjust as needed)
-// import { useGetCurrentUserQuery } from '../redux/slices/userApiSlice';
+// import { useGetmeQuery } from '../redux/slices/userApiSlice';
 
 const Dashboard = () => {
-  const { currentProject, currentUser } = useOutletContext();
   const [showProjectUsersModal, setProjectUsersModal] = useState(false);
+  // Mutation for updating project team
+  const [updateProjectUsers] = useUpdateProjectUsersMutation();
+
+  const { id } = useParams();
+  console.log("ProjectId:", id);
 
   // RTK Query hooks to fetch tasks, project details, and project users
-  const {
-    data: tasks = [],
-    isLoading: loadingTasks,
-    error: tasksError,
-  } = useGetProjectTasksQuery(currentProject?.projectId, {
-    skip: !currentProject?.projectId,
-  });
+  // const {
+  //   data: tasks = [],
+  //   isLoading: loadingTasks,
+  //   error: tasksError,
+  // } = useGetProjectTasksQuery(id, {
+  //   skip: !id,
+  // });
 
+  // fetch all users in the project
   const {
     data: users = [],
     isLoading: loadingUsers,
     error: userError,
-  } = useGetProjectUsersQuery(currentProject?.projectId, {
-    skip: !currentProject?.projectId,
+  } = useGetProjectUsersQuery(id, {
+    skip: !id,
   });
 
+  // fetch project by id number
   const {
-    data: projectDetails,
+    data: projectData,
     isLoading: loadingProject,
     error: projectError,
-  } = useGetProjectByIdQuery(currentProject?.projectId, {
-    skip: !currentProject?.projectId,
+  } = useGetProjectByIdQuery(id, {
+    skip: !id,
   });
 
-  // Mutation for updating project team
-  const [updateProjectTeam] = useUpdateProjectUsersMutation();
-
-  // Sort users alphabetically by last name
-  const sortedUsers = [...users].sort((a, b) =>
-    a.lastName.localeCompare(b.lastName)
-  );
+  // fetch current user
+  const {
+    data: me,
+    isLoading: loadingMe,
+    error: meError
+  } = useGetCurrentUserQuery();
 
   // Handler to update team members
   const handleUpdateProjectUsers = async (updatedMemberIds, newOwnerId) => {
-    if (!currentProject || !currentProject.projectId) {
+    console.log("updated member ids: ", updatedMemberIds);
+    console.log("new owner id:", newOwnerId);
+
+    if (!id) {
       console.error("Cannot save team members: No project selected");
       setProjectUsersModal(false);
       return;
@@ -62,14 +71,12 @@ const Dashboard = () => {
 
     try {
       await updateProjectUsers({
-        projectId: currentProject.projectId,
+        id: id,
         users: updatedMemberIds,
         owner: newOwnerId,
       }).unwrap();
-      // Show a success message (assumes toast is available in your project)
-      toast.success("Team updated successfully!");
+      console.log("Team updated successfully!");
     } catch (error) {
-      toast.error(`Error updating team: ${error.message || "Unknown error"}`);
       console.error("Error saving team:", error);
     } finally {
       setProjectUsersModal(false);
@@ -77,42 +84,56 @@ const Dashboard = () => {
   };
 
   // Check loading and error states using the correct variables
-  if (loadingTasks || loadingProject || loadingUsers) {
+  // if (loadingTasks || loadingProject || loadingUsers) {
+  //   return <div>Loading dashboard data...</div>;
+  // }
+
+  // if (tasksError || projectError || userError) {
+  //   return (
+  //     <div className="error">
+  //       Error loading dashboard data:{" "}
+  //       {tasksError?.error || projectError?.error || userError?.error || "Unknown error"}
+  //     </div>
+  //   );
+  // }
+
+  if (loadingProject || loadingUsers || loadingMe) {
     return <div>Loading dashboard data...</div>;
   }
 
-  if (tasksError || projectError || userError) {
+  if (projectError || userError || meError) {
     return (
       <div className="error">
         Error loading dashboard data:{" "}
-        {tasksError?.error || projectError?.error || userError?.error || "Unknown error"}
+        {projectError?.error || userError?.error || "Unknown error"}
       </div>
     );
   }
 
+  
   // Get task statistics
   //const { completed, inProgress, overdue } = getTaskStats(tasks);
-  const completedCount = tasks.filter(
-    (task) => task.status?.toLowerCase() === 'completed'
-  ).length;
-  const inProgressCount = tasks.filter(
-    (task) => task.status?.toLowerCase() === 'in progress'
-  ).length;
-  const overdueCount = tasks.filter(
-    (task) =>
-      new Date(task.dueDate) < new Date() &&
-      task.status?.toLowerCase() !== 'completed'
-  ).length;
+  // const completedCount = tasks.filter(
+  //   (task) => task.status?.toLowerCase() === 'completed'
+  // ).length;
+  // const inProgressCount = tasks.filter(
+  //   (task) => task.status?.toLowerCase() === 'in progress'
+  // ).length;
+  // const overdueCount = tasks.filter(
+  //   (task) =>
+  //     new Date(task.dueDate) < new Date() &&
+  //     task.status?.toLowerCase() !== 'completed'
+  // ).length;
 
   return (
     <>
       <Sidebar />
       <div className="ml-[15%] w-[85%] min-h-screen bg-[var(--background-primary)]">
-        <Navbar project={currentProject} />
+        <Navbar project={id} />
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 auto-rows-fr">
           {/* Top Stats */}
-          <div className="col-span-12 xl:col-span-4 flex ">
+          {/* <div className="col-span-12 xl:col-span-4 flex ">
             <div className="h-full w-full flex items-center justify-center">
               <StatBox title="Tasks Completed" value={completedCount} />
             </div>
@@ -126,10 +147,10 @@ const Dashboard = () => {
             <div className="h-full w-full flex items-center justify-center">
               <StatBox title="Tasks Overdue" value={overdueCount} />
             </div>
-          </div>
+          </div> */}
 
           {/* Bottom Panels */}
-          <div className="col-span-12 xl:col-span-6">
+          {/* <div className="col-span-12 xl:col-span-6">
             <div className="h-full min-h-[35vh]">
               <StatBox title="Your Tasks">
                 <ul className="text-xs space-y-1">
@@ -151,14 +172,14 @@ const Dashboard = () => {
                 </ul>
               </StatBox>
             </div>
-          </div>
+          </div> */}
 
           {/* Members list */}
           <div className="col-span-12 xl:col-span-6">
             <div className="h-full min-h-[35vh]">
               <StatBox title="Team Members">
                 <div className="flex items-center justify-between mb-2 px-2">
-                  {isProjectOwner(currentUser, projectDetails?.owner) && (
+                  {isProjectOwner(me, projectData?.owner) && (
                     <button
                       className="w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-700 text-sm"
                       onClick={() => setProjectUsersModal(true)}
@@ -170,18 +191,13 @@ const Dashboard = () => {
                 </div>
 
                 <div className="px-2">
+                  {/* Users List */}
                   <ul className="space-y-1 text-xs">
-                    {sortedUsers.map((user) => (
+                    {users.map((user) => (
                       <li
                         key={user._id || user.id}
                         className="p-2 rounded-md bg-[var(--background-primary)] flex items-center gap-2 text-[var(--text)]"
                       >
-                        <div
-                          className="w-6 h-6 rounded-full bg-gray-300 text-gray-800 text-xs flex items-center justify-center"
-                          title={`${user.firstName} ${user.lastName}`}
-                        >
-                          {getInitials(user.firstName, user.lastName)}
-                        </div>
                         <span>
                           {user.firstName} {user.lastName}
                         </span>
@@ -193,6 +209,15 @@ const Dashboard = () => {
                       </li>
                     ))}
                   </ul>
+                  {/* Conditionally show the Add User button if the user is the project owner */}
+                  {isProjectOwner(me.user.id, projectData?.owner) && (
+                    <button
+                      onClick={setProjectUsersModal}
+                      className="mt-2 p-2 bg-blue-500 text-white rounded"
+                    >
+                      Add User
+                    </button>
+                  )}
                 </div>
               </StatBox>
             </div>
@@ -200,12 +225,12 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* User Assignment Modal */}
+      {/* Project Users Modal */}
       {showProjectUsersModal && (
         <ProjectUsersModal
           show={showProjectUsersModal}
-          initialSelectedMemberIds={projectDetails?.users || []}
-          currentProjectOwnerId={projectDetails?.owner}
+          initialSelectedMemberIds={projectData?.users || []}
+          currentProjectOwnerId={projectData?.owner}
           onSave={(users, owner) => handleUpdateProjectUsers(users, owner)}
           onCancel={() => setProjectUsersModal(false)}
           allTeamMembers={users}

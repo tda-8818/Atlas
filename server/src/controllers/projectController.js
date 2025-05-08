@@ -1,6 +1,5 @@
 import Project from "../models/ProjectModel.js";
 import UserModel from "../models/UserModel.js";
-import jwt from 'jsonwebtoken';
 
 const cookieOptions = {
     httpOnly: true,
@@ -72,6 +71,26 @@ export const createProject = async (req, res) => {
     }
 }
 
+
+
+// Deletes a project; RTK Query will later use the response to invalidate its cache.
+export const deleteProject = async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log("deleteProject executed with id:", id);
+
+        // Optionally, you can check if req.user is allowed to delete the project.
+        const projectToDelete = await Project.findByIdAndDelete(id);
+        if (!projectToDelete) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+        res.status(200).json({ message: "Project deleted successfully", project: projectToDelete });
+    } catch (error) {
+        console.error("Error in deleteProject:", error);
+        res.status(500).json({ message: "Error in deleteProject", error });
+    }
+};
+
 export const getUserProjects = async (req, res) => {
     try {
         console.log("getUserProjects Executed");
@@ -96,24 +115,6 @@ export const getUserProjects = async (req, res) => {
       } catch (error) {
         console.error("Error in getUserProjects:", error);
         res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-// Deletes a project; RTK Query will later use the response to invalidate its cache.
-export const deleteProject = async (req, res) => {
-    try {
-        const { id } = req.params;
-        console.log("deleteProject executed with id:", id);
-
-        // Optionally, you can check if req.user is allowed to delete the project.
-        const projectToDelete = await Project.findByIdAndDelete(id);
-        if (!projectToDelete) {
-            return res.status(404).json({ message: "Project not found" });
-        }
-        res.status(200).json({ message: "Project deleted successfully", project: projectToDelete });
-    } catch (error) {
-        console.error("Error in deleteProject:", error);
-        res.status(500).json({ message: "Error in deleteProject", error });
     }
 };
 
@@ -146,4 +147,79 @@ export const getProjectById = async (req, res) => {
         res.status(500).json({ message: "Failed to get project", error });
     }
   };
+
+  ////////// PROJECT-USER RELATED QUERIES
   
+  /**
+   * Fetch a project's users
+   * @param {*} req 
+   * @param {*} res 
+   * @returns 
+   */
+  export const getProjectUsers = async (req, res) => {
+    try {
+      // Depending on your route declaration, you might extract the parameter as either "id" or "id".
+      const { id } = req.params; // This works if your route is defined as '/:id/users'
+      console.log("Fetching users for project with id:", id);
+  
+      // Find the project and populate the users field
+      const project = await Project.findById(id).populate('users');
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+  
+      // Return the project's users array
+      return res.status(200).json(project.users);
+    } catch (error) {
+      console.error('Error fetching project users:', error);
+      return res.status(500).json({ message: 'Failed to fetch project users', error });
+    }
+  };
+
+/**
+ * Controller to update project users and owner.
+ *
+ * Expects:
+ *   - req.params.id: the ID of the project to update.
+ *   - req.body.owner: the new owner ID.
+ *   - req.body.users: an array of user IDs.
+ *
+ * Returns the updated project.
+ */
+export const updateProjectUsers = async (req, res) => {
+    const { id } = req.params;
+    const { owner, users } = req.body;
+  
+    try {
+      // Validate incoming data
+      if (!owner || !Array.isArray(users)) {
+        return res.status(400).json({ error: 'Invalid request data. Provide both owner and users (as an array).' });
+      }
+  
+      // Find the project by its ID
+      const project = await Project.findById(id);
+      if (!project) {
+        return res.status(404).json({ error: 'Project not found.' });
+      }
+  
+      // Optional: Check if the current user (from req.user or session) has permission
+      // to update this project. This logic depends on how you've implemented authentication.
+      // For example:
+      // if (req.user.id !== project.owner.toString()) {
+      //   return res.status(403).json({ error: 'Unauthorized: Only the owner may update project users.' });
+      // }
+  
+      // Update the project's owner and users
+      project.owner = owner;
+      project.users = users;
+  
+      // Save the updated project
+      const updatedProject = await project.save();
+  
+      // Return the updated project data
+      res.status(200).json(updatedProject);
+    } catch (error) {
+      console.error('Error updating project users:', error);
+      res.status(500).json({ error: 'Server error updating project users' });
+    }
+  };
