@@ -22,8 +22,7 @@ const Dashboard = () => {
   const [updateProjectUsers] = useUpdateProjectUsersMutation();
 
   const { id } = useParams();
-  console.log("ProjectId:", id);
-
+  
   // RTK Query hooks to fetch tasks, project details, and project users
   // const {
   //   data: tasks = [],
@@ -53,10 +52,15 @@ const Dashboard = () => {
 
   // fetch current user
   const {
-    data: me,
+    data: currentUser,
     isLoading: loadingMe,
     error: meError
   } = useGetCurrentUserQuery();
+
+  console.log("curr user", currentUser.user.id);
+  console.log("proj owener:", projectData?.owner);
+  console.log("is project owner?:", isProjectOwner(currentUser.user.id, projectData?.owner));
+
 
   // Handler to update team members
   const handleUpdateProjectUsers = async (updatedMemberIds, newOwnerId) => {
@@ -68,6 +72,7 @@ const Dashboard = () => {
       setProjectUsersModal(false);
       return;
     }
+console.log("is project owner?:", isProjectOwner(currentUser.user.id, projectData?.owner));
 
     try {
       await updateProjectUsers({
@@ -179,26 +184,26 @@ const Dashboard = () => {
             <div className="h-full min-h-[35vh]">
               <StatBox title="Team Members">
                 <div className="flex items-center justify-between mb-2 px-2">
-                  {isProjectOwner(me, projectData?.owner) && (
+                  {isProjectOwner(currentUser.user.id, projectData?.owner) && (
                     <button
-                      className="w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-700 text-sm"
+                      className="w-30 h-6 bg-gray-400 hover:bg-gray-300 text-gray-800 items-center justify-center text-sm rounded"
                       onClick={() => setProjectUsersModal(true)}
-                      title="Assign Members"
+                      title="Members"
                     >
-                      ＋
+                      ＋Add Members
                     </button>
                   )}
                 </div>
 
                 <div className="px-2">
                   {/* Users List */}
-                  <ul className="space-y-1 text-xs">
+                  <ul className="space-y-1 text-sm">
                     {users.map((user) => (
                       <li
                         key={user._id || user.id}
                         className="p-2 rounded-md bg-[var(--background-primary)] flex items-center gap-2 text-[var(--text)]"
                       >
-                        <span>
+                        <span className="capitalize">
                           {user.firstName} {user.lastName}
                         </span>
                         {user.role && (
@@ -209,15 +214,6 @@ const Dashboard = () => {
                       </li>
                     ))}
                   </ul>
-                  {/* Conditionally show the Add User button if the user is the project owner */}
-                  {isProjectOwner(me.user.id, projectData?.owner) && (
-                    <button
-                      onClick={setProjectUsersModal}
-                      className="mt-2 p-2 bg-blue-500 text-white rounded"
-                    >
-                      Add User
-                    </button>
-                  )}
                 </div>
               </StatBox>
             </div>
