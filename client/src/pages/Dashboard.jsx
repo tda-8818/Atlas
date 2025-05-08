@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import StatBox from '../components/StatBox';
 import Navbar from '../components/Navbar';
-import ProjectUsersModal from '../components/ProjectUsersModal';
+import ModalContainer from '../components/ModalContainer';
+//import ProjectUsersModal from '../components/ProjectUsersModal';
 import { useOutletContext, useParams } from 'react-router-dom';
 import {
   useGetProjectByIdQuery,
   useGetProjectUsersQuery,
   useUpdateProjectUsersMutation
 } from '../redux/slices/projectSlice';
-import { getInitials } from '../utils/userUtils';
 import { isProjectOwner } from '../utils/projectUtils';
 import { getTaskStats } from '../utils/taskUtils';
 import { useGetCurrentUserQuery } from '../redux/slices/userSlice';
@@ -57,11 +57,6 @@ const Dashboard = () => {
     error: meError
   } = useGetCurrentUserQuery();
 
-  console.log("curr user", currentUser.user.id);
-  console.log("proj owener:", projectData?.owner);
-  console.log("is project owner?:", isProjectOwner(currentUser.user.id, projectData?.owner));
-
-
   // Handler to update team members
   const handleUpdateProjectUsers = async (updatedMemberIds, newOwnerId) => {
     console.log("updated member ids: ", updatedMemberIds);
@@ -72,7 +67,6 @@ const Dashboard = () => {
       setProjectUsersModal(false);
       return;
     }
-console.log("is project owner?:", isProjectOwner(currentUser.user.id, projectData?.owner));
 
     try {
       await updateProjectUsers({
@@ -222,7 +216,7 @@ console.log("is project owner?:", isProjectOwner(currentUser.user.id, projectDat
       </div>
 
       {/* Project Users Modal */}
-      {showProjectUsersModal && (
+      {/* {showProjectUsersModal && (
         <ProjectUsersModal
           show={showProjectUsersModal}
           initialSelectedMemberIds={projectData?.users || []}
@@ -231,7 +225,18 @@ console.log("is project owner?:", isProjectOwner(currentUser.user.id, projectDat
           onCancel={() => setProjectUsersModal(false)}
           allTeamMembers={users}
         />
-      )}
+      )} */}
+
+
+        {/* {showProjectUsersModal && (
+        <ModalContainer
+          isOpen={showProjectUsersModal}
+          onSave={(users, owner) => handleUpdateProjectUsers(users, owner)}
+          onClose={() => setProjectUsersModal(false)}
+          title="Team Members"
+        />
+      )} */}
+      
     </>
   );
 };

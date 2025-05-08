@@ -1,10 +1,12 @@
 // src/components/UserAssignmentModal.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { Button } from '@headlessui/react';
+//import { useUpdateProjectUsers,  } from '../redux/slices/projectSlice'
+// import { useOnClickOutside } from './hooks/useOnClickOutside';
+// import { useEscapeKey } from './hooks/useEscapeKey';
 
 // Receive currentProjectOwnerId to prevent removing the owner from the list
-const ProjectUsersModal = ({ show, initialSelectedMemberIds, currentProjectOwnerId, onSave, onCancel }) => {
-  // State for selected team members
-  const [selectedMemberIds, setSelectedMemberIds] = useState([]);
+const ProjectUsersModal = ({ show, onSave, onCancel }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const modalRef = useRef(null);
@@ -86,10 +88,10 @@ const ProjectUsersModal = ({ show, initialSelectedMemberIds, currentProjectOwner
   return (
     <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
       <div ref={modalRef} className="bg-white rounded shadow-lg p-6 w-[400px] max-h-[80vh] overflow-y-auto">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Assign Team Members</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">Team Members</h3>
 
         {/* Search Input */}
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <input
             ref={searchInputRef}
             value={searchQuery}
@@ -97,112 +99,31 @@ const ProjectUsersModal = ({ show, initialSelectedMemberIds, currentProjectOwner
             placeholder="Search members..."
             className="w-full border px-3 py-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
-        </div>
+        </div> */}
 
         {/* Member List */}
         <div className="max-h-60 overflow-y-auto border-b border-gray-200 pb-4 mb-4">
-          {filteredMembers.length > 0 ? (
-            filteredMembers.map(member => {
-              const isSelected = selectedMemberIds.includes(member.id);
-              const isOwner = member.id === currentProjectOwnerId; // Check if this member is the project owner
-              const displayInitials = member.initials || getInitialsFromName(member.name);
-
-              return (
-                <div
-                  key={member.id}
-                  // Make the div clickable to toggle selection UNLESS it's the owner
-                  className={`flex items-center justify-between p-2 rounded transition-colors
-                              ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-100'}
-                              ${isOwner ? '' : 'cursor-pointer'} `} // No cursor pointer for owner
-                   onClick={() => !isOwner && toggleMemberSelection(member.id)} // Only clickable if NOT owner
-                >
-                  <div className="flex items-center gap-3 flex-grow"> {/* flex-grow to push icon to right */}
-                     {/* Display initials in a simple circle */}
-                     {displayInitials && (
-                        <div className="w-6 h-6 rounded-full bg-gray-300 text-gray-800 text-xs flex items-center justify-center flex-shrink-0">
-                           {displayInitials}
-                        </div>
-                     )}
-                    <span className="text-sm text-gray-800">{member.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2 ml-auto"> {/* ml-auto pushes to the right */}
-                     {isOwner && (
-                         <span className="text-xs text-blue-600 font-semibold bg-blue-100 px-2 py-0.5 rounded-full">Owner</span>
-                     )}
-                     {/* Show checkmark if selected (or if it's the owner) */}
-                     {isSelected || isOwner ? (
-                       <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 text-blue-600 ${isOwner ? 'opacity-50' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                       </svg>
-                     ) : (
-                       // Show plus icon if not selected and not the owner
-                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                       </svg>
-                     )}
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <div className="text-center text-gray-500 text-sm p-4">No members found matching your search.</div>
-          )}
+          
         </div>
 
-        {/* Selected Members (Confirmation Display) */}
-         {selectedMemberIds.length > 0 && (
-             <div className="mb-4">
-                 <p className="text-sm font-semibold mb-2">Selected Members:</p>
-                 <div className="flex flex-wrap gap-2">
-                     {/* Filter out the owner from the list of removable members */}
-                     {selectedMemberIds.map(id => {
-                         const member = getMember(id);
-                         const isOwner = id === currentProjectOwnerId;
-                         const displayInitials = member?.initials || getInitialsFromName(member?.name);
-
-                         return member ? (
-                              <div key={`selected-${id}`} className={`flex items-center border rounded-full pl-2 pr-1 py-0.5 ${isOwner ? 'border-blue-300 bg-blue-100' : 'border-gray-300 bg-gray-100'}`}>
-                                  {displayInitials && (
-                                      <div className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center flex-shrink-0 ${isOwner ? 'bg-blue-300 text-blue-800' : 'bg-gray-300 text-gray-800'}`}>
-                                         {displayInitials}
-                                      </div>
-                                   )}
-                                  <span className={`ml-1 text-xs ${isOwner ? 'font-semibold' : ''}`}>{member.name}</span>
-                                   {isOwner ? (
-                                       <span className='ml-1 text-[10px] text-blue-600 font-semibold'>Owner</span>
-                                   ) : (
-                                       // Allow removing if not owner
-                                       <button
-                                            onClick={() => toggleMemberSelection(id)}
-                                            className="ml-1 text-gray-500 text-[10px] hover:text-red-500"
-                                            title={`Remove ${member.name} from team`}
-                                       >
-                                            ✕
-                                       </button>
-                                   )}
-                              </div>
-                         ) : null;
-                     })}
-                 </div>
-             </div>
-         )}
+        
 
 
         {/* Buttons */}
         <div className="flex justify-end gap-2">
-          <button
+          <Button
             onClick={onCancel}
             className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100 text-sm"
           >
             Cancel
-          </button>
+          </Button>
           {/* Save button is always enabled as long as modal is open (implicitly, owner is present) */}
-          <button
+          <Button
             onClick={handleSave}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
           >
-            Save Team
-          </button>
+            Save
+          </Button>
         </div>
       </div>
     </div>

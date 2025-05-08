@@ -204,11 +204,26 @@ export const updatePassword = async (req, res) => {
   }
 };
 
-// Get all users (for selection in assignment UI)
+// Get all users in the database
 export const getAllUsers = async (req, res) => {
   try {
+    // Extract the 'search' query parameter (if present)
+    const { search } = req.query;
+
+    // Build a filter if there is a search query
+    let filter = {};
+    if (search && search.trim() !== '') {
+      // Using regex to match names that start with the search term (case-insensitive)
+      filter = {
+        $or: [
+          { firstName: { $regex: `^${search}`, $options: 'i' } },
+          { lastName: { $regex: `^${search}`, $options: 'i' } }
+        ]
+      };
+    }
+
     // Only return necessary fields for user selection
-    const users = await UserModel.find({}, 'firstName lastName email');
+    const users = await UserModel.find(filter, 'firstName lastName email');
     return res.status(200).json(users);
   } catch (error) {
     console.error('Error fetching all users:', error);

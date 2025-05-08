@@ -1,5 +1,5 @@
 // src/components/UserAvatar.jsx
-import { LuUser } from 'react-icons/lu';
+import { LuUser, LuCircleArrowOutUpLeft } from 'react-icons/lu';
 import { useLogoutMutation, useGetCurrentUserQuery } from '../redux/slices/userSlice';
 import { getInitials } from '../utils/userUtils.jsx';
 import { useNavigate } from 'react-router-dom'

@@ -1,5 +1,5 @@
 import express from 'express';
-import { signup, login, logout, getMe, updatePassword } from "../controllers/userController.js";
+import { signup, login, logout, getMe, updatePassword, getAllUsers } from "../controllers/userController.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 import rateLimit from 'express-rate-limit';
 
@@ -17,6 +17,8 @@ router.post('/login', authLimiter, login);
 router.post('/signup', authLimiter, signup);
 router.post('/logout', authMiddleware, logout);
 router.get('/me', authMiddleware, getMe);
+router.get('/', getAllUsers);
 router.put('/', authMiddleware, updatePassword);
+
 
 export default router;
