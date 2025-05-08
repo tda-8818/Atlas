@@ -64,15 +64,22 @@ function formatDateForPopup(dateObj) {
 
 const Gantt = () => {
   const { currentProject } = useOutletContext();
-  const data = {
-    data: [
-      { id: 1, text: 'Project #1', start_date: '01-04-2025', duration: 18, progress: 0.4 },
-      { id: 2, text: 'Task #1', start_date: '02-04-2025', duration: 8, progress: 0.6 },
-      { id: 3, text: 'Task #2', start_date: '11-04-2025', duration: 8, progress: 0.6 }
-    ],
-    links: [
-      { id: 1, source: 1, target: 2, type: '0' },
-    ]
+
+  const [addTask] = useAddTaskMutation();
+  const [deleteTask] = useDeleteTaskMutation();
+  const [editTask] = useUpdateTaskMutation();
+  const { data: projectTasks = [], isLoading, isError } = useGetTasksByProjectQuery(currentProject._id);
+
+  // Format tasks for DHTMLX Gantt
+  const formattedData = {
+    data: projectTasks.map(task => ({
+      id: task._id,
+      text: task.title,
+      start_date: task.start, // make sure this is in Gantt-compatible format
+      duration: task.duration,
+      progress: task.progress || 0,
+    })),
+    links: [] // optionally add real links here
   };
 
   return (
