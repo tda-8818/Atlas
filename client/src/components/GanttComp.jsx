@@ -1,22 +1,21 @@
 import { gantt } from 'dhtmlx-gantt';
 import React, { Component } from 'react';
 import 'dhtmlx-gantt/codebase/dhtmlxgantt.css';
-import axios from 'axios';
 import "./css/GanttComp.css";
 import { useAddTaskMutation, useDeleteTaskMutation, useGetTasksByProjectQuery, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 
 export default class GanttComp extends Component {
+  
   componentDidMount() {
 
+    const { addTask, deleteTask, editTask, tasks } = this.props;
     
-      /// RTK QUERY FUNCTIONS ///
-      const [addTask] = useAddTaskMutation();
-      const [deleteTask] = useDeleteTaskMutation();
-      const [editTask] = useUpdateTaskMutation();
+    // --- Initialize Gantt ---
+    gantt.init(this.ganttContainer);
+    gantt.parse(this.props.tasks);
+    //gantt.parse(tasks);
     
-      const {data: projectTasks, isLoading, isError} = useGetTasksByProjectQuery(project._id);
-      /// RTK QUERY FUNCTIONS ///
-    
+    console.log("tasks:", tasks);
     //adding task to database
     if (!this.eventAttached) {
       gantt.attachEvent("onAfterTaskAdd", async (id, task) => {
@@ -104,9 +103,6 @@ export default class GanttComp extends Component {
     gantt.config.link_line_color = "#0288d1";
 
 
-    // --- Initialize Gantt ---
-    gantt.init(this.ganttContainer);
-    gantt.parse(this.props.tasks);
   }
 
   render() {
