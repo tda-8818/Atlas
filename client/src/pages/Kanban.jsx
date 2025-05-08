@@ -5,8 +5,8 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import DeleteTaskPopup from '../components/DeleteTaskPopup';
 import AddTaskPopup from '../components/AddTaskPopup-1';
 import { useOutletContext } from "react-router-dom";
-import { useAddTaskMutation, useDeleteTaskMutation, useGetTasksByProjectQuery, useUpdateTaskMutation } from "../redux/slices/taskSlice";
-
+import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
+import {useGetProjectTasksQuery} from "../redux/slices/projectSlice";
 // Sample team members data
 const teamMembers = [
   { id: "user-1", name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", initials: "AJ" },
@@ -119,7 +119,7 @@ const Kanban = () => {
   const [deleteTask] = useDeleteTaskMutation();
   const [editTask] = useUpdateTaskMutation();
 
-  const { data: projectTasks, isLoading, isError} = useGetTasksByProjectQuery(currentProject._id);
+  const { data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
   // Effect to handle click outside and keydown for the card detail modal
   useEffect(() => {
 

@@ -28,12 +28,12 @@ const fileSchema = new mongoose.Schema({
   },
   uploadedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'user',
     required: true
   },
   project: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Project',
+    ref: 'project',
     required: true // Files must be associated with a project
   },
   description: {
@@ -49,6 +49,6 @@ const fileSchema = new mongoose.Schema({
 // Add text index for search functionality
 fileSchema.index({ filename: 'text', originalName: 'text', description: 'text' });
 
-const File = mongoose.model('File', fileSchema);
+const File = mongoose.model('file', fileSchema);
 
 export default File;

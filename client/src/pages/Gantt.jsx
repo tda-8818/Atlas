@@ -3,12 +3,8 @@ import Navbar from '../components/Sidebar';
 import GanttComp from '../components/GanttComp';
 import ProjectHeader from '../components/Navbar';
 import { useOutletContext } from 'react-router-dom';
-import {
-  useAddTaskMutation,
-  useDeleteTaskMutation,
-  useUpdateTaskMutation,
-  useGetTasksByProjectQuery
-} from '../redux/slices/taskSlice';
+import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
+import {useGetProjectTasksQuery} from "../redux/slices/projectSlice";
 
 const Gantt = () => {
   const { currentProject } = useOutletContext();
@@ -16,7 +12,7 @@ const Gantt = () => {
   const [addTask] = useAddTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
   const [editTask] = useUpdateTaskMutation();
-  const { data: projectTasks = [], isLoading, isError } = useGetTasksByProjectQuery(currentProject._id);
+  const { data: projectTasks = [], isLoading, isError } = useGetProjectTasksQuery(currentProject._id);
 
   // Format tasks for DHTMLX Gantt
   const formattedData = {
