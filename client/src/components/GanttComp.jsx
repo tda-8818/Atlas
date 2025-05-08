@@ -7,24 +7,17 @@ import "./css/GanttComp.css";
 import { useAddTaskMutation, useDeleteTaskMutation, useGetTasksByProjectQuery, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 
 export default class GanttComp extends Component {
-  constructor(props) {
-    super(props);
-    this.eventAttached = false; // Flag to prevent attaching CRUD events multiple times
-    this.taskClickEventAttached = false; // Flag for task click event
-    this.ganttContainer = React.createRef(); // Use React.createRef()
-  }
-
+  
   componentDidMount() {
 
+    const { addTask, deleteTask, editTask, tasks } = this.props;
     
-      /// RTK QUERY FUNCTIONS ///
-      const [addTask] = useAddTaskMutation();
-      const [deleteTask] = useDeleteTaskMutation();
-      const [editTask] = useUpdateTaskMutation();
+    // --- Initialize Gantt ---
+    gantt.init(this.ganttContainer);
+    gantt.parse(this.props.tasks);
+    //gantt.parse(tasks);
     
-      const {data: projectTasks, isLoading, isError} = useGetTasksByProjectQuery(project._id);
-      /// RTK QUERY FUNCTIONS ///
-    
+    console.log("tasks:", tasks);
     //adding task to database
     this.initGantt();
     // Initial parse
@@ -225,94 +218,19 @@ export default class GanttComp extends Component {
       return true;
     });
 
-    // Custom tooltip template
-    gantt.templates.tooltip_text = function(start, end, task) {
-        const assignedNames = (task.assignedTo || [])
-           .map(userId => {
-               const member = teamMembers.find(m => m.id === userId); // Use teamMembers prop
-               return member ? member.name : 'Unknown';
-           })
-           .join(', ');
-
-        // Format dates for display in tooltip
-        // Use task.start_date and task.end_date from Gantt's internal object
-        const startDateFormatted = task.start_date ? gantt.date.date_to_str("%Y-%m-%d")(task.start_date) : 'N/A';
-        // Gantt's end_date is exclusive, tooltip usually shows the last day, so subtract 1 day
-        const endDateFormatted = task.end_date ? gantt.date.date_to_str("%Y-%m-%d")(gantt.date.add(task.end_date, -1, 'day')) : 'N/A';
-
-
-        return `
-            <b>Task:</b> ${task.text || 'Untitled Task'}<br/>
-            <b>Start date:</b> ${startDateFormatted}<br/>
-            <b>End date:</b> ${endDateFormatted}<br/>
-            <b>Duration:</b> ${task.duration || 0} days<br/>
-            <b>Progress:</b> ${Math.round((task.progress || 0) * 100)}%<br/>
-            ${assignedNames ? `<b>Assigned To:</b> ${assignedNames}<br/>` : ''}
-            ${task.priority && task.priority !== 'none' ? `<b>Priority:</b> ${task.priority}<br/>` : ''}
-            ${task.tag ? `<b>Tag:</b> ${task.tag}<br/>` : ''}
-            ${task.description ? `<b>Description:</b> ${task.description.substring(0, 100)}${task.description.length > 100 ? '...' : ''}<br/>` : ''}
-        `;
+    // --- Visual customizations ---
+    gantt.config.grid_lines = {
+      "top": { color: "#e5e7eb", style: "solid", width: 1 },
+      "bottom": { color: "#e5e7eb", style: "solid", width: 1 },
     };
 
-    // Priority-based coloring for the task bar
-    gantt.templates.task_class = function(start, end, task) {
-      let classes = '';
-      if (task.priority === '!!!') {
-        classes += ' high-priority-task';
-      } else if (task.priority === '!!') {
-          classes += ' medium-priority-task';
-      } else if (task.priority === '!') {
-          classes += ' low-priority-task';
-      }
-       // Check if progress is 1 or more (representing 100%)
-       if (task.progress >= 1) {
-           classes += ' completed-task'; // Add class for completed tasks
-       }
-      return classes.trim();
-    };
-
-    // --- Enable Dragging and Resizing ---
-    gantt.config.drag_move = true; // Enable dragging tasks on timeline
-    gantt.config.drag_resize = true; // Enable resizing tasks on timeline
-    gantt.config.drag_links = true; // Enable creating links between tasks
-
-     // Configure Gantt to calculate duration based on start_date and end_date
-     // This is the default behavior, but good to be aware of.
-     // If you had specific work calendars, you might need more complex config here.
-     // gantt.config.duration_unit = "day";
-     // gantt.config.work_time = true; // Enable work calendars if configured
-     // gantt.config.skip_off_time = true; // Skip non-working time when calculating duration/end_date
+    gantt.config.taskbar_background = "#4caf50";
+    gantt.config.taskbar_color = "#ffffff";
+    gantt.config.task_progress_color = "#81c784";
+    gantt.config.task_text_color = "#ffffff";
+    gantt.config.link_line_color = "#0288d1";
 
 
-    // Initialize Gantt
-    // Use this.ganttContainer.current with createRef()
-    gantt.init(this.ganttContainer.current);
-    // Detect Enter key in inline cell editor and trigger save
-    gantt.attachEvent("onEditEnd", function(state) {
-      if (state && state.mode === "edit" && state.editor && state.editor.input) {
-        const inputEl = state.editor.input;
-        if (!inputEl._enterListenerAdded) {
-          inputEl.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-              const taskId = state.id;
-              const task = gantt.getTask(taskId);
-              // Finalize editing
-              gantt.endEdit();
-              // Trigger update
-              if (typeof state.editor.save === 'function') {
-                state.editor.save(); // For good measure
-              }
-              // This ensures parent update logic runs
-              if (typeof this.props.onGanttTaskUpdate === 'function') {
-                this.props.onGanttTaskUpdate(taskId, task);
-              }
-            }
-          });
-          inputEl._enterListenerAdded = true;
-        }
-      }
-      return true; // Allow default behavior
-    }.bind(this));
   }
 
   render() {
