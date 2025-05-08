@@ -3,9 +3,20 @@ import React, { Component } from 'react';
 import 'dhtmlx-gantt/codebase/dhtmlxgantt.css';
 import axios from 'axios';
 import "./css/GanttComp.css";
+import { useAddTaskMutation, useDeleteTaskMutation, useGetTasksByProjectQuery, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 
 export default class GanttComp extends Component {
   componentDidMount() {
+
+    
+      /// RTK QUERY FUNCTIONS ///
+      const [addTask] = useAddTaskMutation();
+      const [deleteTask] = useDeleteTaskMutation();
+      const [editTask] = useUpdateTaskMutation();
+    
+      const {data: projectTasks, isLoading, isError} = useGetTasksByProjectQuery(project._id);
+      /// RTK QUERY FUNCTIONS ///
+    
     //adding task to database
     if (!this.eventAttached) {
       gantt.attachEvent("onAfterTaskAdd", async (id, task) => {
@@ -18,9 +29,9 @@ export default class GanttComp extends Component {
             progress: task.progress,
           };
 
-          const response = await axios.post("http://localhost:5001/Gantt", newTask);
-          if (response.data) {
-            const savedTask = response.data;
+          const response = await addTask(newEvent).unwrap();
+          if (response) {
+            const savedTask = response;
             gantt.changeTaskId(newTask.id, savedTask._id);
           }
         } catch (error) {
