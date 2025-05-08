@@ -33,7 +33,11 @@ export const getTasksByProject = async (req, res) => {
       const id_param = req.params;
 
       const projectId = id_param.id;
+<<<<<<< HEAD
+      //console.log("getTasksByProject FETCH. RECEIVED PROJECTID:", projectId);
+=======
       console.log("getTasksByProject FETCH. RECEIVED PROJECTID:", projectId);
+>>>>>>> af362e3 (Calendar task integration)
 
       if (!projectId) {
         return res.status(400).json({ message: 'Project ID is required in URL params' });
@@ -44,7 +48,11 @@ export const getTasksByProject = async (req, res) => {
         .populate('assignedTo', 'firstName lastName')
         .populate('projectId', 'title');
       
+<<<<<<< HEAD
+      //console.log("SENDING TASKS:", tasks);
+=======
       console.log("SENDING TASKS:", tasks);
+>>>>>>> af362e3 (Calendar task integration)
 
       res.status(200).json(tasks);
     } catch (error) {
@@ -86,6 +94,7 @@ export const createTask = async (req, res) => {
             description,
             startDate: start,
             dueDate: end,
+<<<<<<< HEAD
             columnId:columnId
         });
 
@@ -106,6 +115,10 @@ export const createTask = async (req, res) => {
             await columnToInsert.save(); 
         }
 
+=======
+        });
+
+>>>>>>> af362e3 (Calendar task integration)
         console.log("New task created:", newTask);
 
         // 6. Save task document in database
