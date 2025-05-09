@@ -6,7 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import AddTaskPopup from "./AddTaskPopup";
 import "./css/CalendarComp.css"
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
-
+import { useGetProjectTasksQuery } from "../redux/slices/projectSlice";
 const CalendarComp = ({ project }) => {
 
   const [modalStateAdd, setmodalStateAdd] = useState(false);
@@ -24,7 +24,7 @@ const CalendarComp = ({ project }) => {
   const [deleteTask] = useDeleteTaskMutation();
   const [editTask] = useUpdateTaskMutation();
 
-  const {data: projectTasks, isLoading, isError} = useGetTasksByProjectQuery(project._id);
+  const {data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(project._id);
   /// RTK QUERY FUNCTIONS ///
 
 

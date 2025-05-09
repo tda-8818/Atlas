@@ -21,7 +21,9 @@ const Dashboard = () => {
   // Mutation for updating project team
   const [updateProjectUsers] = useUpdateProjectUsersMutation();
 
-  const { id } = useParams();
+  const {currentProject} = useOutletContext();
+  const id = currentProject._id;
+  //const { id } = useParams();
   
   // RTK Query hooks to fetch tasks, project details, and project users
   // const {
@@ -128,7 +130,7 @@ const Dashboard = () => {
     <>
       <Sidebar />
       <div className="ml-[15%] w-[85%] min-h-screen bg-[var(--background-primary)]">
-        <Navbar project={id} />
+        <Navbar project={currentProject} />
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 auto-rows-fr">
           {/* Top Stats */}
