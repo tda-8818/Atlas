@@ -63,7 +63,7 @@ const stringToColor = (str) => {
 };
 
 
-const AddTaskPopup = ({ show, onAddTask, onCancel, teamMembers = [], initialValues = null }) => {
+const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers = [], initialValues = null }) => {
   const [title, setTitle] = useState('');
   const [tag, setTag] = useState('');
   const [startDate, setStartDate] = useState(''); // Renamed from dueDate
@@ -195,6 +195,21 @@ const AddTaskPopup = ({ show, onAddTask, onCancel, teamMembers = [], initialValu
 
     onAddTask(taskData); // Call the parent's save handler (renamed from onAddTask to be more general)
   };
+  const handleEdit = () =>{
+    const taskData = {
+      id: initialValues?.id, // Pass the ID if editing
+      title: title.trim(),
+      tag: tag.trim() === '' ? null : tag.trim(),
+      startDate: startDate || null, // Pass start date string from popup
+      dueDate: dueDate || null, // Pass due date string from popup
+      // Duration is calculated by the parent component before updating Gantt
+      assignedTo: assignedTo,
+      description: description.trim(),
+      subtasks: subtasks, // Include subtasks
+      priority: priority
+    };
+    onEdit(taskData);
+  };
 
   const addSubtask = () => {
     if (!newSubtaskTitle.trim()) return;
@@ -265,6 +280,10 @@ const AddTaskPopup = ({ show, onAddTask, onCancel, teamMembers = [], initialValu
         }
    };
 
+  //  const handleTaskDelete = () =>{
+  //     onDelete();
+  //     onCancel();
+  //  };
 
   return (
     <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
@@ -530,21 +549,60 @@ const AddTaskPopup = ({ show, onAddTask, onCancel, teamMembers = [], initialValu
 
 
         {/* Buttons */}
-        <div className="flex justify-end gap-2 mt-6">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave} // Use handleSave here
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!title.trim() && !isEditing}
-          >
-            {isEditing ? 'Save Changes' : 'Add Task'}
-          </button>
-        </div>
+        <div className="flex justify-between items-center gap-2 mt-6">
+  {/* Left side: Delete button (conditionally rendered) */}
+  {isEditing ? (
+    <button
+      className="text-red-500 hover:text-red-300 mt-1 cursor-pointer"
+      onClick={()=>{
+        onDelete();
+      }}
+    >
+      Delete
+    </button>
+  ) : (
+    <div /> // Empty div to keep spacing consistent when Delete is hidden
+  )}
+
+  {/* Right side: Cancel and Save/Add buttons */}
+  {isEditing? (
+<div className="flex justify-end gap-2">
+    <button
+      onClick={onCancel}
+      className="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm"
+    >
+      Cancel
+    </button>
+    <button
+      onClick={handleEdit}
+      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+      disabled={!title.trim() && !isEditing}
+    >
+      {isEditing ? 'Save Changes' : 'Add Task'}
+    </button>
+  </div>
+
+
+  ):(
+<div className="flex justify-end gap-2">
+    <button
+      onClick={onCancel}
+      className="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm"
+    >
+      Cancel
+    </button>
+    <button
+      onClick={handleSave}
+      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+      disabled={!title.trim() && !isEditing}
+    >
+      {isEditing ? 'Save Changes' : 'Add Task'}
+    </button>
+  </div>
+  )}
+  
+</div>
+
       </div>
     </div>
   );

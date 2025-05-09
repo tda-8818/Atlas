@@ -109,7 +109,8 @@ export const createTask = async (req, res) => {
     }
 };
 
-export const editTask = async (req, res) => {
+export const updateTask = async (req, res) => {
+   console.log("EDIT TASK EXECUTED");
     const { id } = req.params;
     const {
         title,
@@ -120,7 +121,7 @@ export const editTask = async (req, res) => {
         dueDate,
         startDate
     } = req.body;
-
+    console.log("id: ",id);
     try {
         const updatedTask = await Task.findByIdAndUpdate(
             id,
@@ -135,7 +136,7 @@ export const editTask = async (req, res) => {
             },
             { new: true } 
         );
-
+        console.log("updated task: ", updatedTask);
         if (!updatedTask) {
             return res.status(404).json({ message: "Task not found" });
         }
