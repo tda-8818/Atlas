@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import Presignup from "./pages/Presignup";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
@@ -12,11 +13,11 @@ import Messages from "./pages/Messages";
 import ProjectLayout from "./layouts/ProjectLayout.jsx";
 import { useEffect, useState } from "react";
 import { useGetCurrentUserQuery } from './redux/slices/userSlice.js';
-
+import { handleApiError } from "./components/errorToast.jsx"; 
 
 // The main App component that defines the routes for the application
 function App() {
-  const { data: user, isLoading, isError } = useGetCurrentUserQuery();
+  const { data: user, isLoading, isError, error } = useGetCurrentUserQuery();
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("theme") || "light";
   });
@@ -26,17 +27,26 @@ function App() {
     localStorage.setItem("theme", theme); // persist
   }, [theme]);
   
-
   useEffect(() => {
     if (!isLoading && !isError && user) {
       // User is authenticated
     }
   }, [user, isLoading, isError]);
 
+  // Add this effect to handle API errors with toast notifications
+  useEffect(() => {
+    if (isError && error) {
+      handleApiError(error);
+    }
+  }, [isError, error]);
+
   //if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className={theme}>
+      {/* Add the Toaster component here */}
+      <Toaster />
+      
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/projects" replace />} />

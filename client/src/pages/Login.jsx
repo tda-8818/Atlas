@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLoginMutation, useGetCurrentUserQuery } from '../redux/slices/userSlice';
 import logo from '../assets/logo.png';
 import Textbox from '../components/Textbox';
 import { Button } from '@headlessui/react';
-
+import { showErrorToast } from '../components/errorToast.jsx'; 
+import toast from 'react-hot-toast';
 const Login = () => {
   const {
     register,
@@ -15,14 +16,10 @@ const Login = () => {
 
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
-  const [error, setError] = useState(null); // Proper error state
-  //const { refetch } = useGetCurrentUserQuery(); // Add this
-
+  //const { refetch } = useGetCurrentUserQuery(); // Add this if needed
 
   const onSubmit = async (data) => {
     try {
-      setError(null); // Reset errors on submit
-
       const loginData = {
         ...data,
         email: data.email.toLowerCase()
@@ -37,12 +34,28 @@ const Login = () => {
       // 2. Verify cookie was set
       console.log('Document cookies:', document.cookie);
 
+      // Show success toast
+      toast.success("Login successful!", {
+        duration: 2000,
+        position: "bottom-right"
+      });
+
       // 3. Redirect to home
       navigate('/projects');
 
     } catch (err) {
       console.error('Login failed:', err);
-      setError(err.data?.message || 'Invalid email or password'); // User-friendly error
+      
+      // Show error toast based on error status
+      if (err.status === 401) {
+        showErrorToast("Invalid email or password", "401");
+      } else if (err.status === 404) {
+        showErrorToast("Account not found", "404");
+      } else if (err.status === 400) {
+        showErrorToast(err.data?.message || "Invalid login data", "400");
+      } else {
+        showErrorToast(err.data?.message || "Login failed", err.status?.toString() || "error");
+      }
     }
   };
 
@@ -108,13 +121,9 @@ const Login = () => {
                 label={isLoading ? 'Logging in...' : 'Login'}
                 disabled={isLoading}
                 className='w-full h-10 bg-blue-700 text-white rounded-full'
-              >Login</Button>
-
-              {error && (
-                <div className="text-red-500 text-center mt-2">
-                  {error.data?.message || 'Login failed'}
-                </div>
-              )}
+              >
+                {isLoading ? 'Logging in...' : 'Login'}
+              </Button>
 
               <div className="text-center mt-4 text-sm text-gray-600">
                 Don't have an account?{' '}
@@ -125,7 +134,6 @@ const Login = () => {
               </div>
             </div>
           </form>
-
         </div>
       </div>
     </div>

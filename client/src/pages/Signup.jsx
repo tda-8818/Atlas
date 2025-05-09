@@ -9,9 +9,10 @@ import { Transition, Button } from '@headlessui/react';
 import ErrorMessage from '../components/ErrorMessage';
 import Textbox from '../components/Textbox';
 import logo from '../assets/logo.png';
+import { showErrorToast } from '../components/errorToast.jsx'; // Import the toast utility
+import toast from 'react-hot-toast'; // Import toast for success messages
 
 const Signup = () => {
-   const [error, setError] = useState(""); // Error message state
    const [success, setSuccess] = useState(""); // Success message state
    const navigate = useNavigate();
     
@@ -27,7 +28,6 @@ const Signup = () => {
     
     // Handles form submission
     const onSubmit = async (data) => {
-        setError(""); // Reset error message
         setSuccess(""); // Reset success message
 
         try {
@@ -54,36 +54,41 @@ const Signup = () => {
                 }
             );
 
-            setSuccess("Account created successfully! Redirecting to login...");
+            // Show success toast instead of setting state
+            toast.success("Account created successfully! Redirecting to login...", {
+                duration: 2000,
+                position: "bottom-right"
+            });
+            
             reset();
 
             // Redirect after 2 seconds
             setTimeout(() => navigate('/home'), 2000);
 
         } catch (error) {
-            // Enhanced error handling
+            // Enhanced error handling with toast notifications
             if (error.response) {
                 switch (error.response.status) {
                     case 400:
                         if (error.response.data?.message?.includes('already exists')) {
-                            setError("An account with this email already exists");
+                            showErrorToast("An account with this email already exists", "400");
                         } else {
-                            setError("Invalid registration data. Please check your inputs.");
+                            showErrorToast("Invalid registration data. Please check your inputs.", "400");
                         }
                         break;
                     case 409:
-                        setError("An account with this email already exists.");
+                        showErrorToast("An account with this email already exists.", "409");
                         break;
                     case 500:
-                        setError("Server error. Please try again later.");
+                        showErrorToast("Server error. Please try again later.", "500");
                         break;
                     default:
-                        setError("Registration failed. Please try again.");
+                        showErrorToast("Registration failed. Please try again.", error.response.status.toString());
                 }
             } else if (error.request) {
-                setError("Network error. Please check your connection.");
+                showErrorToast("Network error. Please check your connection.", "network");
             } else {
-                setError("An unexpected error occurred.");
+                showErrorToast("An unexpected error occurred.", "error");
             }
         }
     };
@@ -193,9 +198,9 @@ const Signup = () => {
                                 Sign Up
                             </Button>
 
-                            {(error || success) && (
-                                <div className={`text-${error ? 'red' : 'green'}-500 text-center text-xs mt-1`}>
-                                    {error || success}
+                            {success && (
+                                <div className="text-green-500 text-center text-xs mt-1">
+                                    {success}
                                 </div>
                             )}
 
