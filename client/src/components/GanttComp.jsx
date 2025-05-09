@@ -16,6 +16,10 @@ export default class GanttComp extends Component {
   componentDidMount() {
     this.initGantt();
     // Initial parse
+    console.log("Got tasks in GanttComp:", this.props.tasks); 
+    // const formattedData = {
+    //   data: 
+    // }
     gantt.parse(this.props.tasks);
   }
 

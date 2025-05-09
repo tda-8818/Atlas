@@ -63,18 +63,31 @@ function formatDateForPopup(dateObj) {
 
 
 const Gantt = () => {
-  const { currentProject } = useOutletContext();
-  const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
-  const [editingTask, setEditingTask] = useState(null); // State to hold the task data when editing
+    const { currentProject } = useOutletContext();
+    const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
+    const [editingTask, setEditingTask] = useState(null); // State to hold the task data when editing
 
-  const [addTask] = useAddTaskMutation();
-  const [deleteTask] = useDeleteTaskMutation();
-  const [editTask] = useUpdateTaskMutation();
-  const { data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
-  const [tasks, setTasks] = useState({
-    projectTasks
-  });
-  
+    const [addTask] = useAddTaskMutation();
+    const [deleteTask] = useDeleteTaskMutation();
+    const [editTask] = useUpdateTaskMutation();
+    const { data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
+    const [tasks, setTasks] = useState({
+        projectTasks
+    });
+
+        // Format tasks for DHTMLX Gantt
+    const formattedData = {
+        data: projectTasks.map(task => ({
+        id: task._id,
+        text: task.title,
+        start_date: task.start, // make sure this is in Gantt-compatible format
+        duration: task.duration,
+        progress: task.progress || 0,
+        })),
+        links: [] // optionally add real links here
+    };
+
+
    // Handler to update tasks state when Gantt itself changes tasks (e.g., dragging, resizing)
    // This handler receives the task object *after* Gantt has updated its internal state
    // updatedGanttTask will have start_date (Date), end_date (Date), and duration (number)
@@ -316,7 +329,7 @@ const Gantt = () => {
         {/* Gantt Chart Component */}
         <div className="w-full h-full">
           <GanttComp
-            tasks={tasks} // Pass the tasks state
+            tasks={formattedData} // Pass the tasks state
             onAddTask={openAddTaskPopup}
             onEditTask={handleEditTask}
             onGanttTaskUpdate={handleGanttTaskUpdate} // Handle updates from Gantt drag/resize
