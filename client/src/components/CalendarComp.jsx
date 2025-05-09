@@ -3,7 +3,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import AddTaskPopup from "./AddTaskPopup";
+import AddTaskPopup from "./AddTaskPopup-1";
 import "./css/CalendarComp.css"
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 import { useGetProjectTasksQuery } from "../redux/slices/projectSlice";
@@ -143,9 +143,17 @@ const CalendarComp = ({ project }) => {
         eventClick={handleEventClick}
         events={currentEvents}
       />
-
+       {/* Render the reusable AddTaskPopup */}
+       <AddTaskPopup
+          show={modalStateAdd}
+          onAddTask={handleEventSubmission}
+          onCancel={() => {
+            setmodalStateAdd(false);
+          }}
+        />
+{/* 
       <AddTaskPopup toggle={modalStateAdd} onSubmit={handleEventSubmission} onClose={() => { setmodalStateAdd(!modalStateAdd); setSelectedDateInfo(null); setSelectedEvent(null); }} onDelete={handleEventDelete} event={selectedEvent}actionName={actionName} />
-      {/* <ViewTaskModal toggle={modalStateView} action={()=>{setModalStateView(!modalStateView); setSelectedEvent(null);}} onSubmit={handleEventDelete} /> */}
+      <ViewTaskModal toggle={modalStateView} action={()=>{setModalStateView(!modalStateView); setSelectedEvent(null);}} onSubmit={handleEventDelete} /> */}
 
     </>
   );
