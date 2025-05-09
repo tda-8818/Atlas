@@ -97,10 +97,59 @@ const CalendarComp = ({ project }) => {
   };
 
   //handles when user clikcs on event in calendar to open modal
-  const handleEventClick = async (selected) => {
-    setSelectedEvent(selected.event);
-    setShowAddTaskPopup(true);
+  const handleEventClick = (clickInfo) => {
+    try {
+      const event = clickInfo.event;
+      
+      if (!event) {
+        console.error("Event is undefined");
+        return;
+      }
+      
+      console.log("Clicked event:", event);
+      console.log("Event extended props:", event.extendedProps);
+      
+      // Convert the event to a task format that AddTaskPopup can use
+      const taskData = {
+        id: event.id,
+        title: event.title,
+        description: event.extendedProps?.description || '',
+        tag: event.extendedProps?.tag || '',
+        assignedTo: event.extendedProps?.assignedTo || [],
+        subtasks: event.extendedProps?.subtasks || [],
+        priority: event.extendedProps?.priority || 'none',
+        dueDate: event.end ? event.end.toISOString().split('T')[0] : 
+                event.start ? event.start.toISOString().split('T')[0] : '',
+      };
+      
+      console.log("Prepared task data:", taskData);
+      
+      // Get calendar API reference directly from the event
+      const calendarApi = clickInfo.view.calendar;
+      
+      if (!calendarApi) {
+        console.error("Calendar API is undefined");
+        return;
+      }
+      
+      // Save reference to the calendar for later updates
+      setSelectedEvent({
+        eventRef: event,
+        startStr: event.startStr,
+        endStr: event.endStr || event.startStr,
+        allDay: event.allDay,
+        view: { calendar: calendarApi },
+        taskData: taskData,
+        isEditing: true
+      });
+      
+      // Open the popup
+      setShowAddTaskPopup(true);
+    } catch (error) {
+      console.error("Error handling event click:", error);
+    }
   };
+
 
   //handles when user chooses to delete an event in the modal
   // deletes the event from the calendar and the server
@@ -108,9 +157,9 @@ const CalendarComp = ({ project }) => {
     if (!selectedEvent) return;
 
     try {
-      console.log("Deleting event id:", selectedEvent.id);
-      await deleteTask(selectedEvent.id).unwrap();
-      selectedEvent.remove();
+      console.log("Deleting event id:", selectedEvent.taskData.id);
+      await deleteTask(selectedEvent.taskData.id).unwrap();
+      selectedEvent.eventRef.remove();
     } catch (error) {
       console.error("Error deleting task:", error);
     } finally {
@@ -145,7 +194,12 @@ const CalendarComp = ({ project }) => {
           onCancel={() => {
             setShowAddTaskPopup(false);
             setSelectedDateInfo(null);
+            
           }}
+          onDelete={handleEventDelete}
+          {...(selectedEvent?.isEditing && selectedEvent?.taskData 
+              ? { initialValues: selectedEvent.taskData } 
+              : {})}
         />
 {/* 
       <AddTaskPopup toggle={modalStateAdd} onSubmit={handleEventSubmission} onClose={() => { setmodalStateAdd(!modalStateAdd); setSelectedDateInfo(null); setSelectedEvent(null); }} onDelete={handleEventDelete} event={selectedEvent}actionName={actionName} />
