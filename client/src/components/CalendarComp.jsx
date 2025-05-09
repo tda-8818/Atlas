@@ -56,7 +56,7 @@ const CalendarComp = ({ project }) => {
   const handleEventSubmission = async (formData) => {
     const calendarApi = selectedDateInfo.view.calendar;
     calendarApi.unselect();
-
+    console.log("form data: ",formData)
     // Create a new event using the form data from the modal
     // and the date info from the calendar.
     const newEvent = {
@@ -168,6 +168,38 @@ const CalendarComp = ({ project }) => {
     }
   };
 
+  const handleEventEdit = async (formData) => {
+  if (!selectedEvent) return;
+
+  const newEvent = {
+    _id: formData.id,
+    projectId: selectedEvent.taskData._id,
+    title: formData.title,
+    start: formData.startStr,
+    end: formData.endStr,
+    allDay: formData.allDay,
+    description: formData.description,
+  };
+
+  try {
+    await editTask(newEvent).unwrap();
+
+
+const calendarEvent = selectedEvent.eventRef;
+calendarEvent.setProp("title", newEvent.title);
+calendarEvent.setStart(newEvent.start);
+calendarEvent.setEnd(newEvent.end);
+calendarEvent.setAllDay(newEvent.allDay);
+calendarEvent.setExtendedProp("description", newEvent.description);
+
+  } catch (error) {
+    console.error("error modifying task: ", error);
+  }
+
+  setShowAddTaskPopup(false);
+  setSelectedEvent(null);
+};
+
   return (
     <>
       <FullCalendar
@@ -197,6 +229,7 @@ const CalendarComp = ({ project }) => {
             
           }}
           onDelete={handleEventDelete}
+          onEdit = {handleEventEdit}
           {...(selectedEvent?.isEditing && selectedEvent?.taskData 
               ? { initialValues: selectedEvent.taskData } 
               : {})}

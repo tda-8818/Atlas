@@ -63,7 +63,7 @@ const stringToColor = (str) => {
 };
 
 
-const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, teamMembers = [], initialValues = null }) => {
+const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers = [], initialValues = null }) => {
   const [title, setTitle] = useState('');
   const [tag, setTag] = useState('');
   const [startDate, setStartDate] = useState(''); // Renamed from dueDate
@@ -194,6 +194,21 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, teamMembers = [], in
     };
 
     onAddTask(taskData); // Call the parent's save handler (renamed from onAddTask to be more general)
+  };
+  const handleEdit = () =>{
+    const taskData = {
+      id: initialValues?.id, // Pass the ID if editing
+      title: title.trim(),
+      tag: tag.trim() === '' ? null : tag.trim(),
+      startDate: startDate || null, // Pass start date string from popup
+      dueDate: dueDate || null, // Pass due date string from popup
+      // Duration is calculated by the parent component before updating Gantt
+      assignedTo: assignedTo,
+      description: description.trim(),
+      subtasks: subtasks, // Include subtasks
+      priority: priority
+    };
+    onEdit(taskData);
   };
 
   const addSubtask = () => {
@@ -550,7 +565,26 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, teamMembers = [], in
   )}
 
   {/* Right side: Cancel and Save/Add buttons */}
-  <div className="flex justify-end gap-2">
+  {isEditing? (
+<div className="flex justify-end gap-2">
+    <button
+      onClick={onCancel}
+      className="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm"
+    >
+      Cancel
+    </button>
+    <button
+      onClick={handleEdit}
+      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+      disabled={!title.trim() && !isEditing}
+    >
+      {isEditing ? 'Save Changes' : 'Add Task'}
+    </button>
+  </div>
+
+
+  ):(
+<div className="flex justify-end gap-2">
     <button
       onClick={onCancel}
       className="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm"
@@ -565,6 +599,8 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, teamMembers = [], in
       {isEditing ? 'Save Changes' : 'Add Task'}
     </button>
   </div>
+  )}
+  
 </div>
 
       </div>
