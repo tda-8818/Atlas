@@ -71,12 +71,14 @@ const Gantt = () => {
     const [deleteTask] = useDeleteTaskMutation();
     const [editTask] = useUpdateTaskMutation();
     const { data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
-    const [tasks, setTasks] = useState({
-        projectTasks
-    });
-
+    const [tasks, setTasks] = useState({ data: [], links: [] });
         // Format tasks for DHTMLX Gantt
-    const formattedData = {
+    useEffect(() => {
+      if (!currentProject || !projectTasks || isLoading) return;
+
+      console.log("got project tasks from project: ", projectTasks);
+
+      const formattedData = {
         data: projectTasks.map(task => ({
         id: task._id,
         text: task.title,
@@ -86,6 +88,9 @@ const Gantt = () => {
         })),
         links: [] // optionally add real links here
     };
+      setTasks(formattedData);
+    }, [currentProject, projectTasks])
+    
 
 
    // Handler to update tasks state when Gantt itself changes tasks (e.g., dragging, resizing)
@@ -329,7 +334,7 @@ const Gantt = () => {
         {/* Gantt Chart Component */}
         <div className="w-full h-full">
           <GanttComp
-            tasks={formattedData} // Pass the tasks state
+            tasks={tasks} // Pass the tasks state
             onAddTask={openAddTaskPopup}
             onEditTask={handleEditTask}
             onGanttTaskUpdate={handleGanttTaskUpdate} // Handle updates from Gantt drag/resize
