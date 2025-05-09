@@ -1,5 +1,6 @@
 import Project from '../models/ProjectModel.js';
 import Task from '../models/TaskModel.js';
+import Column from '../models/ColumnModel.js';
 /**
  * Gets task details based on the projectId query parameter.
  * If no projectId is provided, it fetches all tasks.
@@ -46,7 +47,7 @@ export const createEvent = async (req, res) => {
 export const createTask = async (req, res) => {
     try {
         // Optionally remove reliance on the cookie if the client includes projectId in the body.
-        const { projectId, title, description, start, end } = req.body;
+        const { projectId, title, description, start, end, columnId } = req.body;
 
         if (!projectId) {
             return res.status(400).json({ message: 'Project ID is required' });
@@ -66,7 +67,25 @@ export const createTask = async (req, res) => {
             description,
             startDate: start,
             dueDate: end,
+            columnId:columnId
         });
+
+        if (!columnId) {
+            console.log("No columnId provided, inserting into default column");
+            const defaultColumn = await Column.findOne({projectId, isDefault:true});
+            newTask.columnId = defaultColumn._id;
+
+            defaultColumn.tasks.push(newTask._id);
+            await defaultColumn.save();
+        }
+        else{
+            const columnToInsert = await Column.findOne({_id:columnId, projectId})
+
+            if (!columnToInsert) return res.status(404).json({message: "Target column not found in project"});
+            
+            columnToInsert.tasks.push(newTask._id);
+            await columnToInsert.save(); 
+        }
 
         console.log("New task created:", newTask);
 

@@ -3,7 +3,8 @@ import logo from '../assets/logo.png';
 import { RxHome } from "react-icons/rx";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-//import { } from
+import { useGetCurrentUserProjectsQuery } from '../redux/slices/projectSlice';
+
 const navItems = [
   { label: "Home", icon: <RxHome />, href: "/Home" }
 ];
@@ -13,27 +14,38 @@ const Sidebar = () => {
   const [projects, setProjects] = useState([]);
   const navigate = useNavigate();
 
+  // Use RTK Query hook to fetch projects
+  const {
+      data: projectsData = [],
+      isLoading: projectsLoading,
+      isError: projectsError,
+      refetch,
+  } = useGetCurrentUserProjectsQuery();
+
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await axios.get("http://localhost:5001/api/projects", {
-          withCredentials: true
-        });
+        // const response = await axios.get("http://localhost:5001/api/projects", {
+        //   withCredentials: true
+        // });
 
-        if (response.status === 200 && Array.isArray(response.data)) {
-          const projectJson = response.data.map((project) => ({
-            id: project._id,
-            title: project.title
-          }));
-          setProjects(projectJson);
-        }
+        // if (response.status === 200 && Array.isArray(response.data)) {
+        //   const projectJson = response.data.map((project) => ({
+        //     id: project._id,
+        //     title: project.title
+        //   }));
+        //   setProjects(projectJson);
+        // }
+        if (!projectsData) return;
+
+        setProjects(projectsData);
       } catch (error) {
         console.error("Failed to fetch projects in Navbar:", error);
       }
     };
 
     fetchProjects();
-  }, []);
+  }, [projectsData]);
 
   return (
     <nav className={`fixed top-0 left-0 h-full z-40 transition-all duration-300

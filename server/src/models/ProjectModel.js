@@ -9,6 +9,7 @@ const projectSchema = new mongoose.Schema({
     owner: {type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true},
     users: [{type: mongoose.Schema.Types.ObjectId, ref: 'user'}],
     tasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
+    columns: [{type: mongoose.Schema.Types.ObjectId, ref:'column',  default: []}],
     startDate: {type: Date},
     endDate: {type: Date},
     progress: {type: Number, default: 0}

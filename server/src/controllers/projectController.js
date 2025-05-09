@@ -1,6 +1,6 @@
 import Project from "../models/ProjectModel.js";
 import UserModel from "../models/UserModel.js";
-
+import Column from  "../models/ColumnModel.js"
 const cookieOptions = {
     httpOnly: true,
     secure: false, // false for localhost development
@@ -38,6 +38,8 @@ export const createProject = async (req, res) => {
             return res.status(400).json({ message: "user not found in database." });
         }
 
+  
+
         // create new project
         const projectData = new Project({
             owner: user._id,
@@ -46,15 +48,24 @@ export const createProject = async (req, res) => {
             startDate: startDate,
             endDate: endDate,
             users: [],
+            
         })
         // insert the user who created the project as a member of that project
         projectData.users.push(user._id);
 
-        console.log(projectData);
-
         // save project in db
         const savedProject = await projectData.save();
 
+        // Create the unsorted column
+        const unsortedColumn = await Column.create({
+            title: "Unsorted Tasks",
+            projectId: savedProject._id,
+            position: 0,
+            isDefault: true,
+        });
+        // insert the default column
+        projectData.columns.push(unsortedColumn._id)
+        
         // add the project to that user's list of projects
         user.projects.push(savedProject._id);
 
