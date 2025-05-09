@@ -225,7 +225,7 @@ calendarEvent.setExtendedProp("description", newEvent.description);
           onAddTask={handleEventSubmission}
           onCancel={() => {
             setShowAddTaskPopup(false);
-            setSelectedDateInfo(null);
+            setSelectedEvent(null);
             
           }}
           onDelete={handleEventDelete}
