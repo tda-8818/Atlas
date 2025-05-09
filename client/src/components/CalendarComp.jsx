@@ -9,14 +9,11 @@ import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from
 import { useGetProjectTasksQuery } from "../redux/slices/projectSlice";
 const CalendarComp = ({ project }) => {
 
-  const [modalStateAdd, setmodalStateAdd] = useState(false);
-  const [modalStateView, setModalStateView] = useState(false);
+  const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
+  const [selectedDateInfo, setSelectedDateInfo] = useState(null);
 
-  const [selectedDateInfo, setSelectedDateInfo] = useState(null)
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [currentEvents, setCurrentEvents] = useState([]);
-
-  const [actionName, setActionName] = useState(""); //used to determine which action to take in the modal (add/edit/delete)
 
 
   /// RTK QUERY FUNCTIONS ///
@@ -52,9 +49,8 @@ const CalendarComp = ({ project }) => {
   // handles date selection via click and opens modal when clicked
   const handleDateSelect = async (selectInfo) => {
     setSelectedDateInfo(selectInfo);
-    setmodalStateAdd(true);
-    setActionName("Add a task"); // Set action name to "add" for the modal
-  };
+    setShowAddTaskPopup(true);
+    };
 
   // createss a new event using the form data from the modal
   const handleEventSubmission = async (formData) => {
@@ -95,7 +91,7 @@ const CalendarComp = ({ project }) => {
     };
 
     // Close the modal and clear our saved selection.
-    setmodalStateAdd(false);
+    setShowAddTaskPopup(false);
     setSelectedDateInfo(false);
 
   };
@@ -103,8 +99,7 @@ const CalendarComp = ({ project }) => {
   //handles when user clikcs on event in calendar to open modal
   const handleEventClick = async (selected) => {
     setSelectedEvent(selected.event);
-    setmodalStateAdd(true);
-    setActionName("Edit or delete a task"); // Set action name to "edit" for the modal
+    setShowAddTaskPopup(true);
   };
 
   //handles when user chooses to delete an event in the modal
@@ -119,7 +114,7 @@ const CalendarComp = ({ project }) => {
     } catch (error) {
       console.error("Error deleting task:", error);
     } finally {
-      setModalStateView(false);
+      setShowAddTaskPopup(false);
       setSelectedEvent(null); // Clear the selected event
     }
   };
@@ -145,10 +140,11 @@ const CalendarComp = ({ project }) => {
       />
        {/* Render the reusable AddTaskPopup */}
        <AddTaskPopup
-          show={modalStateAdd}
+          show={showAddTaskPopup}
           onAddTask={handleEventSubmission}
           onCancel={() => {
-            setmodalStateAdd(false);
+            setShowAddTaskPopup(false);
+            setSelectedDateInfo(null);
           }}
         />
 {/* 
