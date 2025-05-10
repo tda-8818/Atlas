@@ -8,6 +8,7 @@ import cors from 'cors'; // CORS is a Connect/Express middleware for handling cr
 import userRoutes from './routes/userRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
+import columnRoutes from './routes/columnRoutes.js';
 import mongoose from 'mongoose'; // Mongoose used for connecting to MongoDB
 import dotenv from 'dotenv'; 
 import cookieParser from 'cookie-parser';
@@ -59,6 +60,7 @@ app.use('/settings', userRoutes);
 // app.use('/gantt', taskRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/projects/:projectId/kanban', columnRoutes);
 
 
 

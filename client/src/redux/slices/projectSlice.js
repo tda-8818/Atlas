@@ -91,6 +91,57 @@ export const projectApiSlice = createApi({
       ]
     }),
 
+    /**
+     * START OF COLUMN OPERATIONS FOR KANBAN
+     * START OF COLUMN OPERATIONS FOR KANBAN
+     * START OF COLUMN OPERATIONS FOR KANBAN
+     */
+    // Get all columns in a project
+    getProjectColumns: builder.query({
+      query: (projectId) => `/projects/${projectId}/kanban`,
+    }),
+
+    // Create column
+    createColumn: builder.mutation({
+      query: ({ projectId, columnData }) => ({
+        url: `/projects/${projectId}/kanban`,
+        method: 'POST',
+        body: columnData,
+      }),
+    }),
+
+    // Update a column
+    updateColumn: builder.mutation({
+      query: ({ projectId, columnId, updates }) => ({
+        url: `projects/${projectId}/kanban/${columnId}`,
+        method: 'PUT',
+        body: updates,
+      }),
+    }),
+
+    // Delete a column
+    deleteColumn: builder.mutation({
+      query: ({ projectId, columnId }) => ({
+        url: `projects/${projectId}/kanban/${columnId}`,
+        method: 'DELETE',
+      }),
+    }),
+
+    // Reorder columns
+    reorderColumns: builder.mutation({
+      query: ({ projectId, reorderedColumns }) => ({
+        url: `projects/${projectId}/kanban/reorder`,
+        method: 'PUT',
+        body: { columns: reorderedColumns },
+      }),
+    }),
+
+    /**
+     * END OF COLUMN OPERATIONS FOR KANBAN
+     * END OF COLUMN OPERATIONS FOR KANBAN
+     * END OF COLUMN OPERATIONS FOR KANBAN
+     */
+
   }),
 });
 
