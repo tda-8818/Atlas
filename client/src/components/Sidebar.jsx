@@ -65,9 +65,9 @@ const Sidebar = () => {
       )}
       <ul className="flex-1 px-2 space-y-2 overflow-y-auto">
         {projectsData.map((project) => (
-          <li key={project.id} className="w-full">
+          <li key={project._id} className="w-full">
             <button
-              onClick={() => navigate(`/projects/${project.id}/dashboard`)}
+              onClick={() => navigate(`/projects/${project._id}/dashboard`)}
               className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg
                 bg-[var(--background)] text-[var(--nav-text)]
                 hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)]
