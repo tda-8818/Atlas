@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 import { useGetCurrentUserProjectsQuery, useCreateProjectMutation, useDeleteProjectMutation } from '../redux/slices/projectSlice';
 import { useNavigate } from "react-router-dom";
 import UserAvatar from "../components/UserAvatar";
@@ -120,7 +121,7 @@ const Projects = () => {
 
     return (
         <div className="flex h-screen bg-[var(--background-primary)]">
-            <Navbar />
+            <Sidebar />
             <div className="flex-grow p-10 ml-[240px] overflow-y-auto">
                 <div className="flex justify-between items-center mb-8 pr-5">
                     <h1 className="text-3xl font-bold text-[var(--text)]">Projects</h1>
