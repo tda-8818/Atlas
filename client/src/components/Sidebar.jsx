@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import logo from '../assets/logo.png';
 import { RxHome } from "react-icons/rx";
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useGetCurrentUserProjectsQuery } from '../redux/slices/projectSlice';
 
 const navItems = [
@@ -11,7 +10,7 @@ const navItems = [
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [projects, setProjects] = useState([]);
+  //const [projects, setProjects] = useState([]);
   const navigate = useNavigate();
 
   // Use RTK Query hook to fetch projects
@@ -23,28 +22,7 @@ const Sidebar = () => {
   } = useGetCurrentUserProjectsQuery();
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        // const response = await axios.get("http://localhost:5001/api/projects", {
-        //   withCredentials: true
-        // });
-
-        // if (response.status === 200 && Array.isArray(response.data)) {
-        //   const projectJson = response.data.map((project) => ({
-        //     id: project._id,
-        //     title: project.title
-        //   }));
-        //   setProjects(projectJson);
-        // }
-        if (!projectsData) return;
-
-        setProjects(projectsData);
-      } catch (error) {
-        console.error("Failed to fetch projects in Navbar:", error);
-      }
-    };
-
-    fetchProjects();
+    console.log("projectsData:", projectsData);
   }, [projectsData]);
 
   return (
@@ -86,7 +64,7 @@ const Sidebar = () => {
         <h2 className="px-4 pb-2 pt-4 text-sm font-bold text-[1rem] text-[var(--text)]">Your Projects</h2>
       )}
       <ul className="flex-1 px-2 space-y-2 overflow-y-auto">
-        {projects.map((project) => (
+        {projectsData.map((project) => (
           <li key={project.id} className="w-full">
             <button
               onClick={() => navigate(`/projects/${project.id}/dashboard`)}
