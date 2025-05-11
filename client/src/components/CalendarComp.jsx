@@ -72,6 +72,12 @@ const CalendarComp = ({ project }) => {
       description: formData.description // extra info from your modal
     };
     try {
+      // Optionally save the new event to a server.
+      //ROUTING ISSUE EXISTS
+      // const response = await axios.post(`http://localhost:5001/calendar`, newEvent, {
+      //   withCredentials: true
+      // }, { withCredentials: true });
+
       const response = await addTask(newEvent).unwrap(); // NOW USING RTK Query instead of axios
       console.log("RESPONSE FROM SERVER: TASK RECEIVED -> ", response);
       if (response) {
@@ -236,4 +242,4 @@ calendarEvent.setExtendedProp("status",formData.status);
     </>
   );
 }
-export default CalendarComp
+export default CalendarComp;

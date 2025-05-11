@@ -14,6 +14,7 @@ import { isProjectOwner } from '../utils/projectUtils';
 import { getTaskStats } from '../utils/taskUtils';
 import { useGetCurrentUserQuery, useGetAllUsersQuery } from '../redux/slices/userSlice';
 import { showErrorToast } from '../components/errorToast.jsx';
+import toast from 'react-hot-toast';
 
 const Dashboard = () => {
   const {currentProject} = useOutletContext();
@@ -38,8 +39,6 @@ const Dashboard = () => {
 
   // Handler to update team members
   const handleUpdateProjectUsers = async (updatedMemberIds, newOwnerId) => {
-    console.log("updated member ids: ", updatedMemberIds);
-    console.log("new owner id:", newOwnerId);
 
     if (!id) {
       console.error("Cannot save team members: No project selected");
@@ -48,14 +47,10 @@ const Dashboard = () => {
     }
 
     try {
-      await updateProjectUsers({
-        id: id,
-        users: updatedMemberIds,
-        owner: newOwnerId,
-      }).unwrap();
-      console.log("Team updated successfully!");
+      await updateProjectUsers({ id: id, users: updatedMemberIds, owner: newOwnerId, }).unwrap();
+      toast("Team updated successfully!");
     } catch (error) {
-      console.error("Error saving team:", error);
+      showErrorToast("Error saving team: ", error);
     } finally {
       setProjectUsersModalOpen(false);
     }
