@@ -302,14 +302,28 @@ const Kanban = () => {
     setNewColumnName("");
   };
 
-  // const handleTaskEdit = async(cardData) =>{
-  //   try {
-      
-  //   } catch (error) {
-  //     console.error("Failed to edit task", error)
-  //   }
+  const handleTaskEdit = async(cardData) =>{
+    try {
+      console.log("Attempting to edit with new cardData:", cardData);
 
-  // }
+      const response = await editTask(cardData).unwrap();
+
+      // Find the column and update the card's id to map to the updated Task
+      const updatedColumns = columns.map((column) => {
+        return {
+          ...column,
+          cards: column.cards.map((card) => {
+            card._id === response._id ? response : card //If response is not null, use the response, otherwise use card
+          })
+        }
+      })
+      setColumns(updatedColumns);
+      setSelectedCard(null);
+    } catch (error) {
+      console.error("Failed to edit task", error)
+    }
+
+  }
 
 
   const handleAddTaskFromPopup = async(cardData) => {

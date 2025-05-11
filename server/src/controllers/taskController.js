@@ -93,7 +93,7 @@ export const createTask = async (req, res) => {
         const savedTask = await newTask.save(); // savedTask is the JUST oid for the task object.
 
         // 7. Append the task to the project. This stores the task in a project.tasks array
-        project.tasks.push(savedTask);
+        project.tasks.push(savedTask._id);
         // 8. Save the project document
         await project.save()
 
