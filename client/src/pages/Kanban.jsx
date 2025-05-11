@@ -125,10 +125,6 @@ const Kanban = () => {
   const [updateColumn] = useUpdateColumnMutation();
   const [deleteColumn] = useDeleteColumnMutation();
 
-  const [createColumn] = useCreateColumnMutation();
-  const [updateColumn] = useUpdateColumnMutation();
-  const [deleteColumn] = useDeleteColumnMutation();
-
   const { data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
   const { data: columnData} = useGetProjectColumnsQuery(currentProject._id);
   
