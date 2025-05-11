@@ -346,17 +346,28 @@ const Kanban = () => {
     });
   };
   
-  const removeColumn = () => {
+  const removeColumn = async() => {
     if (!confirmDelete || confirmDelete.type !== 'column') return;
     if (columns.length <= 1) return;
 
     const columnIndex = confirmDelete.index;
     if (columnIndex < 0 || columnIndex >= columns.length) return;
 
-    const updated = [...columns];
-    updated.splice(columnIndex, 1);
-    setColumns(updated);
-    setConfirmDelete(null);
+    // columnIndex is the index of the column you want to delete.  
+    const columnToDelete = columns[columnIndex];
+    console.log("Trying to delete column with ID:", columnToDelete.id);
+    try {
+      await deleteColumn({projectId: currentProject._id, columnId:columnToDelete.id}).unwrap();
+
+      const updated = [...columns];
+      updated.splice(columnIndex, 1);
+      setColumns(updated);
+      setConfirmDelete(null);
+    } catch (error) {
+      console.error("Error deleting column:", error);
+      // TODO: (OPTIONAL) Show a toast or error message to the user
+    }
+
   };
 
   const deleteCard = (columnIndex, cardIndex, e) => {

@@ -45,12 +45,12 @@ export const createProject = async (req, res) => {
             description: description,
             startDate: startDate,
             endDate: endDate,
-            users: [],
-            
+            users: [user._id],
+            columns:[],      
         })
-        // insert the user who created the project as a member of that project
-        projectData.users.push(user._id);
-
+      
+        // save project in db
+        const savedProject = await projectData.save();
 
         // Create the unsorted column
         const unsortedColumn = await Column.create({
@@ -59,20 +59,15 @@ export const createProject = async (req, res) => {
             index: 0,
             isDefault: true,
         });
+
         // insert the default column
-        projectData.columns.push(unsortedColumn._id)
-        
+        savedProject.columns.push(unsortedColumn._id)
+        await savedProject.save();
+
         // add the project to that user's list of projects
         user.projects.push(savedProject._id);
-
-        console.log("USER DETAILS AFTER PROJECT PUSH:", user);
- 
-        // save project in db
-        const savedProject = await projectData.save();
-        
-        // save updated user document
         await user.save();
-
+        
         res.status(201).json(savedProject);
 
     } catch (error) {
