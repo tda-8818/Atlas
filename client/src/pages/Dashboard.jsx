@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import StatBox from '../components/StatBox';
 import Navbar from '../components/Navbar';
@@ -13,6 +13,7 @@ import {
 import { isProjectOwner } from '../utils/projectUtils';
 import { getTaskStats } from '../utils/taskUtils';
 import { useGetCurrentUserQuery, useGetAllUsersQuery } from '../redux/slices/userSlice';
+import { showErrorToast } from '../components/errorToast.jsx';
 
 const Dashboard = () => {
   const {currentProject} = useOutletContext();
