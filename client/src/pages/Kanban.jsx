@@ -302,6 +302,16 @@ const Kanban = () => {
     setNewColumnName("");
   };
 
+  // const handleTaskEdit = async(cardData) =>{
+  //   try {
+      
+  //   } catch (error) {
+  //     console.error("Failed to edit task", error)
+  //   }
+
+  // }
+
+
   const handleAddTaskFromPopup = async(cardData) => {
 
     if (!cardData.title) {
