@@ -6,8 +6,7 @@ import DeleteTaskPopup from '../components/DeleteTaskPopup';
 import AddTaskPopup from '../components/AddTaskPopup-1';
 import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
-import {useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation} from "../redux/slices/projectSlice";import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
-import {useGetProjectTasksQuery} from "../redux/slices/projectSlice";
+import {useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation} from "../redux/slices/projectSlice";
 // Sample team members data
 const teamMembers = [
   { id: "user-1", name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", initials: "AJ" },
@@ -153,17 +152,6 @@ const Kanban = () => {
     const formatted = mapTasksToColumns();
     console.log("FORMATTED COLUMN OBJECTS:", formatted);
     setColumns(formatted);
-
-
-    if (!currentProject || !projectTasks) return;
-
-    console.log("current Project", currentProject);
-    
-    console.log("Got tasks:", projectTasks);
-
-    const groupedTasks = {
-
-    }
 
     if (selectedCard) {
       const handleClickOutside = (event) => {

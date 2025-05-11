@@ -6,8 +6,6 @@ import {
   useGetCurrentUserQuery
 } from "../redux/slices/userSlice";
 import axios from "axios";
-import { showErrorToast } from '../components/errorToast.jsx';
-import toast from 'react-hot-toast';
 
 const Settings = ({ setTheme }) => {
   const navigate = useNavigate();
@@ -45,11 +43,6 @@ const Settings = ({ setTheme }) => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Check file size (limit to 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showErrorToast("File size exceeds 5MB limit", "400");
-        return;
-      }
       setProfileImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -96,90 +89,27 @@ const Settings = ({ setTheme }) => {
       console.error("Profile info update failed:", error);
       alert("Failed to update name or email.");
     }
-
-  const handleSaveGeneral = async () => {
-    try {
-      // Validate input
-      if (!firstName.trim() || !lastName.trim() || !email.trim()) {
-        showErrorToast("Please fill all required fields", "400");
-        return;
-      }
-      
-      // Email validation
-      const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-      if (!emailRegex.test(email)) {
-        showErrorToast("Please enter a valid email address", "400");
-        return;
-      }
-      
-      // Mock API call for now
-      // await axios.put('/api/settings/profile', {
-      //   firstName,
-      //   lastName,
-      //   email
-      // }, { withCredentials: true });
-      
-      toast.success("Profile updated successfully!");
-    } catch (error) {
-      console.error("Profile update error:", error);
-      showErrorToast(
-        error.response?.data?.message || "Failed to update profile", 
-        error.response?.status || "400"
-      );
-    }
   };
 
   const handlePasswordChange = async () => {
-    try {
-      // Validate input
-      if (!currentPassword || !newPassword || !confirmPassword) {
-        showErrorToast("Please fill all password fields", "400");
-        return;
-      }
-      
-      if (newPassword !== confirmPassword) {
-        showErrorToast("Passwords do not match", "400");
-        return;
-      }
-      
-      // Password strength validation
-      if (newPassword.length < 8) {
-        showErrorToast("Password must be at least 8 characters long", "400");
-        return;
-      }
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
 
-      // API call
-      try {
-        await axios.put(
-          "http://localhost:5001/settings",
-          {
-            currentPassword,
-            confirmPassword,
-          },
-          {
-            withCredentials: true,
-          }
-        );
-        toast.success("Password updated successfully!");
-        
-        // Clear password fields
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      } catch (error) {
-        console.error("Password update error:", error);
-        
-        if (error.response?.status === 401) {
-          showErrorToast("Current password is incorrect", "401");
-        } else {
-          showErrorToast(
-            error.response?.data?.message || "Failed to update password", 
-            error.response?.status || "400"
-          );
-        }
-      }
+    try {
+      await axios.put(
+        "http://localhost:5001/settings",
+        {
+          currentPassword,
+          confirmPassword,
+        },
+        { withCredentials: true }
+      );
+      alert("Password updated successfully!");
     } catch (error) {
-      showErrorToast("An unexpected error occurred", "500");
+      console.error("Password update error:", error);
+      alert("Failed to update password.");
     }
   };
 
@@ -330,30 +260,25 @@ const Settings = ({ setTheme }) => {
             </div>
           </div>
 
-      {/* Theme Selection */}
-      <div className="bg-[var(--background)] rounded-2xl p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-[var(--text)] mb-6">Display</h2>
-        <div className="flex gap-4">
-          <button
-            onClick={() => {
-              setTheme("light");
-              toast.success("Theme updated to light mode");
-            }}
-            className="px-6 py-3 rounded-xl bg-white text-black shadow-md hover:shadow-lg transition"
-          >
-            Light
-          </button>
-          <button
-            onClick={() => {
-              setTheme("dark");
-              toast.success("Theme updated to dark mode");
-            }}
-            className="px-6 py-3 rounded-xl bg-[#1e1e1e] text-white shadow-md hover:shadow-lg transition"
-          >
-            Dark
-          </button>
-        </div>
-      </div>
+          <div className="bg-[var(--background)] rounded-2xl p-6 shadow-sm">
+            <h2 className="text-xl font-semibold text-[var(--text)] mb-6">Display</h2>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setTheme("light")}
+                className="px-6 py-3 rounded-xl bg-white text-black shadow-md hover:shadow-lg transition"
+              >
+                Light
+              </button>
+              <button
+                onClick={() => setTheme("dark")}
+                className="px-6 py-3 rounded-xl bg-[#1e1e1e] text-white shadow-md hover:shadow-lg transition"
+              >
+                Dark
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
