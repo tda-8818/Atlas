@@ -546,7 +546,7 @@ const Kanban = () => {
 
 
   // Function to save changes from the selectedCard state to the main columns state
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (!selectedCard) {
         console.error("No card selected to save.");
         return;
@@ -564,7 +564,14 @@ const Kanban = () => {
     const { columnIndex, cardIndex, ...cardDataToSave } = selectedCard;
 
     // Check if the card still exists at the original index before saving
-    if (columnIndex === undefined || cardIndex === undefined || columnIndex < 0 || columnIndex >= columns.length || cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length || columns[columnIndex].cards[cardIndex].id !== selectedCard.id) {
+    if (columnIndex === undefined || 
+      cardIndex === undefined || 
+      columnIndex < 0 || 
+      columnIndex >= columns.length ||
+      cardIndex < 0 ||
+      cardIndex >= columns[columnIndex].cards.length ||
+      columns[columnIndex].cards[cardIndex].id !== selectedCard.id
+    ){
       console.error("Card not found at original index for saving. It may have been moved or deleted.");
       // In this case, we might just close the modal without saving,
       // as the original card is no longer there.
@@ -572,12 +579,20 @@ const Kanban = () => {
       return;
     }
 
-    const updatedColumns = [...columns];
-    updatedColumns[columnIndex].cards[cardIndex] = cardDataToSave;
-    setColumns(updatedColumns);
-
-    // Set selectedCard to null AFTER the state update to close the modal
-    setSelectedCard(null);
+    try {
+      const response = await editTask(cardDataToSave).unwrap();
+      console.log("Task successfully updated:", response);
+      
+      // Send data to backend to edit task
+      const updatedColumns = [...columns];
+      updatedColumns[columnIndex].cards[cardIndex] = cardDataToSave;
+      setColumns(updatedColumns);
+        
+      // Set selectedCard to null AFTER the state update to close the modal
+      setSelectedCard(null);
+    } catch (error) {
+      console.error("Failed to update task in Kanban.jsx", error);
+    }
   };
 
   // Function to close the modal WITHOUT saving changes
