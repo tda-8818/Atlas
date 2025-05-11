@@ -5,23 +5,23 @@ import { useGetCurrentUserProjectsQuery, useCreateProjectMutation, useDeleteProj
 import { useNavigate } from "react-router-dom";
 import UserAvatar from "../components/UserAvatar";
 import { LuClock } from "react-icons/lu";
+import { showErrorToast } from '../components/errorToast.jsx';
+import toast from 'react-hot-toast';
 
 const Projects = () => {
-
     const navigate = useNavigate();
     
-
     // Use RTK Query hook to fetch projects
     const {
         data: projectsData = [],
         isLoading: projectsLoading,
         isError: projectsError,
+        error: projectsErrorData,
         refetch,
     } = useGetCurrentUserProjectsQuery();
     
-
-    const [createProject] = useCreateProjectMutation();
-    const [deleteProject] = useDeleteProjectMutation();
+    const [createProject, { error: createError }] = useCreateProjectMutation();
+    const [deleteProject, { error: deleteError }] = useDeleteProjectMutation();
 
     // Local UI state to handle modal visibility and new project form inputs.
     const [showModal, setShowModal] = useState(false);
@@ -31,9 +31,33 @@ const Projects = () => {
         deadline: ""
     });
 
-    // If either current user or projects are loading, display a loading state.
-    //if (userLoading || projectsLoading) return <div>Loading...</div>;
-    //if (userError || projectsError) return <div>Error loading data</div>;
+    // Show error toasts when API errors occur
+    useEffect(() => {
+        if (projectsError && projectsErrorData) {
+            showErrorToast(
+                `Failed to load projects: ${projectsErrorData.data?.message || 'Unknown error'}`,
+                projectsErrorData.status || '400'
+            );
+        }
+    }, [projectsError, projectsErrorData]);
+    
+    useEffect(() => {
+        if (createError) {
+            showErrorToast(
+                `Failed to create project: ${createError.data?.message || 'Unknown error'}`,
+                createError.status || '400'
+            );
+        }
+    }, [createError]);
+    
+    useEffect(() => {
+        if (deleteError) {
+            showErrorToast(
+                `Failed to delete project: ${deleteError.data?.message || 'Unknown error'}`,
+                deleteError.status || '400'
+            );
+        }
+    }, [deleteError]);
 
     // Optional: Transform projectsData if needed. For example, if your API returns data with _id etc.
     const projects = Array.isArray(projectsData)
@@ -47,13 +71,13 @@ const Projects = () => {
         }))
         : [];
 
-
     const handleProjectClick = async (project) => {
         try {
             // Redirect to project-specific dashboard
             navigate(`/projects/${project.id}/dashboard`);
         } catch (error) {
             console.error("Error in handleProjectClick:", error);
+            showErrorToast("Error navigating to project", "400");
         }
     };
 
@@ -64,10 +88,16 @@ const Projects = () => {
         if (window.confirm("Are you sure you want to delete this project?")) {
             try {
                 await deleteProject(projectId).unwrap();
+                // Show success toast
+                toast.success("Project deleted successfully");
                 // RTK Query auto-invalidates or you can call refetch
                 refetch();
             } catch (error) {
                 console.error("Error deleting project", error);
+                showErrorToast(
+                    `Failed to delete project: ${error.data?.message || 'Unknown error'}`,
+                    error.status || '400'
+                );
             }
         }
     };
@@ -80,44 +110,53 @@ const Projects = () => {
         setNewProject((prev) => ({ ...prev, [name]: value }));
     };
 
-
     //function for creating a project one user completes modal inputs
     const handleCreateProject = async () => {
         if (!newProject.title || !newProject.description || !newProject.deadline) {
-          alert("Please fill all fields!");
-          return;
+            showErrorToast("Please fill all fields!", "400");
+            return;
         }
       
         // Calculate daysLeft
         const today = new Date();
         const deadline = new Date(newProject.deadline);
         const daysLeft = Math.max(
-          Math.ceil((deadline - today) / (1000 * 60 * 60 * 24)),
-          0
+            Math.ceil((deadline - today) / (1000 * 60 * 60 * 24)),
+            0
         );
       
         const projectData = {
-          title: newProject.title,
-          description: newProject.description,
-          progress: 0,
-          endDate: deadline,
-          startDate: today,
-          team: ["/avatars/avatar1.png"]
+            title: newProject.title,
+            description: newProject.description,
+            progress: 0,
+            endDate: deadline,
+            startDate: today,
+            team: ["/avatars/avatar1.png"]
         };
       
         try {
-          // createProject RTK Query mutation hook
-          await createProject(projectData).unwrap();
-      
-          // Clear the form inputs after successful creation
-          setNewProject({ title: "", description: "", deadline: "" });
-      
-          // Refresh the list if needed
-          refetch();
+            // createProject RTK Query mutation hook
+            await createProject(projectData).unwrap();
+          
+            // Show success toast
+            toast.success("Project created successfully");
+          
+            // Clear the form inputs after successful creation
+            setNewProject({ title: "", description: "", deadline: "" });
+          
+            // Close the modal
+            setShowModal(false);
+          
+            // Refresh the list if needed
+            refetch();
         } catch (error) {
-          console.error("Error creating project", error);
+            console.error("Error creating project", error);
+            showErrorToast(
+                `Failed to create project: ${error.data?.message || 'Unknown error'}`,
+                error.status || '400'
+            );
         }
-      };
+    };
 
     return (
         <div className="flex h-screen bg-[var(--background-primary)]">
@@ -217,6 +256,7 @@ const Projects = () => {
                             value={newProject.description}
                             onChange={handleInputChange}
                             placeholder="Description"
+                            className="w-full p-2 mb-3 border border-gray-300 rounded"
                         />
                         <input
                             type="date"
