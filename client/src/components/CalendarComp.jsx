@@ -5,7 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import AddTaskPopup from "./AddTaskPopup-1";
 import "./css/CalendarComp.css"
-import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
+import taskApiSlice, { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 import { useGetProjectTasksQuery } from "../redux/slices/projectSlice";
 const CalendarComp = ({ project }) => {
 
@@ -22,6 +22,9 @@ const CalendarComp = ({ project }) => {
   const [editTask] = useUpdateTaskMutation();
 
   const {data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(project._id);
+  
+
+
   /// RTK QUERY FUNCTIONS ///
 
 
@@ -35,6 +38,7 @@ const CalendarComp = ({ project }) => {
     const transformedTasks = projectTasks.map(task => ({
       id: task._id,
       projectId: task.projectId,
+      status: task.status,
       title: task.title,
       start: task.startDate,
       end: task.dueDate,
@@ -56,14 +60,14 @@ const CalendarComp = ({ project }) => {
   const handleEventSubmission = async (formData) => {
     const calendarApi = selectedDateInfo.view.calendar;
     calendarApi.unselect();
-    console.log("form data: ",formData)
+    console.log("form data gotten: ",formData)
     // Create a new event using the form data from the modal
     // and the date info from the calendar.
     const newEvent = {
       projectId: project._id,
       title: formData.title, // from modal input
-      start: new Date(selectedDateInfo.startStr),
-      end: new Date(selectedDateInfo.endStr),
+      start: new Date(selectedDateInfo.startStr) || new Date(formData.startDate),
+      end: new Date(formData.dueDate),
       allDay: selectedDateInfo.allDay,
       description: formData.description // extra info from your modal
     };
@@ -113,8 +117,8 @@ const CalendarComp = ({ project }) => {
       const taskData = {
         id: event.id,
         title: event.title,
+        status: event.extendedProps.status,
         description: event.extendedProps?.description || '',
-        tag: event.extendedProps?.tag || '',
         assignedTo: event.extendedProps?.assignedTo || [],
         subtasks: event.extendedProps?.subtasks || [],
         priority: event.extendedProps?.priority || 'none',
@@ -135,8 +139,8 @@ const CalendarComp = ({ project }) => {
       // Save reference to the calendar for later updates
       setSelectedEvent({
         eventRef: event,
-        startStr: new Date(event.startStr),
-        endStr: new Date(event.endStr) || new Date(event.startStr),
+        startDate: new Date(event.startStr),
+        dueDate: new Date(event.endStr) || new Date(event.startStr),
         allDay: event.allDay,
         view: { calendar: calendarApi },
         taskData: taskData,
@@ -170,13 +174,14 @@ const CalendarComp = ({ project }) => {
 
   const handleEventEdit = async (formData) => {
   if (!selectedEvent) return;
-
+console.log("formData: ",formData)
   const newEvent = {
     _id: formData.id,
     projectId: selectedEvent.taskData._id,
+    status: formData.status,
     title: formData.title,
-    start: new Date(formData.startStr),
-    end: new Date(formData.endStr),
+    startDate: new Date(formData.startDate),
+    dueDate: new Date(formData.dueDate),
     allDay: formData.allDay,
     description: formData.description,
   };
@@ -187,10 +192,10 @@ const CalendarComp = ({ project }) => {
 
 const calendarEvent = selectedEvent.eventRef;
 calendarEvent.setProp("title", newEvent.title);
-calendarEvent.setStart(newEvent.start);
-calendarEvent.setEnd(newEvent.end);
-calendarEvent.setAllDay(newEvent.allDay);
+calendarEvent.setStart(formData.startDate);
+calendarEvent.setEnd(formData.dueDate);
 calendarEvent.setExtendedProp("description", newEvent.description);
+calendarEvent.setExtendedProp("status",formData.status);
 
   } catch (error) {
     console.error("error modifying task: ", error);
@@ -234,10 +239,6 @@ calendarEvent.setExtendedProp("description", newEvent.description);
               ? { initialValues: selectedEvent.taskData } 
               : {})}
         />
-{/* 
-      <AddTaskPopup toggle={modalStateAdd} onSubmit={handleEventSubmission} onClose={() => { setmodalStateAdd(!modalStateAdd); setSelectedDateInfo(null); setSelectedEvent(null); }} onDelete={handleEventDelete} event={selectedEvent}actionName={actionName} />
-      <ViewTaskModal toggle={modalStateView} action={()=>{setModalStateView(!modalStateView); setSelectedEvent(null);}} onSubmit={handleEventDelete} /> */}
-
     </>
   );
 }

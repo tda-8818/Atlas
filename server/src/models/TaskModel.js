@@ -5,6 +5,7 @@ const taskSchema = new mongoose.Schema(
        projectId: {type: mongoose.Schema.Types.ObjectId, ref: 'project'},
        title: {type: String, required: true},
        description: {type: String, default: ""},
+       status: {type: Boolean, default: false},
        columnId: {type: mongoose.Schema.Types.ObjectId, ref: 'column'},
        priority: {type: String, default: "None"},
        assignedTo: [{type: mongoose.Schema.Types.ObjectId, ref: 'user', default: []}],

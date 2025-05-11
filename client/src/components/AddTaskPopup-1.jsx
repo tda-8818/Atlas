@@ -65,7 +65,7 @@ const stringToColor = (str) => {
 
 const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers = [], initialValues = null }) => {
   const [title, setTitle] = useState('');
-  const [tag, setTag] = useState('');
+  const [isCompleted, setIsCompleted] = useState(false);
   const [startDate, setStartDate] = useState(''); // Renamed from dueDate
   const [dueDate, setDueDate] = useState(''); // New state for end date
   const [assignedTo, setAssignedTo] = useState([]);
@@ -96,7 +96,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
       if (initialValues) {
         // We're editing an existing task
         setTitle(initialValues.title || '');
-        setTag(initialValues.tag || '');
+        setIsCompleted(initialValues.status);
         // Populate start and due dates from initialValues (these are strings from state)
         setStartDate(formatDateToInputValue(initialValues.startDate) || '');
         setDueDate(formatDateToInputValue(initialValues.dueDate) || '');
@@ -112,7 +112,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
       } else {
         // We're creating a new task
         setTitle('');
-        setTag('');
+        setIsCompleted(false);
         setStartDate('');
         setDueDate('');
         setAssignedTo([]);
@@ -187,11 +187,11 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
     // based on the startDate and dueDate strings provided by the popup.
     // We still pass these strings back to the parent.
     // The parent will convert them to Date objects and calculate the duration for Gantt.
-
+    console.log("initial values: ",initialValues);
     const taskData = {
       id: initialValues?.id, // Pass the ID if editing
       title: title.trim(),
-      tag: tag.trim() === '' ? null : tag.trim(),
+      status: isCompleted,
       startDate: startDate || null, // Pass start date string from popup
       dueDate: dueDate || null, // Pass due date string from popup
       // Duration is calculated by the parent component before updating Gantt
@@ -207,7 +207,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
     const taskData = {
       id: initialValues?.id, // Pass the ID if editing
       title: title.trim(),
-      tag: tag.trim() === '' ? null : tag.trim(),
+      status: isCompleted,
       startDate: startDate || null, // Pass start date string from popup
       dueDate: dueDate || null, // Pass due date string from popup
       // Duration is calculated by the parent component before updating Gantt
@@ -319,19 +319,24 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
 
            {/* Tag - Removed label */}
            {/* Use flex-shrink-0 and a smaller basis to keep it compact */}
-           <div className="flex-shrink-0 basis-[80px]">
-               <input
-                 type="text"
-                 id="taskTag"
-                 value={tag || ''}
-                 onChange={(e) => setTag(e.target.value)}
-                 placeholder="Tag"
-                 className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-               />
-           </div>
+          {/* Task Completion */}
+  <div className="flex flex-col items-center space-y-3">
+    <span className="text-sm font-medium text-gray-700">Completed</span>
+    <input
+      type="checkbox"
+      id="completed"
+      checked={isCompleted}
+      onChange={(e) => setIsCompleted(e.target.checked)}
+      className="w-6 h-6"
+    />
+  </div>
+
+
            {/* Priority - Removed label */}
            {/* Use flex-shrink-0 and a smaller basis to keep it compact */}
            <div className="flex-shrink-0 basis-[60px]">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">Priority</h3>
+
                <select
                  id="taskPriority"
                  value={priority}

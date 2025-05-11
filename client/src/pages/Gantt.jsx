@@ -70,7 +70,7 @@ const Gantt = () => {
     const [addTask] = useAddTaskMutation();
     const [deleteTask] = useDeleteTaskMutation();
     const [editTask] = useUpdateTaskMutation();
-    const { data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
+    const { data:projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
     const [tasks, setTasks] = useState({ data: [], links: [] });
         // Format tasks for DHTMLX Gantt
     useEffect(() => {
@@ -82,8 +82,8 @@ const Gantt = () => {
         data: projectTasks.map(task => ({
         id: task._id,
         text: task.title,
-        start_date: task.start, // make sure this is in Gantt-compatible format
-        duration: task.duration,
+        start_date: formatDateForGantt(task.startDate), // make sure this is in Gantt-compatible format
+        duration: (task.startDate-task.dueDate)/(1000*60*60*24),
         progress: task.progress || 0,
         })),
         links: [] // optionally add real links here
@@ -338,18 +338,47 @@ const handleDeleteTaskFromPopup = async() =>{
        setShowAddTaskPopup(true);
   };
   const handleEditTaskConfirm = async(formData) => {
-    console.log("commencing backend task update");
+    console.log("commencing backend task update ",formData);
     const newTask = {
       _id: formData.id,
       projectId: currentProject._id,
       title: formData.title,
-      start: formData.startDate,
-      end: formData.dueDate,
-      allDay: formData.allDay,
+      start: new Date(formData.startDate),
+      end: new Date(formData.dueDate),
       description: formData.description,
     }
     try{
       await editTask(newTask).unwrap()
+
+      const taskDataToStoreGantt = {
+      // Use existing ID if editing, generate new if adding
+      id: formData.id, // Use gantt.uid() for new task IDs
+      projectId: currentProject._id,
+      text: formData.title,
+      // Store Date objects for Gantt's internal use based on popup dates
+      start_date: formData.startDate, // Pass Date object
+      end_date: formData.dueDate,     // Pass Date object (exclusive)
+      // Do NOT calculate and pass 'duration' here when updating from popup.
+      // Let Gantt calculate duration based on start_date and end_date.
+      // Gantt will automatically set the 'duration' property internally.
+
+      progress: formData.progress || 0, // Preserve progress or default
+      type: 'task', // Explicitly set type to 'task'
+
+      // Store custom properties, including original date strings from popup
+      description: formData.description,
+      assignedTo: formData.assignedTo,
+      priority: formData.priority,
+      subtasks: formData.subtasks,
+      // --- IMPORTANT: Store the original date strings from the popup for editing purposes ---
+      // These are the user's intended dates from the form.
+      startDate: formData.startDate, // Keep the string from the popup
+      dueDate: formData.dueDate // Keep the string from the popup
+    };
+      setTasks(prevTasks => ({
+            ...prevTasks,
+            data: [...prevTasks.data, taskDataToStoreGantt]
+        }));
     }catch(error){
       console.error("Error occured while editing task: ",error)
     }
