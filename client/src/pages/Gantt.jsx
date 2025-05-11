@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import GanttComp from '../components/GanttComp';
 import { useOutletContext } from "react-router-dom";
-import AddTaskPopup from '../components/AddTaskPopup-1';
+import AddTaskPopup from '../components/AddTaskPopup';
 import { gantt } from 'dhtmlx-gantt';
 import Sidebar from '../components/Sidebar';
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from '../redux/slices/taskSlice';
@@ -77,13 +77,13 @@ const Gantt = () => {
       if (!currentProject || !projectTasks || isLoading) return;
 
       console.log("got project tasks from project: ", projectTasks);
-
+      
       const formattedData = {
         data: projectTasks.map(task => ({
         id: task._id,
         text: task.title,
         start_date: formatDateForGantt(task.startDate), // make sure this is in Gantt-compatible format
-        duration: (task.startDate-task.dueDate)/(1000*60*60*24),
+        duration: (new Date(task.dueDate)-new Date(task.startDate))/(1000*60*60*24),
         progress: task.progress || 0,
         })),
         links: [] // optionally add real links here
@@ -227,7 +227,8 @@ const handleDeleteTaskFromPopup = async() =>{
       text:title,
       // Store Date objects for Gantt's internal use based on popup dates
       start_date: startDateForGantt, // Pass Date object
-      end_date: endDateForGantt,     // Pass Date object (exclusive)
+      end_date: endDateForGantt,
+      duration: endDateForGantt - startDateForGantt,
       // Do NOT calculate and pass 'duration' here when updating from popup.
       // Let Gantt calculate duration based on start_date and end_date.
       // Gantt will automatically set the 'duration' property internally.
@@ -315,6 +316,9 @@ const handleDeleteTaskFromPopup = async() =>{
   const handleEditTask = (ganttTask) => {
        console.log("Editing Gantt task:", ganttTask);
        // Prepare task data for the popup, including custom properties
+       const startDate = new Date(ganttTask.start_date);
+       const endDate = new Date(startDate);
+       endDate.setDate(startDate.getDate() + Math.round(ganttTask.duration));
        const taskDataForPopup = {
            id: ganttTask.id,
            title: ganttTask.text || '',
@@ -323,8 +327,8 @@ const handleDeleteTaskFromPopup = async() =>{
            // These are the user's last inputs from the form, not Gantt's calculated dates.
            // Use the startDate and dueDate properties stored in our state, which are
            // kept in sync with Gantt's timeline by handleGanttTaskUpdate.
-           startDate: new Date(ganttTask.start_date)|| '',
-           dueDate: new Date(ganttTask.end_date) || '',
+           startDate: startDate|| '',
+           dueDate: endDate || '',
            assignedTo: ganttTask.assignedTo || [],
            description: ganttTask.description || '',
            subtasks: ganttTask.subtasks || [],
@@ -343,11 +347,12 @@ const handleDeleteTaskFromPopup = async() =>{
       _id: formData.id,
       projectId: currentProject._id,
       title: formData.title,
-      start: new Date(formData.startDate),
-      end: new Date(formData.dueDate),
+      startDate: new Date(formData.startDate),
+      dueDate: new Date(formData.dueDate),
       description: formData.description,
     }
     try{
+      console.log("sending over: ",newTask);
       await editTask(newTask).unwrap()
 
       const taskDataToStoreGantt = {

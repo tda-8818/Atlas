@@ -3,7 +3,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import AddTaskPopup from "./AddTaskPopup-1";
+import AddTaskPopup from "./AddTaskPopup";
 import "./css/CalendarComp.css"
 import taskApiSlice, { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 import { useGetProjectTasksQuery } from "../redux/slices/projectSlice";

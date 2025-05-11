@@ -176,26 +176,6 @@ export default class GanttComp extends Component {
       { name: "duration", label: "Days", align: "center", resize: true }, // <-- This column displays task.duration
       // Assigned To column
       {
-          name: "assigned",
-          label: "Assigned To",
-          align: "center",
-          width: 100,
-          resize: true,
-          template: (task) => {
-              if (!task.assignedTo || task.assignedTo.length === 0) {
-                  return "";
-              }
-              // Use the teamMembers prop passed to the component
-              const assignedNames = (task.assignedTo || [])
-                 .map(userId => {
-                     const member = teamMembers.find(m => m.id === userId);
-                     return member ? member.initials : '?'; // Display initials
-                 })
-                 .join(', ');
-              return assignedNames;
-          }
-      },
-      {
         name: "add",
         label: "",
         width: 40,
