@@ -1,5 +1,5 @@
 /**
- * Manages interactions with the backend API.
+ * Manages interactions with the backend API, specifically user related controllers.
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
@@ -18,6 +18,15 @@ export const userApiSlice = createApi({
     tagTypes: ['User'],
     endpoints: (builder) => ({
         // User endpoints
+        signup: builder.mutation({ // Add the signup mutation
+            query: (credentials) => ({
+              url: '/api/users/signup',
+              method: 'POST',
+              body: credentials,
+            }),
+            // No invalidatesTags needed here as we're redirecting after signup
+        }),
+
         login: builder.mutation({
             query: (credentials) => ({
                 url: '/users/login',
@@ -64,36 +73,39 @@ export const userApiSlice = createApi({
             invalidatesTags: ['User'],
         }),
 
-        // Add an updateProfile mutation (for future use)
-        updateProfile: builder.mutation({
+        updateMe: builder.mutation({ // For name/email
             query: (userData) => ({
-                url: 'profile',
+              url: '/users/me',
+              method: 'PUT',
+              body: userData,
+            }),
+            invalidatesTags: ['User'],
+          }),
+
+
+        updateProfilePic: builder.mutation({
+            query: (formData) => ({
+                url: '/users/profile-pic',
                 method: 'PUT',
-                body: userData,
+                body: formData,
+                formData: true, 
             }),
             invalidatesTags: ['User'],
         }),
-      uploadProfilePic: builder.mutation({
-        query: (formData) => ({
-          url: '/users/profile-pic',
-          method: 'PUT',
-          body: formData,
-          formData: true, // Add this for proper FormData handling
-        }),
-        invalidatesTags: ['User'],
-      }),
+
+        
     }),
 });
 
 export const {
+    useSignupMutation,
     useLoginMutation,
     useLogoutMutation,
     useGetCurrentUserQuery,
-    useGetUsersByProjectQuery,
     useGetAllUsersQuery,
     useUpdatePasswordMutation,
-    useUpdateProfileMutation,
-    useUploadProfilePicMutation
+    useUpdateProfilePicMutation,
+    useUpdateMeMutation
 
 } = userApiSlice;
 

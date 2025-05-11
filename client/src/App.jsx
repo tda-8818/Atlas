@@ -9,7 +9,6 @@ import Calendar from "./pages/Calendar";
 import Kanban from "./pages/Kanban";
 import Gantt from "./pages/Gantt";
 import Settings from "./pages/Settings";
-import Messages from "./pages/Messages";
 import ProjectLayout from "./layouts/ProjectLayout.jsx";
 import { useEffect, useState, useRef } from "react";
 import { useGetCurrentUserQuery } from './redux/slices/userSlice.js';
@@ -55,11 +54,13 @@ function App() {
   // Add this effect to handle API errors with toast notifications
   useEffect(() => {
     if (isError && error) {
-      // Don't show error toasts for auth errors when on login page or when logging out
+      // Don't show error toasts for auth errors when on login or presignup page or when logging out
       const isAuthError = error?.status === 401;
       const isLoginPage = location.pathname === '/login';
-      
-      if (!(isAuthError && (isLoginPage || isLoggingOut.current))) {
+      const isSignupPage = location.pathname === '/signup';
+      const isPresignupPage = location.pathname === '/presignup';
+
+      if (!(isAuthError && (isLoginPage || isSignupPage || isPresignupPage || isLoggingOut.current))) {
         handleApiError(error);
       }
     }
@@ -73,33 +74,28 @@ function App() {
       <Toaster />
       
       <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/projects" replace />} />
-        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/projects" replace />} />
-        <Route path="/Presignup" element={<Presignup />} />
-        {/* Protected routes */}
-        <Route path="/" element={user ? <Outlet /> : <Navigate to="/login" replace />}>
-          <Route index element={<Navigate to="/projects" replace />} />
-          <Route path="projects" element={<Projects />} />
-          <Route path="settings" element={<Settings setTheme={setTheme} />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="kanban" element={<Kanban />} />
-          <Route path="calendar" element={<Calendar />} />
-          <Route path="gantt" element={<Gantt />} />
-        </Route>
+          {/* Public Routes */}
+          <Route path="/" element={<Navigate to="/presignup" replace />} />
+          <Route path="/presignup" element={!user ? <Presignup /> : <Navigate to="/projects" replace />} />
+          <Route path="/login" element={!user ? <Login /> : <Navigate to="/projects" replace />} />
+          <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/projects" replace />} />
 
-        {/* Project Routes */}
-        <Route path="/projects/:id" element={<ProjectLayout />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="kanban" element={<Kanban />} />
-          <Route path="calendar" element={<Calendar />} />
-          <Route path="gantt" element={<Gantt />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
+          {/* Protected Routes (Require Authentication) */}
+          <Route path="/projects" element={user ? <Projects /> : <Navigate to="/" replace />} />
+          <Route path="/settings" element={user ? <Settings setTheme={setTheme} /> : <Navigate to="/" replace />} />
 
-        {/* Catch-all route */}
-        <Route path="*" element={<Navigate to={user ? "/projects" : "/login"} replace />} />
-      </Routes>
+          {/* Project-Specific Routes (Nested) */}
+          <Route path="/projects/:id" element={user ? <ProjectLayout /> : <Navigate to="/" replace />}>
+            <Route index element={<Navigate to="dashboard" replace />} /> {/* Default project page */}
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="kanban" element={<Kanban />} />
+            <Route path="calendar" element={<Calendar />} />
+            <Route path="gantt" element={<Gantt />} />
+          </Route>
+
+          {/* Catch-All Route (404 equivalent) */}
+          <Route path="*" element={<Navigate to={user ? "/projects" : "/presignup"} replace />} />
+        </Routes>
     </div>
   );
 }

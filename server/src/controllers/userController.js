@@ -11,6 +11,8 @@ const cookieOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 };
 
+
+
 // Login controller
 export const login = async (req, res) => {
   try {
@@ -38,7 +40,7 @@ export const login = async (req, res) => {
     const token = jwt.sign(
       { id: user._id.toString() }, // Ensure string conversion
       process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: '1h' }
     );
 
     // 4. Set cookie
@@ -233,8 +235,6 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// In userController.js
-
 // Update profile picture
 export const updateProfilePicture = async (req, res) => {
   try {
@@ -273,24 +273,39 @@ export const updateProfilePicture = async (req, res) => {
     
     console.log('Updated user:', updatedUser);
 
-    // Return the user data in the response
-    res.status(200).json({
-      success: true,
-      message: 'Profile picture updated successfully',
-      user: {
-        id: updatedUser._id,
-        firstName: updatedUser.firstName,
-        lastName: updatedUser.lastName,
-        email: updatedUser.email,
-        profilePic: updatedUser.profilePic
-      }
-    });
   } catch (error) {
     console.error('Error updating profile picture:', error);
     res.status(500).json({ 
       message: 'Failed to update profile picture',
       error: error.message 
     });
+  }
+};
+
+export const updateMe = async (req, res) => {
+  const userId = req.user._id;
+  const { firstName, lastName, email } = req.body;
+
+  const user = await UserModel.findById(userId);
+
+  if (user) {
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (email !== undefined) user.email = email;
+
+    const updatedUser = await user.save();
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user: {
+        _id: updatedUser._id,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: updatedUser.email,
+        profilePic: updatedUser.profilePic, // Still return the profilePic
+      },
+    });
+  } else {
+    res.status(404).json({ message: 'User not found' });
   }
 };
 
@@ -302,4 +317,5 @@ export default {
   getAllUsers,
   updatePassword,
   updateProfilePicture,
+  updateMe
 };

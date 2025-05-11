@@ -827,7 +827,7 @@ const Kanban = () => {
                               <input
                                 value={editColumnName}
                                 onChange={(e) => setEditColumnName(e.target.value)}
-                                className="border rounded px-2 py-1 text-sm w-full bg-white text-gray-800"
+                                className="border rounded px-2 py-1 text-sm w-full text-gray-800"
                                 autoFocus
                                 onBlur={saveColumnName}
                                 onKeyDown={handleColumnNameKeyDown}
@@ -876,7 +876,7 @@ const Kanban = () => {
                                       ref={provided.innerRef}
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
-                                      className={`kanban-card bg-white p-3 rounded shadow mb-2 flex flex-col cursor-pointer hover:shadow-md transition-shadow relative ${
+                                      className={`kanban-card p-3 rounded shadow mb-2 flex flex-col cursor-pointer hover:shadow-md transition-shadow relative ${
                                         snapshot.isDragging ? "shadow-lg" : ""
                                       }`}
                                       onClick={() => openCardDetails(columnIndex, cardIndex)}
@@ -1000,7 +1000,7 @@ const Kanban = () => {
           <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
              {/* Add ref to the modal content div */}
              {/* Removed onKeyDown from this div */}
-            <div ref={cardModalRef} className="bg-white rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto kanban-card-modal-content">
+            <div ref={cardModalRef} className="rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto kanban-card-modal-content">
               {/* Title and Tag/Priority */}
               <div className="mb-4">
                  <div className="flex items-center mb-1">
@@ -1095,7 +1095,7 @@ const Kanban = () => {
 
                     {/* Member search panel */}
                     {showMemberSearch && (
-                      <div className="absolute top-full mt-2 bg-white shadow-lg rounded p-2 border w-full max-w-xs z-10">
+                      <div className="absolute top-full mt-2 shadow-lg rounded p-2 border w-full max-w-xs z-10">
                         <div className="mb-2">
                           <input
                             type="text"
@@ -1297,7 +1297,7 @@ const Kanban = () => {
                   {/* Close Button (Left of Save) */}
                   <button
                     onClick={handleCloseCardDetails}
-                    className="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm mr-2"
+                    className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm mr-2"
                   >
                     Close
                   </button>

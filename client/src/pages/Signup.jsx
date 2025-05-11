@@ -3,20 +3,19 @@
  */
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { Transition, Button } from '@headlessui/react';
-import ErrorMessage from '../components/ErrorMessage';
 import Textbox from '../components/Textbox';
 import logo from '../assets/logo.png';
 import { showErrorToast } from '../components/errorToast.jsx'; // Import the toast utility
 import toast from 'react-hot-toast'; // Import toast for success messages
+import { useSignupMutation } from '../redux/slices/userSlice.js';
 
 const Signup = () => {
-   const [success, setSuccess] = useState(""); // Success message state
-   const navigate = useNavigate();
-    
-   const {
+    const navigate = useNavigate();
+    const [signup, { isLoading }] = useSignupMutation(); // Use the signup mutation hook
+
+    const {
         register,
         handleSubmit,
         formState: { errors },
@@ -25,52 +24,40 @@ const Signup = () => {
     } = useForm(); // Use react-hook-form
 
     const password = watch("password", ""); // Watch password input
-    
+
     // Handles form submission
     const onSubmit = async (data) => {
-        setSuccess(""); // Reset success message
-
         try {
             // Convert email, firstName, and lastName to lowercase
             const userData = {
                 ...data,
                 email: data.email.toLowerCase(),
-                firstName: data.firstName.toLowerCase(),
-                lastName: data.lastName.toLowerCase(),
+                firstName: data.firstName.charAt(0).toUpperCase() + data.firstName.slice(1).toLowerCase(),
+                lastName: data.lastName.charAt(0).toUpperCase() + data.lastName.slice(1).toLowerCase()
             };
 
             // Remove confirmPassword from data before sending to API
             delete userData.confirmPassword;
 
-            // API endpoint for signup
-            const response = await axios.post(
-                "/api/users/signup",
-                userData,
-                {
-                    withCredentials: true,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+            // Trigger the signup mutation
+            const result = await signup(userData).unwrap();
 
-            // Show success toast instead of setting state
+            // Show success toast
             toast.success("Account created successfully! Redirecting to login...", {
                 duration: 2000,
-                position: "bottom-right"
             });
-            
+
             reset();
 
             // Redirect after 2 seconds
             setTimeout(() => navigate('/home'), 2000);
 
         } catch (error) {
-            // Enhanced error handling with toast notifications
-            if (error.response) {
-                switch (error.response.status) {
+            // Enhanced error handling with toast notifications based on RTK Query error structure
+            if (error?.data) {
+                switch (error.data.status) {
                     case 400:
-                        if (error.response.data?.message?.includes('already exists')) {
+                        if (error.data?.message?.includes('already exists')) {
                             showErrorToast("An account with this email already exists", "400");
                         } else {
                             showErrorToast("Invalid registration data. Please check your inputs.", "400");
@@ -83,16 +70,16 @@ const Signup = () => {
                         showErrorToast("Server error. Please try again later.", "500");
                         break;
                     default:
-                        showErrorToast("Registration failed. Please try again.", error.response.status.toString());
+                        showErrorToast(`Registration failed: ${error.data.message}`, error.data.status.toString());
                 }
-            } else if (error.request) {
-                showErrorToast("Network error. Please check your connection.", "network");
+            } else if (error?.error) {
+                showErrorToast(`Network error: ${error.error}`, "network");
             } else {
                 showErrorToast("An unexpected error occurred.", "error");
             }
         }
     };
-    
+
     return (
         <div className='w-full min-h-screen flex items-center justify-center flex-col lg:flex-row bg-[#F4F9F9]'>
             <div className='w-full md:w-auto flex gap-0 md:gap-40 flex-col md:flex-row items-center justify-center'>
@@ -145,7 +132,7 @@ const Signup = () => {
                                     />
                                 </div>
                             </div>
-                            
+
                             <Textbox
                                 placeholder='Email'
                                 type='email'
@@ -153,14 +140,14 @@ const Signup = () => {
                                 register={register("email", {
                                     required: "Email required",
                                     pattern: {
-                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                        message: "Invalid email"
+                                        value: /^[A-Z0-9._%+-]+@student\.monash\.edu$/i,
+                                        message: "Must be a valid Monash student email"
                                     }
                                 })}
                                 error={errors.email ? errors.email.message : ""}
                                 className='w-full rounded-full text-sm'
                             />
-                            
+
                             <Textbox
                                 placeholder='Password'
                                 type='password'
@@ -169,17 +156,17 @@ const Signup = () => {
                                     required: "Password required",
                                     minLength: {
                                         value: 8,
-                                        message: "Min 8 chars with uppercase & number"
+                                        message: "Your password must be at least 8 characters long and include an uppercase letter and a number."
                                     },
                                     pattern: {
                                         value: /^(?=.*[A-Z])(?=.*\d).+$/,
-                                        message: "Need uppercase & number"
+                                        message: "Your password must contain at least one uppercase letter (A-Z) and one number (0-9)."
                                     }
                                 })}
                                 error={errors.password ? errors.password.message : ""}
                                 className='w-full rounded-full text-sm'
                             />
-                            
+
                             <Textbox
                                 placeholder='Confirm Password'
                                 type='password'
@@ -190,17 +177,18 @@ const Signup = () => {
                                 error={errors.confirmPassword ? errors.confirmPassword.message : ""}
                                 className='w-full rounded-full text-sm'
                             />
-                            
+
                             <Button
                                 type='submit'
                                 className='w-full h-9 bg-blue-700 text-white rounded-full text-sm mt-1'
+                                disabled={isLoading} // Disable button while signing up
                             >
-                                Sign Up
+                                {isLoading ? 'Signing Up...' : 'Sign Up'}
                             </Button>
 
-                            {success && (
+                            {toast.success && (
                                 <div className="text-green-500 text-center text-xs mt-1">
-                                    {success}
+                                    {toast.success}
                                 </div>
                             )}
 
