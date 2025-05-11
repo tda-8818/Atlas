@@ -302,12 +302,13 @@ const Kanban = () => {
     setNewColumnName("");
   };
 
-  const handleAddTaskFromPopup = (cardData) => {
-    // Ensure card has a valid id for drag-and-drop
-    if (!cardData.id) {
-      cardData.id = generateId("card");
+  const handleAddTaskFromPopup = async(cardData) => {
+
+    if (!cardData.title) {
+      console.warn("Missing task title!")
+      return;
     }
-  
+    console.log("Prepared Task Data:", cardData);
     if (
       addTaskColumnIndex === null ||
       addTaskColumnIndex < 0 ||
@@ -318,14 +319,29 @@ const Kanban = () => {
       setAddTaskColumnIndex(null);
       return;
     }
-    console.log("attempting to cardData: ", cardData);
-    //const response = await addTask().unwrap(); 
 
-  
-    const updated = [...columns];
-    updated[addTaskColumnIndex].cards.push(cardData);
-    setColumns(updated);
-  
+    const columnId = columns[addTaskColumnIndex].id;
+
+    console.log("Attempting to addTask to: ", columnId);
+
+    try {
+      const response = await addTask({
+        ...cardData,
+        columnId,
+        projectId: currentProject._id,
+      }).unwrap();
+      
+      console.log("Received response after creating task", response);
+
+      cardData.id = response._id;
+
+      const updated = [...columns];
+      updated[addTaskColumnIndex].cards.push(cardData);
+      setColumns(updated);
+    } catch (error) {
+      console.error("Failed to create task:", err);
+    }
+
     setShowAddTaskPopup(false);
     setAddTaskColumnIndex(null);
   };
