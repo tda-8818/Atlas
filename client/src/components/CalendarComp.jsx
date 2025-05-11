@@ -62,8 +62,8 @@ const CalendarComp = ({ project }) => {
     const newEvent = {
       projectId: project._id,
       title: formData.title, // from modal input
-      start: selectedDateInfo.startStr,
-      end: selectedDateInfo.endStr,
+      start: new Date(selectedDateInfo.startStr),
+      end: new Date(selectedDateInfo.endStr),
       allDay: selectedDateInfo.allDay,
       description: formData.description // extra info from your modal
     };
@@ -118,8 +118,8 @@ const CalendarComp = ({ project }) => {
         assignedTo: event.extendedProps?.assignedTo || [],
         subtasks: event.extendedProps?.subtasks || [],
         priority: event.extendedProps?.priority || 'none',
-        dueDate: event.end ? event.end.toISOString().split('T')[0] : 
-                event.start ? event.start.toISOString().split('T')[0] : '',
+        dueDate: new Date(event.end),
+        startDate: new Date(event.start)
       };
       
       console.log("Prepared task data:", taskData);
@@ -135,8 +135,8 @@ const CalendarComp = ({ project }) => {
       // Save reference to the calendar for later updates
       setSelectedEvent({
         eventRef: event,
-        startStr: event.startStr,
-        endStr: event.endStr || event.startStr,
+        startStr: new Date(event.startStr),
+        endStr: new Date(event.endStr) || new Date(event.startStr),
         allDay: event.allDay,
         view: { calendar: calendarApi },
         taskData: taskData,
@@ -175,8 +175,8 @@ const CalendarComp = ({ project }) => {
     _id: formData.id,
     projectId: selectedEvent.taskData._id,
     title: formData.title,
-    start: formData.startStr,
-    end: formData.endStr,
+    start: new Date(formData.startStr),
+    end: new Date(formData.endStr),
     allDay: formData.allDay,
     description: formData.description,
   };

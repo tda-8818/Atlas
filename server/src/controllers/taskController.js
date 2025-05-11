@@ -78,10 +78,6 @@ export const createTask = async (req, res) => {
         // 8. Save the project document
         await project.save()
 
-        // Optionally link the task back to the project
-        project.tasks.push(savedTask._id);
-        await project.save();
-
         // 9. Send the oid for the task back to the frontend.
         res.status(201).json(savedTask);
     } catch (error) {
@@ -136,6 +132,10 @@ export const deleteTask = async (req, res) => {
 
         const task_to_delete = await Task.findByIdAndDelete(id);
         
+        await Project.findByIdAndUpdate(
+          { _id: task_to_delete.projectId},
+          { $pull: { tasks: task_to_delete.id}}
+        );
         if (!task_to_delete) {
             return res.status(404).json({ message: "Task not found"});
 

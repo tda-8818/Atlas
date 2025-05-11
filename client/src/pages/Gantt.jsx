@@ -136,9 +136,21 @@ const Gantt = () => {
        }));
    };
 
+const handleDeleteTaskFromPopup = async() =>{
+  console.log("commencing task delete: ",editingTask);
+
+  try{
+    await deleteTask(editingTask.id).unwrap();
+    handleGanttTaskDelete(editingTask.id);
+  }catch(error){
+    console.error("failed to delete task: ",error)
+  }
+  setEditingTask(null);
+  setShowAddTaskPopup(false);
+};
 
   // Handler for adding/saving a task from the popup
-  const handleSaveTaskFromPopup = (cardData) => {
+  const handleSaveTaskFromPopup = async(cardData) => {
     // Safely access and trim properties, defaulting to empty string if null/undefined
     const title = cardData.title ? cardData.title.trim() : '';
     const tag = cardData.tag ? cardData.tag.trim() : '';
@@ -163,6 +175,7 @@ const Gantt = () => {
     if (popupStartDateStr) {
         startDateForGantt = formatDateForGantt(popupStartDateStr);
     }
+
 
     if (popupDueDateStr) {
         // Gantt's end_date is typically the day *after* the task ends.
@@ -197,12 +210,21 @@ const Gantt = () => {
      }
 
 
+    //     const newEvent = {
+    //   projectId: project._id,
+    //   title: formData.title, // from modal input
+    //   start: selectedDateInfo.startDate,
+    //   end: selectedDateInfo.dueDate,
+    //   allDay: selectedDateInfo.allDay,
+    //   description: formData.description // extra info from your modal
+    // };
     // Construct the task data object to be stored in React state
     // This object includes both Gantt-compatible properties and custom properties
-    const taskDataToStore = {
+    const taskDataToStoreGantt = {
       // Use existing ID if editing, generate new if adding
       id: cardData.id || gantt.uid(), // Use gantt.uid() for new task IDs
-      text: title,
+      projectId: currentProject._id,
+      text:title,
       // Store Date objects for Gantt's internal use based on popup dates
       start_date: startDateForGantt, // Pass Date object
       end_date: endDateForGantt,     // Pass Date object (exclusive)
@@ -225,44 +247,57 @@ const Gantt = () => {
       startDate: popupStartDateStr, // Keep the string from the popup
       dueDate: popupDueDateStr // Keep the string from the popup
     };
+  
 
-    console.log("Saving task from popup:", taskDataToStore);
+    const taskDataToStoreDB = {
+      projectId: currentProject._id,
+      title: title,
+      start: popupStartDateStr,
+      end: popupDueDateStr,
+      description: description
+    };
+      console.log("current task ID: ",taskDataToStoreGantt)
+    console.log("Saving task from popup:", taskDataToStoreDB);
 
+    // // Check if we are editing an existing task
+    // const existingTaskIndex = tasks.data.findIndex(task => task.id === taskDataToStore.id);
 
-    // Check if we are editing an existing task
-    const existingTaskIndex = tasks.data.findIndex(task => task.id === taskDataToStore.id);
-
-    if (existingTaskIndex !== -1) {
-        // Editing existing task
-        // Merge the updated properties into the existing task object in state
-        const updatedTasksData = [...tasks.data];
-        // Create a new object by merging to ensure immutability
-        updatedTasksData[existingTaskIndex] = {
-            ...updatedTasksData[existingTaskIndex], // Keep any properties not in taskDataToStore
-            ...taskDataToStore // Apply updates (title, dates, assignedTo, etc.)
-        };
-
-
-        setTasks(prevTasks => ({
-            ...prevTasks,
-            data: updatedTasksData
-        }));
-
-        // Update the Gantt instance directly for immediate visual feedback
-         // Pass the taskDataToStore which now has start_date and end_date
-         gantt.updateTask(taskDataToStore.id, taskDataToStore);
+    // if (existingTaskIndex !== -1) {
+    //     // Editing existing task
+    //     // Merge the updated properties into the existing task object in state
+    //     const updatedTasksData = [...tasks.data];
+    //     // Create a new object by merging to ensure immutability
+    //     updatedTasksData[existingTaskIndex] = {
+    //         ...updatedTasksData[existingTaskIndex], // Keep any properties not in taskDataToStore
+    //         ...taskDataToStore // Apply updates (title, dates, assignedTo, etc.)
+    //     };
 
 
-    } else {
+    //     setTasks(prevTasks => ({
+    //         ...prevTasks,
+    //         data: updatedTasksData
+    //     }));
+
+    //     // Update the Gantt instance directly for immediate visual feedback
+    //      // Pass the taskDataToStore which now has start_date and end_date
+    //      gantt.updateTask(taskDataToStore.id, taskDataToStore);
+
+
+    // } else {
         // Adding new task
+      try{
+        await addTask(taskDataToStoreDB).unwrap()
         setTasks(prevTasks => ({
             ...prevTasks,
-            data: [...prevTasks.data, taskDataToStore]
+            data: [...prevTasks.data, taskDataToStoreGantt]
         }));
+        
         // Add to Gantt instance for immediate visual feedback
         // Gantt's addTask expects the same structure as `taskDataToStore`
-        gantt.addTask(taskDataToStore);
-    }
+        gantt.addTask(taskDataToStoreGantt);
+      }catch(error){
+        console.error("error encountered when trying to add task: ", error)
+      }
 
     // Close popup and reset editing state
     setShowAddTaskPopup(false);
@@ -271,23 +306,12 @@ const Gantt = () => {
 
   // Handler to open the popup for adding a new task
   const openAddTaskPopup = (initialTaskData = {}) => {
-       setEditingTask({ // Set initial state for a new task
-           id: null, // No ID yet
-           title: '',
-           tag: '',
-           startDate: '', // Start with empty date strings for new tasks
-           dueDate: '',
-           assignedTo: [],
-           description: '',
-           subtasks: [],
-           priority: 'none',
-           parent: initialTaskData.parent || null // Pass parent ID if adding a subtask
-       });
+      // setEditingTask(initialTaskData)
        setShowAddTaskPopup(true);
   };
 
 
-  // Handler to open the popup for editing an existing task
+    // Handler to open the popup for editing an existing task
   const handleEditTask = (ganttTask) => {
        console.log("Editing Gantt task:", ganttTask);
        // Prepare task data for the popup, including custom properties
@@ -299,8 +323,8 @@ const Gantt = () => {
            // These are the user's last inputs from the form, not Gantt's calculated dates.
            // Use the startDate and dueDate properties stored in our state, which are
            // kept in sync with Gantt's timeline by handleGanttTaskUpdate.
-           startDate: ganttTask.startDate || '',
-           dueDate: ganttTask.dueDate || '',
+           startDate: new Date(ganttTask.start_date)|| '',
+           dueDate: new Date(ganttTask.end_date) || '',
            assignedTo: ganttTask.assignedTo || [],
            description: ganttTask.description || '',
            subtasks: ganttTask.subtasks || [],
@@ -313,8 +337,26 @@ const Gantt = () => {
        setEditingTask(taskDataForPopup);
        setShowAddTaskPopup(true);
   };
+  const handleEditTaskConfirm = async(formData) => {
+    console.log("commencing backend task update");
+    const newTask = {
+      _id: formData.id,
+      projectId: currentProject._id,
+      title: formData.title,
+      start: formData.startDate,
+      end: formData.dueDate,
+      allDay: formData.allDay,
+      description: formData.description,
+    }
+    try{
+      await editTask(newTask).unwrap()
+    }catch(error){
+      console.error("Error occured while editing task: ",error)
+    }
 
-
+    setEditingTask(null);
+    setShowAddTaskPopup(false);
+  };
   // Function to cancel adding/editing
   const handleCancelPopup = () => {
     // If editing, reset editingTask state
@@ -350,6 +392,8 @@ const Gantt = () => {
             show={showAddTaskPopup} // Pass the show state explicitly
             onAddTask={handleSaveTaskFromPopup} // Use the save handler
             onCancel={handleCancelPopup}
+            onEdit={handleEditTaskConfirm}
+            onDelete={handleDeleteTaskFromPopup}
             teamMembers={teamMembers} // Pass team members to the popup
             initialValues={editingTask} // Pass the task data when editing
           />

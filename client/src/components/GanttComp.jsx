@@ -84,6 +84,7 @@ export default class GanttComp extends Component {
     // Override double-click to open our edit modal
     gantt.attachEvent("onTaskDblClick", (id, e) => {
          const task = gantt.getTask(id);
+         console.log("THE GANTT TASK FORMAT: ",task);
          if (onEditTask && typeof onEditTask === 'function') {
               onEditTask(task);
          }
@@ -101,6 +102,7 @@ export default class GanttComp extends Component {
 
              // Otherwise, handle task editing on single click
              const task = gantt.getTask(id);
+             console.log("THE GANTT TASK FORMAT: ",task);
              if (onEditTask && typeof onEditTask === 'function') {
                   onEditTask(task);
              }

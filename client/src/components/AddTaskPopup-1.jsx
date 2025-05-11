@@ -92,13 +92,14 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
   // Handler to populate form with initialValues when editing an existing task
   useEffect(() => {
     if (show) {
+      console.log("current initial value: ",initialValues)
       if (initialValues) {
         // We're editing an existing task
         setTitle(initialValues.title || '');
         setTag(initialValues.tag || '');
         // Populate start and due dates from initialValues (these are strings from state)
-        setStartDate(initialValues.startDate || '');
-        setDueDate(initialValues.dueDate || '');
+        setStartDate(formatDateToInputValue(initialValues.startDate) || '');
+        setDueDate(formatDateToInputValue(initialValues.dueDate) || '');
         setAssignedTo(initialValues.assignedTo || []);
         setDescription(initialValues.description || '');
         setSubtasks(initialValues.subtasks || []);
@@ -138,6 +139,13 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
     }
   }, [show, initialValues]); // Added initialValues to dependencies
 
+  function formatDateToInputValue(date) {
+  if (!date) return '';
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is zero-based
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
 
     // Effect to handle clicking outside the member search dropdown
     useEffect(() => {
