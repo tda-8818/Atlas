@@ -15,6 +15,7 @@ const navItems = [
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   //const [projects, setProjects] = useState([]);
+  //const [projects, setProjects] = useState([]);
   const navigate = useNavigate();
 
   // Use RTK Query hook to fetch projects
@@ -25,7 +26,17 @@ const Sidebar = () => {
       refetch,
   } = useGetCurrentUserProjectsQuery();
 
+  // Use RTK Query hook to fetch projects
+  const {
+      data: projectsData = [],
+      isLoading: projectsLoading,
+      isError: projectsError,
+      refetch,
+  } = useGetCurrentUserProjectsQuery();
+
   useEffect(() => {
+    console.log("projectsData:", projectsData);
+  }, [projectsData]);
     console.log("projectsData:", projectsData);
   }, [projectsData]);
 
@@ -70,7 +81,10 @@ const Sidebar = () => {
       <ul className="flex-1 px-2 space-y-2 overflow-y-auto">
         {projectsData.map((project) => (
           <li key={project._id} className="w-full">
+        {projectsData.map((project) => (
+          <li key={project._id} className="w-full">
             <button
+              onClick={() => navigate(`/projects/${project._id}/dashboard`)}
               onClick={() => navigate(`/projects/${project._id}/dashboard`)}
               className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg
                 bg-[var(--background)] text-[var(--nav-text)]

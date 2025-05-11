@@ -75,7 +75,6 @@ export const createTask = async (req, res) => {
             description,
             startDate: start,
             dueDate: end,
-<<<<<<< HEAD
             columnId:columnId
         });
 
@@ -96,14 +95,10 @@ export const createTask = async (req, res) => {
             await columnToInsert.save(); 
         }
 
-=======
-        });
-
->>>>>>> af362e3 (Calendar task integration)
         console.log("New task created:", newTask);
 
         // 6. Save task document in database
-        const savedTask = await newTask.save(); // savedTask is the JUST oid for the task object.
+        const savedTask = await newTask.save(); // savedTask is the task object.
 
         // 7. Append the task to the project. This stores the task in a project.tasks array
         project.tasks.push(savedTask._id);
@@ -201,7 +196,7 @@ export const deleteTask = async (req, res) => {
         const { taskId } = req.params
         console.log('deleteTasks has been executed received taskId', taskId);
 
-        const task_to_delete = await Task.findByIdAndDelete(taskId);
+        const task_to_delete = await Task.findById(taskId);
         
         await Project.findByIdAndUpdate(
           { _id: task_to_delete.projectId},
@@ -209,9 +204,25 @@ export const deleteTask = async (req, res) => {
         );
         if (!task_to_delete) {
             return res.status(404).json({ message: "Task not found"});
-
         }
-        res.status(200).json({ message: "Task deleted successfully", task_to_delete})
+
+        await Task.findByIdAndDelete(taskId);
+
+        // Remove task from its column's task list (if stored there)
+        if (task_to_delete.columnId) {
+            await Column.findByIdAndUpdate(task_to_delete.columnId, {
+                $pull: { tasks: task_to_delete._id}
+            })
+        }
+
+        // Remove task from its project’s task list (if stored there)
+        if (task_to_delete.projectId) {
+            await Project.findByIdAndUpdate(task_to_delete.projectId, {
+                $pull: { tasks: task_to_delete._id }
+            });
+        }
+
+    res.status(200).json({ message: "Task deleted successfully", deletedTask: task_to_delete });
     } catch (error) {
         console.error("Error deleting task: ", error);
         res.status(500).json({ message: "Server error while deleting task"});

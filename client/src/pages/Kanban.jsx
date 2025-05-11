@@ -7,6 +7,7 @@ import AddTaskPopup from '../components/AddTaskPopup-1';
 import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 import {useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation} from "../redux/slices/projectSlice";
+import {useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation} from "../redux/slices/projectSlice";
 // Sample team members data
 const teamMembers = [
   { id: "user-1", name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", initials: "AJ" },
@@ -24,6 +25,7 @@ const sampleTags = ['Design', 'Development', 'Marketing', 'Research', 'Bug'];
 
 const defaultColumns = [
   {
+    id: "6820365eb1d5ba37bb22848a",
     id: "6820365eb1d5ba37bb22848a",
     title: "Unsorted Tasks",
     cards: [
@@ -123,9 +125,15 @@ const Kanban = () => {
   const [updateColumn] = useUpdateColumnMutation();
   const [deleteColumn] = useDeleteColumnMutation();
 
+  const [createColumn] = useCreateColumnMutation();
+  const [updateColumn] = useUpdateColumnMutation();
+  const [deleteColumn] = useDeleteColumnMutation();
+
   const { data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
   const { data: columnData} = useGetProjectColumnsQuery(currentProject._id);
   
+
+  // 
   const mapTasksToColumns = () => {
     if (!columnData || !projectTasks) return [];
 
@@ -145,12 +153,13 @@ const Kanban = () => {
   useEffect(() => {
     if (!currentProject || !projectTasks) return;
 
-    console.log("current Project", currentProject);
-    console.log("Got tasks in Kanban:", projectTasks);
-    console.log("Got columns from project:", columnData);
-
+    // console.log("current Project", currentProject);
+    // console.log("Got tasks in Kanban:", projectTasks);
+    // console.log("Got columns from project:", columnData);
+    console.log('projectTasks changed:', projectTasks);
     const formatted = mapTasksToColumns();
-    console.log("FORMATTED COLUMN OBJECTS:", formatted);
+ 
+    //console.log("FORMATTED COLUMN OBJECTS:", formatted);
     setColumns(formatted);
 
     if (selectedCard) {
@@ -202,7 +211,7 @@ const Kanban = () => {
      };
 
 
-  }, [selectedCard, columnData, currentProject, projectTasks]); // Added columns to dependencies because handleSaveChanges uses it
+  }, [columnData, projectTasks]); // Added columns to dependencies because handleSaveChanges uses it
 
 
 
@@ -302,14 +311,28 @@ const Kanban = () => {
     setNewColumnName("");
   };
 
-  // const handleTaskEdit = async(cardData) =>{
-  //   try {
-      
-  //   } catch (error) {
-  //     console.error("Failed to edit task", error)
-  //   }
+  const handleTaskEdit = async(cardData) =>{
+    try {
+      console.log("Attempting to edit with new cardData:", cardData);
 
-  // }
+      const response = await editTask(cardData).unwrap();
+
+      // Find the column and update the card's id to map to the updated Task
+      const updatedColumns = columns.map((column) => {
+        return {
+          ...column,
+          cards: column.cards.map((card) => {
+            card._id === response._id ? response : card //If response is not null, use the response, otherwise use card
+          })
+        }
+      })
+      setColumns(updatedColumns);
+      setSelectedCard(null);
+    } catch (error) {
+      console.error("Failed to edit task", error)
+    }
+
+  }
 
 
   const handleAddTaskFromPopup = async(cardData) => {
@@ -333,20 +356,24 @@ const Kanban = () => {
     const columnId = columns[addTaskColumnIndex].id;
 
     console.log("Attempting to addTask to: ", columnId);
+    console.log("CardData:", cardData);
 
     try {
       const response = await addTask({
         ...cardData,
         columnId,
         projectId: currentProject._id,
+        start: cardData.startDate ? new Date(cardData.startDate) : undefined,
+        end: cardData.dueDate ? new Date(cardData.dueDate) : undefined,
       }).unwrap();
       
       console.log("Received response after creating task", response);
 
-      cardData.id = response._id;
-
       const updated = [...columns];
-      updated[addTaskColumnIndex].cards.push(cardData);
+      updated[addTaskColumnIndex].cards.push({
+        ...response,
+        id: response._id, 
+      });
       setColumns(updated);
     } catch (error) {
       console.error("Failed to create task:", err);
@@ -529,7 +556,7 @@ const Kanban = () => {
 
 
   // Function to save changes from the selectedCard state to the main columns state
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (!selectedCard) {
         console.error("No card selected to save.");
         return;
@@ -547,7 +574,14 @@ const Kanban = () => {
     const { columnIndex, cardIndex, ...cardDataToSave } = selectedCard;
 
     // Check if the card still exists at the original index before saving
-    if (columnIndex === undefined || cardIndex === undefined || columnIndex < 0 || columnIndex >= columns.length || cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length || columns[columnIndex].cards[cardIndex].id !== selectedCard.id) {
+    if (columnIndex === undefined || 
+      cardIndex === undefined || 
+      columnIndex < 0 || 
+      columnIndex >= columns.length ||
+      cardIndex < 0 ||
+      cardIndex >= columns[columnIndex].cards.length ||
+      columns[columnIndex].cards[cardIndex].id !== selectedCard.id
+    ){
       console.error("Card not found at original index for saving. It may have been moved or deleted.");
       // In this case, we might just close the modal without saving,
       // as the original card is no longer there.
@@ -555,12 +589,27 @@ const Kanban = () => {
       return;
     }
 
-    const updatedColumns = [...columns];
-    updatedColumns[columnIndex].cards[cardIndex] = cardDataToSave;
-    setColumns(updatedColumns);
+    try {
+      // Send data to backend to edit task
+      const response = await editTask(cardDataToSave).unwrap();
+      console.log("Task successfully updated:", response);
 
-    // Set selectedCard to null AFTER the state update to close the modal
-    setSelectedCard(null);
+
+      const updatedColumns = [...columns];
+
+      updatedColumns[columnIndex].cards[cardIndex] = {
+        ...updatedColumns[columnIndex].cards[cardIndex],
+        ...response, // Overwrite with fresh backend data
+      };
+      
+      console.log("updated card", updatedColumns[columnIndex].cards[cardIndex]);
+
+      // Set selectedCard to null AFTER the state update to close the modal
+      setColumns(updatedColumns);
+      setSelectedCard(null);
+    } catch (error) {
+      console.error("Failed to update task in Kanban.jsx", error);
+    }
   };
 
   // Function to close the modal WITHOUT saving changes
