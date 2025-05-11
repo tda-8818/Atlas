@@ -25,7 +25,6 @@ const sampleTags = ['Design', 'Development', 'Marketing', 'Research', 'Bug'];
 const defaultColumns = [
   {
     id: "6820365eb1d5ba37bb22848a",
-    id: "6820365eb1d5ba37bb22848a",
     title: "Unsorted Tasks",
     cards: [
       {
