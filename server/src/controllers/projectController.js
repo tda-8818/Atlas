@@ -38,8 +38,6 @@ export const createProject = async (req, res) => {
             return res.status(400).json({ message: "user not found in database." });
         }
 
-  
-
         // create new project
         const projectData = new Project({
             owner: user._id,
@@ -128,7 +126,7 @@ export const getUserProjects = async (req, res) => {
     
         // Return the user's projects as JSON
         const projects = user.projects;
-        console.log("User projects:", projects);
+        console.log("User projects called by getUserProjects:", projects);
         res.status(200).json(projects);
       } catch (error) {
         console.error("Error in getUserProjects:", error);
