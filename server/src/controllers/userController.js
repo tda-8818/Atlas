@@ -54,8 +54,8 @@ export const login = async (req, res) => {
         id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email
-        // Other safe fields
+        email: user.email,
+        profilePic: user.profilePic
       }
     });
   } catch (error) {
@@ -109,6 +109,7 @@ export const signup = async (req, res) => {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
+          profilePic: user.profilePic
         },
       },
     });
@@ -148,7 +149,8 @@ export const getMe = async (req, res) => {
         id: req.user._id,
         email: req.user.email,
         firstName: req.user.firstName,
-        lastName: req.user.lastName
+        lastName: req.user.lastName,
+        profilePic: req.user.profilePic
       }
     });
   } catch (error) {
@@ -236,34 +238,61 @@ export const getAllUsers = async (req, res) => {
 // Update profile picture
 export const updateProfilePicture = async (req, res) => {
   try {
+    console.log('Update profile picture function called');
+    
     if (!req.file) {
+      console.log('No file in request');
       return res.status(400).json({ message: 'No file uploaded' });
     }
-    console.log('req.file:', req.file);
-    console.log('req.body:', req.body);
+    
+    console.log('req.file:', JSON.stringify(req.file, null, 2));
+    console.log('req.user:', JSON.stringify(req.user, null, 2));
+    
     // Get the URL of the uploaded image from Cloudinary
     const profileImageUrl = req.file.path;
+    console.log('Profile image URL:', profileImageUrl);
+
+    // Make sure req.user._id exists
+    if (!req.user || !req.user._id) {
+      console.log('User ID not found in request:', req.user);
+      return res.status(400).json({ message: 'User ID not found' });
+    }
 
     // Update the user's profile with the new image URL
     const updatedUser = await UserModel.findByIdAndUpdate(
-      req.user.id,
+      req.user._id,
       { profilePic: profileImageUrl },
-      { new: true } // Return the updated user
-    );
+      { new: true }
+    ).select('-password'); // Exclude the password field
+    
+    // Check if user was found and updated
+    if (!updatedUser) {
+      console.log('User not found in database');
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    console.log('Updated user:', updatedUser);
 
+    // Return the user data in the response
     res.status(200).json({
       success: true,
       message: 'Profile picture updated successfully',
-      user: updatedUser
+      user: {
+        id: updatedUser._id,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: updatedUser.email,
+        profilePic: updatedUser.profilePic
+      }
     });
   } catch (error) {
     console.error('Error updating profile picture:', error);
-    res.status(500).json({ message: 'Failed to update profile picture' });
+    res.status(500).json({ 
+      message: 'Failed to update profile picture',
+      error: error.message 
+    });
   }
 };
-
-
-
 
 export default {
   login,

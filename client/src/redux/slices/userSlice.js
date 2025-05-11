@@ -78,10 +78,10 @@ export const userApiSlice = createApi({
           url: '/users/profile-pic',
           method: 'PUT',
           body: formData,
+          formData: true, // Add this for proper FormData handling
         }),
         invalidatesTags: ['User'],
       }),
-      
     }),
 });
 
