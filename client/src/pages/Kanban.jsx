@@ -347,12 +347,15 @@ const Kanban = () => {
     const columnId = columns[addTaskColumnIndex].id;
 
     console.log("Attempting to addTask to: ", columnId);
+    console.log("CardData:", cardData);
 
     try {
       const response = await addTask({
         ...cardData,
         columnId,
         projectId: currentProject._id,
+        start: cardData.startDate ? new Date(cardData.startDate) : undefined,
+        end: cardData.dueDate ? new Date(cardData.dueDate) : undefined,
       }).unwrap();
       
       console.log("Received response after creating task", response);
