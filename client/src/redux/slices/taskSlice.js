@@ -39,8 +39,8 @@ export const taskApiSlice = createApi({
 
     // Delete a task
     deleteTask: builder.mutation({
-      query: (id) => ({
-        url: `/tasks/${id}`,
+      query: (taskId) => ({
+        url: `/tasks/${taskId}`,
         method: 'DELETE',
       }),
       invalidatesTags: (result, error, id) => [{ type: 'Task', id }],
