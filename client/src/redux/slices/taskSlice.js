@@ -22,7 +22,9 @@ export const taskApiSlice = createApi({
         method: 'POST',
         body: newTask,
       }),
-      invalidatesTags: [{ type: 'Task', id: 'LIST' }],
+      invalidatesTags: (result, error, newTask) => [
+        { type: 'Task', id: newTask.projectId }
+      ],
     }),
 
     // Update an existing task

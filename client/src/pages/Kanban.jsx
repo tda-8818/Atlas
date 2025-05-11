@@ -126,6 +126,8 @@ const Kanban = () => {
   const { data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
   const { data: columnData} = useGetProjectColumnsQuery(currentProject._id);
   
+
+  // 
   const mapTasksToColumns = () => {
     if (!columnData || !projectTasks) return [];
 
@@ -145,12 +147,13 @@ const Kanban = () => {
   useEffect(() => {
     if (!currentProject || !projectTasks) return;
 
-    console.log("current Project", currentProject);
-    console.log("Got tasks in Kanban:", projectTasks);
-    console.log("Got columns from project:", columnData);
-
+    // console.log("current Project", currentProject);
+    // console.log("Got tasks in Kanban:", projectTasks);
+    // console.log("Got columns from project:", columnData);
+    console.log('projectTasks changed:', projectTasks);
     const formatted = mapTasksToColumns();
-    console.log("FORMATTED COLUMN OBJECTS:", formatted);
+ 
+    //console.log("FORMATTED COLUMN OBJECTS:", formatted);
     setColumns(formatted);
 
     if (selectedCard) {
@@ -202,7 +205,7 @@ const Kanban = () => {
      };
 
 
-  }, [selectedCard, columnData, currentProject, projectTasks]); // Added columns to dependencies because handleSaveChanges uses it
+  }, [columnData, projectTasks]); // Added columns to dependencies because handleSaveChanges uses it
 
 
 
@@ -360,10 +363,11 @@ const Kanban = () => {
       
       console.log("Received response after creating task", response);
 
-      cardData.id = response._id;
-
       const updated = [...columns];
-      updated[addTaskColumnIndex].cards.push(cardData);
+      updated[addTaskColumnIndex].cards.push({
+        ...response,
+        id: response._id, 
+      });
       setColumns(updated);
     } catch (error) {
       console.error("Failed to create task:", err);
@@ -580,15 +584,22 @@ const Kanban = () => {
     }
 
     try {
+      // Send data to backend to edit task
       const response = await editTask(cardDataToSave).unwrap();
       console.log("Task successfully updated:", response);
-      
-      // Send data to backend to edit task
+
+
       const updatedColumns = [...columns];
-      updatedColumns[columnIndex].cards[cardIndex] = cardDataToSave;
-      setColumns(updatedColumns);
-        
+
+      updatedColumns[columnIndex].cards[cardIndex] = {
+        ...updatedColumns[columnIndex].cards[cardIndex],
+        ...response, // Overwrite with fresh backend data
+      };
+      
+      console.log("updated card", updatedColumns[columnIndex].cards[cardIndex]);
+
       // Set selectedCard to null AFTER the state update to close the modal
+      setColumns(updatedColumns);
       setSelectedCard(null);
     } catch (error) {
       console.error("Failed to update task in Kanban.jsx", error);
