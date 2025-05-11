@@ -3,11 +3,12 @@ import Sidebar from '../components/Sidebar';
 import StatBox from '../components/StatBox';
 import Navbar from '../components/Navbar';
 import ProjectUsersModal from '../components/ProjectUsersModal';
-import { useOutletContext, useParams } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
 import {
   useGetProjectByIdQuery,
   useGetProjectUsersQuery,
-  useUpdateProjectUsersMutation
+  useUpdateProjectUsersMutation,
+  useGetProjectTasksQuery
 } from '../redux/slices/projectSlice';
 import { isProjectOwner } from '../utils/projectUtils';
 import { getTaskStats } from '../utils/taskUtils';
@@ -20,16 +21,8 @@ const Dashboard = () => {
   // Mutation for updating project team
   const [updateProjectUsers] = useUpdateProjectUsersMutation();
 
-  
-
   // RTK Query hooks to fetch tasks, project details, and project users
-  // const {
-  //   data: tasks = [],
-  //   isLoading: loadingTasks,
-  //   error: tasksError,
-  // } = useGetProjectTasksQuery(id, {
-  //   skip: !id,
-  // });
+  const { data: tasks = [], isLoading: loadingTasks, error: tasksError, } = useGetProjectTasksQuery(id, { skip: !id, });
 
   const { data: allUsers = [], isLoading: loadingAllUsers } = useGetAllUsersQuery();
 
@@ -68,18 +61,18 @@ const Dashboard = () => {
   };
 
   // Check loading and error states using the correct variables
-  // if (loadingTasks || loadingProject || loadingUsers) {
-  //   return <div>Loading dashboard data...</div>;
-  // }
+  if (loadingTasks || loadingProject || loadingUsers) {
+    return <div>Loading dashboard data...</div>;
+  }
 
-  // if (tasksError || projectError || userError) {
-  //   return (
-  //     <div className="error">
-  //       Error loading dashboard data:{" "}
-  //       {tasksError?.error || projectError?.error || userError?.error || "Unknown error"}
-  //     </div>
-  //   );
-  // }
+  if (tasksError || projectError || userError) {
+    return (
+      <div className="error">
+        Error loading dashboard data:{" "}
+        {tasksError?.error || projectError?.error || userError?.error || "Unknown error"}
+      </div>
+    );
+  }
 
   if (loadingProject || loadingUsers || loadingMe) {
     return <div>Loading dashboard data...</div>;

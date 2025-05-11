@@ -9,26 +9,7 @@ import Column from '../models/ColumnModel.js';
  */
 export const getTasksByProject = async (req, res) => {
     try {
-
-    // req.param is the json object {id: abc123} => destructure it 
-      const id_param = req.params;
-
-      const projectId = id_param.id;
-      //console.log("getTasksByProject FETCH. RECEIVED PROJECTID:", projectId);
-
-      if (!projectId) {
-        return res.status(400).json({ message: 'Project ID is required in URL params' });
-      }
-  
-      // Fetch tasks for the given project ID
-      const tasks = await Task.find({ projectId })
-        .populate('assignedTo', 'firstName lastName')
-        .populate('projectId', 'title');
       
-      //console.log("SENDING TASKS:", tasks);
-
-      res.status(200).json(tasks);
-
     // req.param is the json object {id: abc123} => destructure it 
       const id_param = req.params;
 

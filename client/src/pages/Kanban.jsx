@@ -18,7 +18,7 @@ const teamMembers = [
 ];
 
 // Define priority levels
-const priorityLevels = ['none', '!', '!!', '!!!'];
+const priorityLevels = ['', '!', '!!', '!!!'];
 
 // Define sample tags (no longer used for dropdown, but kept for reference/initial data)
 const sampleTags = ['Design', 'Development', 'Marketing', 'Research', 'Bug'];

@@ -18,8 +18,9 @@ console.log('project routes loaded');  // Should appear when server starts
 router.post('/', authMiddleware, createProject);
 
 router.get('/', authMiddleware, getUserProjects);
-router.get('/:id', authMiddleware, getProjectById)
+
 router.get('/:id/users', authMiddleware, getProjectUsers);
+router.get('/:id', authMiddleware, getProjectById);
 
 router.put('/:id/users', authMiddleware, updateProjectUsers);
 
