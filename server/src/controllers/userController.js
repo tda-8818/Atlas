@@ -1,6 +1,10 @@
 import UserModel from '../models/UserModel.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import asyncHandler from 'express-async-handler';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs/promises';
 
 const cookieOptions = {
   httpOnly: true,
@@ -10,6 +14,15 @@ const cookieOptions = {
   path: '/', // Root path
   maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 };
+
+const storage = multer.diskStorage({
+  destination: 'uploads/',
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage });
 
 // Login controller
 export const login = async (req, res) => {
@@ -38,7 +51,7 @@ export const login = async (req, res) => {
     const token = jwt.sign(
       { id: user._id.toString() }, // Ensure string conversion
       process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: '1h' }
     );
 
     // 4. Set cookie
@@ -292,6 +305,49 @@ export const updateProfilePicture = async (req, res) => {
   }
 };
 
+export const updateMe = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { firstName, lastName, email } = req.body;
+  let profilePicPath;
+
+  if (req.file) {
+    profilePicPath = req.file.path;
+  }
+
+  const user = await UserModel.findById(userId);
+
+  if (user) {
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (email !== undefined) user.email = email;
+
+    if (profilePicPath) {
+      if (user.profilePic) {
+        try {
+          await fs.unlink(user.profilePic);
+        } catch (error) {
+          console.error("Error deleting old profile picture:", error);
+        }
+      }
+      user.profilePic = profilePicPath;
+    }
+
+    const updatedUser = await user.save();
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user: {
+        _id: updatedUser._id,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: updatedUser.email,
+        profilePic: updatedUser.profilePic,
+      },
+    });
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+});
+
 export default {
   login,
   signup,
@@ -300,4 +356,5 @@ export default {
   getAllUsers,
   updatePassword,
   updateProfilePicture,
+  updateMe
 };

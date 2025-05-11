@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  useUpdateProfileMutation,
+  useUpdateProfilePicMutation,
   useGetCurrentUserQuery,
   useUpdatePasswordMutation
 } from "../redux/slices/userSlice";
+import { showErrorToast } from "../components/errorToast";
 
 const Settings = ({ setTheme }) => {
   const navigate = useNavigate();
   
-  // Add this line to fetch the current user data
   const { data: userData, isLoading } = useGetCurrentUserQuery();
-  
+  const [updateProfilePic, { isLoading: isUpdatingPic }] = useUpdateProfilePicMutation();
+  const [updateUser, { isLoading: isUpdatingUser }] = useUpdateMeMutation(); // Destructure loading state for name/email
+  const [updatePasswordMutation, { isLoading: isUpdatingPassword }] = useUpdatePasswordMutation();
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -21,8 +24,6 @@ const Settings = ({ setTheme }) => {
 
   const [profileImagePreview, setProfileImagePreview] = useState(null);
   const [profileImageFile, setProfileImageFile] = useState(null);
- 
-  const [updateProfile] = useUpdateProfileMutation();
 
   // Add useEffect to load user data when component mounts
   useEffect(() => {
@@ -53,39 +54,42 @@ const Settings = ({ setTheme }) => {
   const handleProfilePictureChange = async () => {
     try {
       if (!profileImageFile) {
-        alert("No profile image selected!");
+        toast.warn("No profile image selected!");
         return;
       }
-      
+
       const formData = new FormData();
       formData.append("profilePic", profileImageFile);
-      
-      // Trigger the upload API call
-      const result = await uploadProfilePic(formData).unwrap();
+
+      const result = await updateProfilePic(formData).unwrap(); // Correct function call
       console.log("Upload success:", result);
-      
-      // If the server returns the updated user info with profile pic URL
+
       if (result.user && result.user.profilePic) {
-        // Here you could update the profile picture in your app state if needed
         console.log("New profile picture URL:", result.user.profilePic);
         setProfileImagePreview(result.user.profilePic);
       }
-      
-      alert("Profile picture updated successfully!");
+
+      toast.success("Profile picture updated successfully!");
     } catch (error) {
       console.error("Profile picture update failed:", error);
-      alert("Failed to update profile picture.");
+      toast.error(error?.data?.message || "Failed to update profile picture.");
     }
   };
 
-  const handleNameEmailChange = async () => {
+
+  const handleUpdateNameAndEmail = async () => {
     try {
       const updatedData = { firstName, lastName, email };
-      await updateProfile(updatedData).unwrap();
-      alert("Name and email updated!");
-    } catch (error) {
-      console.error("Profile info update failed:", error);
-      alert("Failed to update name or email.");
+      const result = await updateUser(updatedData).unwrap(); // Correct function call
+      toast.success('Name and email updated successfully!');
+      if (result?.user) {
+        setFirstName(result.user.firstName || "");
+        setLastName(result.user.lastName || "");
+        setEmail(result.user.email || "");
+      }
+    } catch (err) {
+      console.error('Name and email update failed:', err);
+      toast.error(err?.data?.message || 'Failed to update name and email.');
     }
   };
 
@@ -98,19 +102,19 @@ const Settings = ({ setTheme }) => {
     try {
       const result = await updatePassword({ currentPassword, newPassword }).unwrap();
       if (result?.message) {
-        alert(result.message); // Show success message from backend if available
+        toast(result.message); // Show success message from backend if available
       } else {
-        alert("Password updated successfully!");
+        toast("Password updated successfully!");
       }
       // Optionally clear the password fields after successful update
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      console.error("Password update error:", err);
-      alert(err?.data?.message || "Failed to update password."); // Show error message from backend if available
+      showErrorToast(err?.data?.message || "Failed to update password."); // Show error message from backend if available
     }
   };
+
 
   return (
     <div className="p-8 bg-[var(--background-primary)] min-h-screen">
@@ -122,10 +126,10 @@ const Settings = ({ setTheme }) => {
         <>
           <div className="mb-6">
             <button
-              onClick={() => navigate("/")}
+              onClick={() => navigate('/')}
               className="bg-[var(--background)] text-[var(--text)] border border-[var(--border-color)] rounded-lg px-4 py-2 text-sm hover:bg-[var(--background-secondary)] transition-all"
             >
-              ← Back to Home
+              ← Back to Projects
             </button>
           </div>
 
@@ -201,7 +205,7 @@ const Settings = ({ setTheme }) => {
                   Save Profile Picture
                 </button>
                 <button
-                  onClick={handleNameEmailChange}
+                  onClick={handleUpdateNameAndEmail}
                   className="bg-[#187cb4] hover:bg-[#12547a] text-white py-3 px-6 text-sm font-medium rounded-lg"
                 >
                   Save Name & Email
