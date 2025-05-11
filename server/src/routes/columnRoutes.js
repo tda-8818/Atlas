@@ -6,7 +6,7 @@ import {
   deleteColumn,
   updateProjectColumn,
   updateColumnPositions
-} from "../controllers/projectController.js";
+} from "../controllers/columnController.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();

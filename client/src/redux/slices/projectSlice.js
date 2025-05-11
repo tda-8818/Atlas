@@ -155,6 +155,11 @@ export const {
   useGetProjectUsersQuery,
   useGetProjectTasksQuery,
   useUpdateProjectUsersMutation,
+  useGetProjectColumnsQuery,
+  useCreateColumnMutation,
+  useUpdateColumnMutation,
+  useDeleteColumnMutation,
+  useReorderColumnsMutation,
 } = projectApiSlice;
 
 export default projectApiSlice;

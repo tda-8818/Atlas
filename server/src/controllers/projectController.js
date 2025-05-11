@@ -53,8 +53,6 @@ export const createProject = async (req, res) => {
         // insert the user who created the project as a member of that project
         projectData.users.push(user._id);
 
-        // save project in db
-        const savedProject = await projectData.save();
 
         // Create the unsorted column
         const unsortedColumn = await Column.create({
@@ -70,7 +68,10 @@ export const createProject = async (req, res) => {
         user.projects.push(savedProject._id);
 
         console.log("USER DETAILS AFTER PROJECT PUSH:", user);
-
+ 
+        // save project in db
+        const savedProject = await projectData.save();
+        
         // save updated user document
         await user.save();
 
@@ -90,11 +91,17 @@ export const deleteProject = async (req, res) => {
         const { id } = req.params;
         console.log("deleteProject executed with id:", id);
 
+        
+
         // Optionally, you can check if req.user is allowed to delete the project.
         const projectToDelete = await Project.findByIdAndDelete(id);
         if (!projectToDelete) {
             return res.status(404).json({ message: "Project not found" });
         }
+
+        const columnDeleteOperation = await Column.deleteMany({projectId:id});
+        console.log(`Deleted ${columnDeleteOperation.deletedCount} columns related to project`);
+
         res.status(200).json({ message: "Project deleted successfully", project: projectToDelete });
     } catch (error) {
         console.error("Error in deleteProject:", error);
