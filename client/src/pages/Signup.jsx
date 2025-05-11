@@ -32,8 +32,8 @@ const Signup = () => {
             const userData = {
                 ...data,
                 email: data.email.toLowerCase(),
-                firstName: data.firstName.toLowerCase(),
-                lastName: data.lastName.toLowerCase(),
+                firstName: data.firstName.charAt(0).toUpperCase() + data.firstName.slice(1).toLowerCase(),
+                lastName: data.lastName.charAt(0).toUpperCase() + data.lastName.slice(1).toLowerCase()
             };
 
             // Remove confirmPassword from data before sending to API
@@ -45,7 +45,6 @@ const Signup = () => {
             // Show success toast
             toast.success("Account created successfully! Redirecting to login...", {
                 duration: 2000,
-                position: "bottom-right"
             });
 
             reset();

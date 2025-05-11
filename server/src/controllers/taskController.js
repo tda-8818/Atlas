@@ -14,7 +14,7 @@ export const getTasksByProject = async (req, res) => {
       const id_param = req.params;
 
       const projectId = id_param.id;
-      //console.log("getTasksByProject FETCH. RECEIVED PROJECTID:", projectId);
+      console.log("getTasksByProject FETCH. RECEIVED PROJECTID:", projectId);
 
       if (!projectId) {
         return res.status(400).json({ message: 'Project ID is required in URL params' });

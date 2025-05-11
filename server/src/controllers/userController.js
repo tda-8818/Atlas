@@ -1,10 +1,6 @@
 import UserModel from '../models/UserModel.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import asyncHandler from 'express-async-handler';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs/promises';
 
 const cookieOptions = {
   httpOnly: true,
@@ -15,14 +11,7 @@ const cookieOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 };
 
-const storage = multer.diskStorage({
-  destination: 'uploads/',
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  },
-});
-const upload = multer({ storage });
+
 
 // Login controller
 export const login = async (req, res) => {
@@ -284,18 +273,6 @@ export const updateProfilePicture = async (req, res) => {
     
     console.log('Updated user:', updatedUser);
 
-    // Return the user data in the response
-    res.status(200).json({
-      success: true,
-      message: 'Profile picture updated successfully',
-      user: {
-        id: updatedUser._id,
-        firstName: updatedUser.firstName,
-        lastName: updatedUser.lastName,
-        email: updatedUser.email,
-        profilePic: updatedUser.profilePic
-      }
-    });
   } catch (error) {
     console.error('Error updating profile picture:', error);
     res.status(500).json({ 
@@ -305,14 +282,9 @@ export const updateProfilePicture = async (req, res) => {
   }
 };
 
-export const updateMe = asyncHandler(async (req, res) => {
+export const updateMe = async (req, res) => {
   const userId = req.user._id;
   const { firstName, lastName, email } = req.body;
-  let profilePicPath;
-
-  if (req.file) {
-    profilePicPath = req.file.path;
-  }
 
   const user = await UserModel.findById(userId);
 
@@ -320,17 +292,6 @@ export const updateMe = asyncHandler(async (req, res) => {
     if (firstName !== undefined) user.firstName = firstName;
     if (lastName !== undefined) user.lastName = lastName;
     if (email !== undefined) user.email = email;
-
-    if (profilePicPath) {
-      if (user.profilePic) {
-        try {
-          await fs.unlink(user.profilePic);
-        } catch (error) {
-          console.error("Error deleting old profile picture:", error);
-        }
-      }
-      user.profilePic = profilePicPath;
-    }
 
     const updatedUser = await user.save();
     res.status(200).json({
@@ -340,13 +301,13 @@ export const updateMe = asyncHandler(async (req, res) => {
         firstName: updatedUser.firstName,
         lastName: updatedUser.lastName,
         email: updatedUser.email,
-        profilePic: updatedUser.profilePic,
+        profilePic: updatedUser.profilePic, // Still return the profilePic
       },
     });
   } else {
     res.status(404).json({ message: 'User not found' });
   }
-});
+};
 
 export default {
   login,

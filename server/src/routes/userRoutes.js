@@ -1,5 +1,5 @@
 import express from 'express';
-import { signup, login, logout, getMe, updatePassword, updateProfilePicture, getAllUsers } from "../controllers/userController.js";
+import { signup, login, logout, getMe, updatePassword, updateProfilePicture, updateMe, getAllUsers } from "../controllers/userController.js";
 import { uploadProfilePicture } from '../../utils/cloudinary.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import rateLimit from 'express-rate-limit';
@@ -18,7 +18,8 @@ router.post('/login', authLimiter, login);
 router.post('/signup', authLimiter, signup);
 router.post('/logout', authMiddleware, logout);
 router.get('/me', authMiddleware, getMe);
-router.put('/profile-pic',authMiddleware,uploadProfilePicture.single('profilePic'),updateProfilePicture)
+router.put('/profile-pic',authMiddleware,uploadProfilePicture.single('profilePic'),updateProfilePicture);
+router.put('/me', authMiddleware, updateMe);
 router.get('/', getAllUsers);
 router.put('/', authMiddleware, updatePassword);
 

@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import {
   useUpdateProfilePicMutation,
   useGetCurrentUserQuery,
-  useUpdatePasswordMutation
+  useUpdatePasswordMutation,
+  useUpdateMeMutation
 } from "../redux/slices/userSlice";
 import { showErrorToast } from "../components/errorToast";
+import toast from "react-hot-toast";
 
 const Settings = ({ setTheme }) => {
   const navigate = useNavigate();
@@ -95,7 +97,7 @@ const Settings = ({ setTheme }) => {
 
   const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
-      alert("Passwords do not match!");
+      showErrorToast("Passwords do not match!");
       return;
     }
 
