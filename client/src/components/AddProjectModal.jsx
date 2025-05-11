@@ -54,11 +54,13 @@ const AddProjectModal = ({ show, onAddProject, onCancel, initialValues = null })
   const [dueDate, setDueDate] = useState('');
   const [owner, setOwner] = useState(null);
   const [selectedTeamMemberIds, setSelectedTeamMemberIds] = useState([]);
+  const [description,setDescription] = useState('');
 
   const [showOwnerSearch, setShowOwnerSearch] = useState(false);
   const [showTeamMemberSearch, setShowTeamMemberSearch] = useState(false);
   const [ownerSearchQuery, setOwnerSearchQuery] = useState('');
   const [teamSearchQuery, setTeamSearchQuery] = useState('');
+  const [isDescriptionCollapsed,setIsDescriptionCollapsed] = useState();
 
   const modalRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -128,12 +130,14 @@ const AddProjectModal = ({ show, onAddProject, onCancel, initialValues = null })
       startDate: startDate || null,
       dueDate: dueDate || null,
       owner,
+      description: description,
       teamMembers: selectedTeamMemberIds,
       progress: initialValues?.progress || 0,
       daysLeft: dueDate
         ? Math.max(Math.ceil((new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24)), 0)
         : 0,
     };
+    console.log("new project data ",projectData)
     onAddProject(projectData);
   };
 
@@ -186,7 +190,32 @@ const AddProjectModal = ({ show, onAddProject, onCancel, initialValues = null })
         </div>
 
         {/* Owner */}
-        <div className="mb-4 relative">
+        <div className="mb-4">
+           <button
+               className="flex items-center justify-between w-full py-3 text-sm font-semibold text-left text-gray-700 hover:text-gray-900 focus:outline-none" // Removed border-b
+               onClick={() => setIsDescriptionCollapsed(!isDescriptionCollapsed)}
+           >
+               Description (Optional)
+               <svg
+                   className={`w-4 h-4 transform transition-transform duration-200 ${isDescriptionCollapsed ? '' : 'rotate-180'}`}
+                   xmlns="http://www.w3.org/2000/svg"
+                   viewBox="0 0 20 20"
+                   fill="currentColor"
+               >
+                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+               </svg>
+           </button>
+           <div className={`pb-3 ${isDescriptionCollapsed ? 'hidden' : ''}`}>
+               <textarea
+                 id="taskDescription"
+                 value={description || ''}
+                 onChange={(e) => setDescription(e.target.value)}
+                 placeholder="Add a detailed description..."
+                 className="w-full border rounded px-3 py-2 text-sm min-h-[80px] focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+               />
+           </div>
+        </div>
+        {/* <div className="mb-4 relative">
           <label className="text-sm font-semibold block mb-1">Project Owner</label>
           <div className="flex items-center gap-2 flex-wrap">
             {owner ? (
@@ -239,7 +268,7 @@ const AddProjectModal = ({ show, onAddProject, onCancel, initialValues = null })
               </div>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Team Members */}
         <div className="mb-4 relative">

@@ -7,6 +7,8 @@ import UserAvatar from "../components/UserAvatar";
 import { LuClock } from "react-icons/lu";
 import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';
+import AddProjectModal from "../components/AddProjectModal.jsx";
+import DeleteProjectModal from "../components/DeleteProjectModal.jsx"
 
 const Projects = () => {
     const navigate = useNavigate();
@@ -25,12 +27,8 @@ const Projects = () => {
 
     // Local UI state to handle modal visibility and new project form inputs.
     const [showModal, setShowModal] = useState(false);
-    const [newProject, setNewProject] = useState({
-        title: "",
-        description: "",
-        deadline: ""
-    });
-
+    const [showDeleteConfirmModal,setShowDeleteConfirmModal] = useState(false);
+    const [selectedProject,setSelectedProject] = useState({title:'',title:'',});
     // Show error toasts when API errors occur
     useEffect(() => {
         if (projectsError && projectsErrorData) {
@@ -82,16 +80,14 @@ const Projects = () => {
     };
 
     //handles delete project when user chooses to delete
-    const handleDeleteProject = async (e, projectId) => {
-        e.stopPropagation(); // prevent triggering navigation
-
-        if (window.confirm("Are you sure you want to delete this project?")) {
+    const handleDeleteProject = async () => {
+            console.log("current selected project: ",selectedProject)
             try {
-                await deleteProject(projectId).unwrap();
+                await deleteProject(selectedProject.id).unwrap();
                 // Show success toast
                 toast.success("Project deleted successfully");
                 // RTK Query auto-invalidates or you can call refetch
-                refetch();
+             
             } catch (error) {
                 console.error("Error deleting project", error);
                 showErrorToast(
@@ -99,39 +95,35 @@ const Projects = () => {
                     error.status || '400'
                 );
             }
-        }
+        setSelectedProject({title:'',id:''});
+        setShowDeleteConfirmModal(false);
     };
 
     //handles opening modal whne user clicks Add proejct
     const handleAddProjectClick = () => setShowModal(true);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setNewProject((prev) => ({ ...prev, [name]: value }));
-    };
 
     //function for creating a project one user completes modal inputs
-    const handleCreateProject = async () => {
-        if (!newProject.title || !newProject.description || !newProject.deadline) {
+    const handleCreateProject = async (formData) => {
+        if (!formData.title  || !formData.dueDate) {
             showErrorToast("Please fill all fields!", "400");
             return;
         }
-      
+   
+        console.log("current new project " ,formData);
         // Calculate daysLeft
         const today = new Date();
-        const deadline = new Date(newProject.deadline);
+        const deadline = new Date(formData.dueDate);
         const daysLeft = Math.max(
             Math.ceil((deadline - today) / (1000 * 60 * 60 * 24)),
             0
         );
       
         const projectData = {
-            title: newProject.title,
-            description: newProject.description,
-            progress: 0,
-            endDate: deadline,
+            title: formData.title,
+            description: formData.description,
             startDate: today,
-            team: ["/avatars/avatar1.png"]
+            endDate: deadline   
         };
       
         try {
@@ -142,7 +134,7 @@ const Projects = () => {
             toast.success("Project created successfully");
           
             // Clear the form inputs after successful creation
-            setNewProject({ title: "", description: "", deadline: "" });
+         
           
             // Close the modal
             setShowModal(false);
@@ -176,7 +168,7 @@ const Projects = () => {
                         >
                             {/* Delete Button */}
                             <button
-                                onClick={(e) => handleDeleteProject(e, project.id)}
+                                onClick={(e) =>{ e.stopPropagation(); setSelectedProject(project); setShowDeleteConfirmModal(true)}}
                                 className="absolute p-1 top-2 right-2 text-gray-400 hover:text-red-500 z-5 cursor-pointer"
                                 title="Delete Project"
                             >
@@ -236,9 +228,10 @@ const Projects = () => {
                     </div>
                 </div>
             </div>
-
+            <AddProjectModal show = {showModal} onAddProject = {handleCreateProject} onCancel={()=>{setShowModal(false);}} />
+            <DeleteProjectModal show={showDeleteConfirmModal} projectName={selectedProject.title} onDeleteConfirm={handleDeleteProject} onCancel={()=>{setShowDeleteConfirmModal(false);}} />
             {/* Modal */}
-            {showModal && (
+            {/* {showModal && (
                 <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex justify-center items-center z-50">
                     <div className="bg-white p-8 rounded-xl w-[400px] text-center animate-fadeIn">
                         <h2 className="text-xl font-bold mb-4">Create New Project</h2>
@@ -271,7 +264,7 @@ const Projects = () => {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
     );
 };

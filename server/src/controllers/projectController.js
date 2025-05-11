@@ -43,7 +43,7 @@ export const createProject = async (req, res) => {
         const projectData = new Project({
             owner: user._id,
             title: title,
-            description: description,
+            description,
             startDate: startDate,
             endDate: endDate,
             users: [user._id],
