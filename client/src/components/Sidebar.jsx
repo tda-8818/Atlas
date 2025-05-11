@@ -3,18 +3,13 @@ import logo from '../assets/logo.png';
 import { RxHome } from "react-icons/rx";
 import { useNavigate } from 'react-router-dom';
 import { useGetCurrentUserProjectsQuery } from '../redux/slices/projectSlice';
-import {
-  useGetProjectByIdQuery,
-  useGetProjectUsersQuery,
-  useUpdateProjectUsersMutation
-} from '../redux/slices/projectSlice';
+
 const navItems = [
   { label: "Home", icon: <RxHome />, href: "/Home" }
 ];
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
-  //const [projects, setProjects] = useState([]);
   //const [projects, setProjects] = useState([]);
   const navigate = useNavigate();
 
@@ -27,8 +22,6 @@ const Sidebar = () => {
   } = useGetCurrentUserProjectsQuery();
 
   useEffect(() => {
-    console.log("projectsData:", projectsData);
-  }, [projectsData]);
     console.log("projectsData:", projectsData);
   }, [projectsData]);
 
@@ -73,10 +66,7 @@ const Sidebar = () => {
       <ul className="flex-1 px-2 space-y-2 overflow-y-auto">
         {projectsData.map((project) => (
           <li key={project._id} className="w-full">
-        {projectsData.map((project) => (
-          <li key={project._id} className="w-full">
             <button
-              onClick={() => navigate(`/projects/${project._id}/dashboard`)}
               onClick={() => navigate(`/projects/${project._id}/dashboard`)}
               className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg
                 bg-[var(--background)] text-[var(--nav-text)]

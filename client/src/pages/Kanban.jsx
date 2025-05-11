@@ -7,7 +7,6 @@ import AddTaskPopup from '../components/AddTaskPopup-1';
 import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 import {useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation} from "../redux/slices/projectSlice";
-import {useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation} from "../redux/slices/projectSlice";
 // Sample team members data
 const teamMembers = [
   { id: "user-1", name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", initials: "AJ" },
