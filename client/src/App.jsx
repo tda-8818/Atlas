@@ -11,9 +11,10 @@ import Gantt from "./pages/Gantt";
 import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
 import ProjectLayout from "./layouts/ProjectLayout.jsx";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useGetCurrentUserQuery } from './redux/slices/userSlice.js';
 import { handleApiError } from "./components/errorToast.jsx"; 
+import { useLocation } from "react-router-dom";
 
 // The main App component that defines the routes for the application
 function App() {
@@ -21,6 +22,24 @@ function App() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("theme") || "light";
   });
+  const location = useLocation();
+  // Add a ref to track if we're in the process of logging out
+  const isLoggingOut = useRef(false);
+  
+  // Check if we're on the login page and just arrived from another page
+  useEffect(() => {
+    if (location.pathname === '/login') {
+      // If we just landed on the login page, assume we might be logging out
+      isLoggingOut.current = true;
+      
+      // Reset this flag after a short delay
+      const timer = setTimeout(() => {
+        isLoggingOut.current = false;
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname]);
   
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme); // apply theme to <html>
@@ -36,9 +55,15 @@ function App() {
   // Add this effect to handle API errors with toast notifications
   useEffect(() => {
     if (isError && error) {
-      handleApiError(error);
+      // Don't show error toasts for auth errors when on login page or when logging out
+      const isAuthError = error?.status === 401;
+      const isLoginPage = location.pathname === '/login';
+      
+      if (!(isAuthError && (isLoginPage || isLoggingOut.current))) {
+        handleApiError(error);
+      }
     }
-  }, [isError, error]);
+  }, [isError, error, location.pathname]);
 
   //if (isLoading) return <div>Loading...</div>;
 
