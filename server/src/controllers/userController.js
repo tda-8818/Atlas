@@ -233,8 +233,6 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// In userController.js
-
 // Update profile picture
 export const updateProfilePicture = async (req, res) => {
   try {

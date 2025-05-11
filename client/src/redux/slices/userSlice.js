@@ -1,5 +1,5 @@
 /**
- * Manages interactions with the backend API.
+ * Manages interactions with the backend API, specifically user related controllers.
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
@@ -64,24 +64,16 @@ export const userApiSlice = createApi({
             invalidatesTags: ['User'],
         }),
 
-        // Add an updateProfile mutation (for future use)
+
         updateProfile: builder.mutation({
-            query: (userData) => ({
-                url: 'profile',
+            query: (formData) => ({
+                url: '/users/profile-pic',
                 method: 'PUT',
-                body: userData,
+                body: formData,
+                formData: true, // Add this for proper FormData handling
             }),
             invalidatesTags: ['User'],
         }),
-      uploadProfilePic: builder.mutation({
-        query: (formData) => ({
-          url: '/users/profile-pic',
-          method: 'PUT',
-          body: formData,
-          formData: true, // Add this for proper FormData handling
-        }),
-        invalidatesTags: ['User'],
-      }),
     }),
 });
 
@@ -92,8 +84,7 @@ export const {
     useGetUsersByProjectQuery,
     useGetAllUsersQuery,
     useUpdatePasswordMutation,
-    useUpdateProfileMutation,
-    useUploadProfilePicMutation
+    useUpdateProfileMutation
 
 } = userApiSlice;
 

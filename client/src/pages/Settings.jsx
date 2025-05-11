@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  useUploadProfilePicMutation,
   useUpdateProfileMutation,
-  useGetCurrentUserQuery
+  useGetCurrentUserQuery,
+  useUpdatePasswordMutation
 } from "../redux/slices/userSlice";
-import axios from "axios";
 
 const Settings = ({ setTheme }) => {
   const navigate = useNavigate();
@@ -22,8 +21,7 @@ const Settings = ({ setTheme }) => {
 
   const [profileImagePreview, setProfileImagePreview] = useState(null);
   const [profileImageFile, setProfileImageFile] = useState(null);
-
-  const [uploadProfilePic] = useUploadProfilePicMutation();
+ 
   const [updateProfile] = useUpdateProfileMutation();
 
   // Add useEffect to load user data when component mounts
@@ -98,18 +96,19 @@ const Settings = ({ setTheme }) => {
     }
 
     try {
-      await axios.put(
-        "http://localhost:5001/settings",
-        {
-          currentPassword,
-          confirmPassword,
-        },
-        { withCredentials: true }
-      );
-      alert("Password updated successfully!");
-    } catch (error) {
-      console.error("Password update error:", error);
-      alert("Failed to update password.");
+      const result = await updatePassword({ currentPassword, newPassword }).unwrap();
+      if (result?.message) {
+        alert(result.message); // Show success message from backend if available
+      } else {
+        alert("Password updated successfully!");
+      }
+      // Optionally clear the password fields after successful update
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      console.error("Password update error:", err);
+      alert(err?.data?.message || "Failed to update password."); // Show error message from backend if available
     }
   };
 

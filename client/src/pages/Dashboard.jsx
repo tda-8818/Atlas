@@ -11,7 +11,7 @@ import {
   useGetProjectTasksQuery
 } from '../redux/slices/projectSlice';
 import { isProjectOwner } from '../utils/projectUtils';
-import { getTaskStats } from '../utils/taskUtils';
+import { getTaskStats, calculateProjectProgress } from '../utils/taskUtils';
 import { useGetCurrentUserQuery, useGetAllUsersQuery } from '../redux/slices/userSlice';
 import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';
@@ -83,20 +83,9 @@ const Dashboard = () => {
     );
   }
 
-  
-  // Get task statistics
-  // const { completed, inProgress, overdue } = getTaskStats(tasks);
-  // const completedCount = tasks.filter(
-  //   (task) => task.status?.toLowerCase() === 'completed'
-  // ).length;
-  // const inProgressCount = tasks.filter(
-  //   (task) => task.status?.toLowerCase() === 'in progress'
-  // ).length;
-  // const overdueCount = tasks.filter(
-  //   (task) =>
-  //     new Date(task.dueDate) < new Date() &&
-  //     task.status?.toLowerCase() !== 'completed'
-  // ).length;
+  const { completed, inProgress, overdue } = getTaskStats(tasks);
+  const projectProgress = calculateProjectProgress(tasks);
+
 
   return (
     <>
@@ -106,21 +95,21 @@ const Dashboard = () => {
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 auto-rows-fr">
           {/* Top Stats */}
-          {/* <div className="col-span-12 xl:col-span-4 flex ">
+          <div className="col-span-12 xl:col-span-4 flex ">
             <div className="h-full w-full flex items-center justify-center">
-              <StatBox title="Tasks Completed" value={completedCount} />
+              <StatBox title="Tasks Completed" value={completed} />
             </div>
           </div>
           <div className="col-span-12 xl:col-span-4 flex items-center justify-center">
             <div className="h-full w-full flex items-center justify-center">
-              <StatBox title="Tasks In Progress" value={inProgressCount} />
+              <StatBox title="Tasks In Progress" value={inProgress} />
             </div>
           </div>
           <div className="col-span-12 xl:col-span-4 flex items-center justify-center">
             <div className="h-full w-full flex items-center justify-center">
-              <StatBox title="Tasks Overdue" value={overdueCount} />
+              <StatBox title="Tasks Overdue" value={overdue} />
             </div>
-          </div> */}
+          </div>
 
           {/* Bottom Panels */}
           {/* <div className="col-span-12 xl:col-span-6">

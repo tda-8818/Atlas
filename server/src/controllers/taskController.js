@@ -26,6 +26,7 @@ export const getTasksByProject = async (req, res) => {
         .populate('projectId', 'title');
       
       //console.log("SENDING TASKS:", tasks);
+      console.log("SENDING TASKS:", tasks);
 
       res.status(200).json(tasks);
     } catch (error) {
