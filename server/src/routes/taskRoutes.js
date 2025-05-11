@@ -10,7 +10,7 @@ router.post('/', authMiddleware, createTask);
 
 router.post('/:taskId', authMiddleware, createSubTask);
 
-router.delete('/:id', authMiddleware, deleteTask);
+router.delete('/:taskId', authMiddleware, deleteTask);
 
 router.put('/:id', authMiddleware, updateTask);
 

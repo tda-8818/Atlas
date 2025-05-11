@@ -386,7 +386,7 @@ const Kanban = () => {
 
   };
 
-  const deleteCard = (columnIndex, cardIndex, e) => {
+  const deleteCard = async(columnIndex, cardIndex, e) => {
     if (e && e.stopPropagation) {
       e.stopPropagation();
     }
@@ -394,12 +394,25 @@ const Kanban = () => {
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
 
-    const updated = [...columns];
-    updated[columnIndex].cards.splice(cardIndex, 1);
-    setColumns(updated);
-
-    setSelectedCard(null);
-    setConfirmDelete(null);
+    
+    const cardToDelete = columns[columnIndex].cards[cardIndex];
+    //const columnId = columns[columnIndex].id;
+    console.log("Attempting to delete:", cardToDelete._id);
+    try {
+      await deleteTask(
+        cardToDelete._id,
+      ).unwrap();
+  
+      const updated = [...columns];
+      updated[columnIndex].cards.splice(cardIndex, 1);
+      setColumns(updated);
+  
+      setSelectedCard(null);
+      setConfirmDelete(null);
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+      // Optionally show a toast or user message here
+    }
   };
 
   // Handlers to update the temporary 'selectedCard' state (within the modal)

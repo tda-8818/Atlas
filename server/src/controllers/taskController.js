@@ -181,10 +181,10 @@ export const updateTask = async (req, res) => {
 
 export const deleteTask = async (req, res) => {
     try {
-        const { id } = req.params
-        console.log('deleteTasks has been executed');
+        const { taskId } = req.params
+        console.log('deleteTasks has been executed received taskId', taskId);
 
-        const task_to_delete = await Task.findByIdAndDelete(id);
+        const task_to_delete = await Task.findByIdAndDelete(taskId);
         
         await Project.findByIdAndUpdate(
           { _id: task_to_delete.projectId},
