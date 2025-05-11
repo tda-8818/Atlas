@@ -1,132 +1,134 @@
-// src/components/UserAssignmentModal.jsx
-import React, { useState, useEffect, useRef } from 'react';
-import { Button } from '@headlessui/react';
-//import { useUpdateProjectUsers,  } from '../redux/slices/projectSlice'
-// import { useOnClickOutside } from './hooks/useOnClickOutside';
-// import { useEscapeKey } from './hooks/useEscapeKey';
+// ProjectUsersModal.jsx
+import { useState, useEffect } from 'react';
+import { Dialog, Transition, DialogTitle, TransitionChild } from '@headlessui/react';
 
-// Receive currentProjectOwnerId to prevent removing the owner from the list
-const ProjectUsersModal = ({ show, onSave, onCancel }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+const ProjectUsersModal = ({
+  show,
+  onClose,
+  initialSelectedMemberIds = [],
+  currentProjectOwnerId,
+  onSave,
+  allTeamMembers = []
+}) => {
+  // Local state to track which users are selected
+  const [selectedMembers, setSelectedMembers] = useState(initialSelectedMemberIds);
+  // State for current search term
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const modalRef = useRef(null);
-  const searchInputRef = useRef(null);
-
-  // Effect to initialize state when the modal opens or initial props change
-  useEffect(() => {
-    if (show) {
-      // Initialize selected members with the initial list passed in
-      // Ensure initialSelectedMemberIds is an array
-      setSelectedMemberIds(Array.isArray(initialSelectedMemberIds) ? initialSelectedMemberIds : []);
-      setSearchQuery('');
-      // Focus the search input
-      requestAnimationFrame(() => searchInputRef.current?.focus());
-    }
-     // Depend on show and initialSelectedMemberIds
-  }, [show, initialSelectedMemberIds]);
-
-
-  // Effect for clicking outside to close
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target) && show) {
-        onCancel();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [show, onCancel]);
-
-  // Effect for pressing Escape to close
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && show) {
-        onCancel();
-      }
-    };
-    if (show) {
-      document.addEventListener('keydown', handleKeyDown);
-    }
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [show, onCancel]);
-
-
-  // Toggle member selection
-  const toggleMemberSelection = (memberId) => {
-      // Prevent deselecting the project owner
-      if (memberId === currentProjectOwnerId) {
-          alert("The project owner cannot be removed from the team list here.");
-          return;
-      }
-      setSelectedMemberIds(prev =>
-          prev.includes(memberId) ? prev.filter(id => id !== memberId) : [...prev, memberId]
-      );
-  };
-
-  // Handle saving - now only passes the member IDs
-  const handleSave = () => {
-      // Ensure the current owner is always included in the list being saved
-      const membersToSave = selectedMemberIds.includes(currentProjectOwnerId)
-          ? selectedMemberIds // Owner is already included
-          : [...selectedMemberIds, currentProjectOwnerId]; // Add owner if not already there
-
-      onSave(membersToSave); // Pass only the array of member IDs
-  };
-
-  // Filter members based on search query
-  const filteredMembers = allTeamMembers.filter(member =>
-    member.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filter users based on search term (client-side filtering)
+  const filteredUsers = allTeamMembers.filter((user) =>
+    `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Helper to get member details by ID
-  const getMember = (id) => allTeamMembers.find(m => m.id === id);
+  useEffect(() => {
+    // Initialize selected members when modal opens
+    if (show) {
+      setSelectedMembers(initialSelectedMemberIds);
+    }
+  }, [show, initialSelectedMemberIds]);
 
-  if (!show) return null;
+  // Toggle user selection from list
+  const handleToggleUser = (userId) => {
+    setSelectedMembers((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  // Handler to update owner (for simplicity, you might allow owner selection separately)
+  const handleOwnerChange = (e) => {
+    // For example, you can allow the modal to pick an owner from the filtered list
+    // This is a simple stub: for a production app, you might use a dropdown.
+    // If needed, add new state for newOwner and pass it with onSave.
+  };
+
+  const handleSave = () => {
+    // Here you would also send back the new owner if that is modifiable
+    const newOwnerId = currentProjectOwnerId;
+    onSave(selectedMembers, newOwnerId);
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
-      <div ref={modalRef} className="bg-white rounded shadow-lg p-6 w-[400px] max-h-[80vh] overflow-y-auto">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Team Members</h3>
-
-        {/* Search Input */}
-        {/* <div className="mb-4">
-          <input
-            ref={searchInputRef}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search members..."
-            className="w-full border px-3 py-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+    <Transition appear show={show} as="div">
+      <Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" onClose={onClose}>
+        <div className="min-h-screen px-4 text-center">
+          <TransitionChild
+            as="div"
+            className="fixed inset-0 bg-black bg-opacity-30"
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
           />
-        </div> */}
-
-        {/* Member List */}
-        <div className="max-h-60 overflow-y-auto border-b border-gray-200 pb-4 mb-4">
-          
-        </div>
-
-        
-
-
-        {/* Buttons */}
-        <div className="flex justify-end gap-2">
-          <Button
-            onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100 text-sm"
+          {/* Trick the browser into centering the modal contents */}
+          <span className="inline-block h-screen align-middle" aria-hidden="true">
+            &#8203;
+          </span>
+          <TransitionChild
+            as="div"
+            className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl"
+            enter="ease-out duration-300"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
           >
-            Cancel
-          </Button>
-          {/* Save button is always enabled as long as modal is open (implicitly, owner is present) */}
-          <Button
-            onClick={handleSave}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-          >
-            Save
-          </Button>
+            <DialogTitle as="h3" className="text-lg font-medium leading-6 text-gray-900 mb-4">
+              Update Project Members
+            </DialogTitle>
+            <div className="mb-4">
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700">
+                Search Users
+              </label>
+              <input
+                id="search"
+                type="text"
+                className="mt-1 block w-full border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300 p-2"
+                placeholder="Type a name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="max-h-60 overflow-y-auto mb-4">
+              <ul>
+                {filteredUsers.map((user) => (
+                  <li key={user._id} className="flex items-center justify-between py-1">
+                    <span>{user.firstName} {user.lastName}</span>
+                    <input
+                      type="checkbox"
+                      checked={selectedMembers.includes(user._id)}
+                      onChange={() => handleToggleUser(user._id)}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                    />
+                  </li>
+                ))}
+                {filteredUsers.length === 0 && (
+                  <li className="text-gray-500 text-sm">No users found.</li>
+                )}
+              </ul>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-transparent rounded-md hover:bg-gray-300 focus:outline-none"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none"
+                onClick={handleSave}
+              >
+                Save
+              </button>
+            </div>
+          </TransitionChild>
         </div>
-      </div>
-    </div>
+      </Dialog>
+    </Transition>
   );
 };
 

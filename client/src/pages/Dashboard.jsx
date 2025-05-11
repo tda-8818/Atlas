@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import StatBox from '../components/StatBox';
 import Navbar from '../components/Navbar';
-import ModalContainer from '../components/ModalContainer';
-//import ProjectUsersModal from '../components/ProjectUsersModal';
+import ProjectUsersModal from '../components/ProjectUsersModal';
 import { useOutletContext, useParams } from 'react-router-dom';
 import {
   useGetProjectByIdQuery,
@@ -12,19 +11,17 @@ import {
 } from '../redux/slices/projectSlice';
 import { isProjectOwner } from '../utils/projectUtils';
 import { getTaskStats } from '../utils/taskUtils';
-import { useGetCurrentUserQuery } from '../redux/slices/userSlice';
-// If available, import current user (adjust as needed)
-// import { useGetmeQuery } from '../redux/slices/userApiSlice';
+import { useGetCurrentUserQuery, useGetAllUsersQuery } from '../redux/slices/userSlice';
 
 const Dashboard = () => {
-  const [showProjectUsersModal, setProjectUsersModal] = useState(false);
+  const {currentProject} = useOutletContext();
+  const id = currentProject._id;
+  const [isProjectUsersModalOpen, setProjectUsersModalOpen] = useState(false);
   // Mutation for updating project team
   const [updateProjectUsers] = useUpdateProjectUsersMutation();
 
-  const {currentProject} = useOutletContext();
-  const id = currentProject._id;
-  //const { id } = useParams();
   
+
   // RTK Query hooks to fetch tasks, project details, and project users
   // const {
   //   data: tasks = [],
@@ -34,30 +31,16 @@ const Dashboard = () => {
   //   skip: !id,
   // });
 
+  const { data: allUsers = [], isLoading: loadingAllUsers } = useGetAllUsersQuery();
+
   // fetch all users in the project
-  const {
-    data: users = [],
-    isLoading: loadingUsers,
-    error: userError,
-  } = useGetProjectUsersQuery(id, {
-    skip: !id,
-  });
+  const { data: users = [], isLoading: loadingUsers, error: userError, } = useGetProjectUsersQuery(id, { skip: !id, });
 
   // fetch project by id number
-  const {
-    data: projectData,
-    isLoading: loadingProject,
-    error: projectError,
-  } = useGetProjectByIdQuery(id, {
-    skip: !id,
-  });
+  const { data: projectData, isLoading: loadingProject, error: projectError, } = useGetProjectByIdQuery(id, { skip: !id, });
 
   // fetch current user
-  const {
-    data: currentUser,
-    isLoading: loadingMe,
-    error: meError
-  } = useGetCurrentUserQuery();
+  const { data: currentUser, isLoading: loadingMe, error: meError } = useGetCurrentUserQuery();
 
   // Handler to update team members
   const handleUpdateProjectUsers = async (updatedMemberIds, newOwnerId) => {
@@ -66,7 +49,7 @@ const Dashboard = () => {
 
     if (!id) {
       console.error("Cannot save team members: No project selected");
-      setProjectUsersModal(false);
+      setProjectUsersModalOpen(false);
       return;
     }
 
@@ -80,7 +63,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error saving team:", error);
     } finally {
-      setProjectUsersModal(false);
+      setProjectUsersModalOpen(false);
     }
   };
 
@@ -113,7 +96,7 @@ const Dashboard = () => {
 
   
   // Get task statistics
-  //const { completed, inProgress, overdue } = getTaskStats(tasks);
+  // const { completed, inProgress, overdue } = getTaskStats(tasks);
   // const completedCount = tasks.filter(
   //   (task) => task.status?.toLowerCase() === 'completed'
   // ).length;
@@ -183,7 +166,7 @@ const Dashboard = () => {
                   {isProjectOwner(currentUser.user.id, projectData?.owner) && (
                     <button
                       className="w-30 h-6 bg-gray-400 hover:bg-gray-300 text-gray-800 items-center justify-center text-sm rounded"
-                      onClick={() => setProjectUsersModal(true)}
+                      onClick={() => setProjectUsersModalOpen(true)}
                       title="Members"
                     >
                       ＋Add Members
@@ -217,27 +200,14 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Project Users Modal */}
-      {/* {showProjectUsersModal && (
-        <ProjectUsersModal
-          show={showProjectUsersModal}
-          initialSelectedMemberIds={projectData?.users || []}
-          currentProjectOwnerId={projectData?.owner}
-          onSave={(users, owner) => handleUpdateProjectUsers(users, owner)}
-          onCancel={() => setProjectUsersModal(false)}
-          allTeamMembers={users}
-        />
-      )} */}
-
-
-        {/* {showProjectUsersModal && (
-        <ModalContainer
-          isOpen={showProjectUsersModal}
-          onSave={(users, owner) => handleUpdateProjectUsers(users, owner)}
-          onClose={() => setProjectUsersModal(false)}
-          title="Team Members"
-        />
-      )} */}
+      <ProjectUsersModal
+        show={isProjectUsersModalOpen}
+        onClose={() => setProjectUsersModalOpen(false)}
+        initialSelectedMemberIds={projectData?.users || []}
+        currentProjectOwnerId={projectData?.owner}
+        onSave={handleUpdateProjectUsers}
+        allTeamMembers={allUsers} // Pass all users to allow searching
+      />
       
     </>
   );
