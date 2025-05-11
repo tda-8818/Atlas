@@ -109,7 +109,9 @@ export const getColumnFromProject = async(req, res) => {
 export const deleteColumn = async (req, res) => {
     try {
       const { projectId, columnId } = req.params;
-  
+      
+      console.log("Delete column projectId and columnId received: ",projectId, columnId);
+
       // Step 1: Delete the column
       const deletedColumn = await Column.findOneAndDelete({ _id: columnId, projectId });
       if (!deletedColumn) {
