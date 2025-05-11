@@ -24,7 +24,7 @@ const sampleTags = ['Design', 'Development', 'Marketing', 'Research', 'Bug'];
 
 const defaultColumns = [
   {
-    id: "column-1",
+    id: "6820365eb1d5ba37bb22848a",
     title: "Unsorted Tasks",
     cards: [
       {
@@ -125,18 +125,33 @@ const Kanban = () => {
 
   const { data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
   const { data: columnData} = useGetProjectColumnsQuery(currentProject._id);
+  
+  const mapTasksToColumns = () => {
+    if (!columnData || !projectTasks) return [];
+
+    return columnData.map(column => ({
+      id: column._id,
+      title: column.title,
+      cards: projectTasks
+        .filter( task => task.columnId === column._id)
+        .map( task => ({
+          ...task,
+          id: String(task._id),
+        }))
+    }));
+  }
+
   // Effect to handle click outside and keydown for the card detail modal
   useEffect(() => {
-
     if (!currentProject || !projectTasks) return;
 
     console.log("current Project", currentProject);
-    
     console.log("Got tasks in Kanban:", projectTasks);
-
     console.log("Got columns from project:", columnData);
-    // const groupedTasks = {
-    // }
+
+    const formatted = mapTasksToColumns();
+    console.log("FORMATTED COLUMN OBJECTS:", formatted);
+    setColumns(formatted);
 
     if (selectedCard) {
       const handleClickOutside = (event) => {
@@ -187,7 +202,8 @@ const Kanban = () => {
      };
 
 
-  }, [selectedCard, columns, currentProject, projectTasks]); // Added columns to dependencies because handleSaveChanges uses it
+  }, [selectedCard, columnData, currentProject, projectTasks]); // Added columns to dependencies because handleSaveChanges uses it
+
 
 
   // Helper function to generate IDs
@@ -262,25 +278,34 @@ const Kanban = () => {
     });
   };
 
-  const addColumn = () => {
+  const addColumn = async() => {
     if (!newColumnName.trim()) return;
     //const columnId = generateId("column")
+
+    const newColumn = {
+      title: newColumnName,
+      index: columns.length,
+    }
+    console.log("Attempting to create new column: ", currentProject._id, newColumn);
+    const response = await createColumn({projectId: currentProject._id, columnData:newColumn}).unwrap();
+    console.log("RESPONSE FROM CREATING A COLUMN", response);
+
     setColumns([
       ...columns,
       {
-        id: columnId,
-        title: newColumnName,
+        id: response._id,
+        title: response.title,
         cards: [],
       },
     ]);
-    console.log(columnId, typeof(columnId));
+    //console.log(columnId, typeof(columnId));
     setNewColumnName("");
   };
 
   const handleAddTaskFromPopup = (cardData) => {
     // Ensure card has a valid id for drag-and-drop
     if (!cardData.id) {
-      //cardData.id = generateId("card");
+      cardData.id = generateId("card");
     }
   
     if (
@@ -394,7 +419,7 @@ const Kanban = () => {
     if (!newSubtaskTitle.trim() || !selectedCard) return;
   
     const newSubtask = {
-      //id: generateId("subtask"), // Ensure draggableId exists
+      id: generateId("subtask"), // Ensure draggableId exists
       title: newSubtaskTitle.trim(),
       completed: false,
       priority: "none",

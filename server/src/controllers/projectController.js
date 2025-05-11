@@ -56,7 +56,7 @@ export const createProject = async (req, res) => {
         const unsortedColumn = await Column.create({
             title: "Unsorted Tasks",
             projectId: savedProject._id,
-            position: 0,
+            index: 0,
             isDefault: true,
         });
         // insert the default column

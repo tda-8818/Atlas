@@ -13,7 +13,10 @@ import Task from "../models/TaskModel.js";
 export const createColumn = async(req, res) => {
     try {
         const { projectId } = req.params;
-        const { title, position } = req.body;
+        const { title, index } = req.body;
+
+        console.log("Received projectId:", projectId);
+        console.log("Received body: ", title, index);
 
         if (!projectId){ 
             return res.status(400).json({message: "Error in createColumn. MISSING PROJECT ID! Did you send the projectId properly???"})
@@ -26,7 +29,7 @@ export const createColumn = async(req, res) => {
 
         const newColumn = new Column({
             title: title,
-            position: position,
+            index: index,
             projectId: projectId
         });
 
@@ -138,18 +141,18 @@ export const deleteColumn = async (req, res) => {
 export const updateProjectColumn = async (req, res) => {
     try {
       const { columnId } = req.params;
-      const { title, position } = req.body;
+      const { title, index } = req.body;
 
 
     // Ensure at least one field is provided
-    if (!title && position === undefined) {
+    if (!title && index === undefined) {
       return res.status(400).json({ message: "Nothing to update" });
     }
 
     // ONLY UPDATE THE FIELDS THAT ARE PROVIDED
     const updateFields = {};
     if (title) updateFields.title = title;
-    if (position !== undefined) updateFields.position = position;
+    if (index !== undefined) updateFields.index = index;
 
     const updatedColumn = await Column.findByIdAndUpdate(
       columnId,
@@ -172,11 +175,11 @@ export const updateProjectColumn = async (req, res) => {
 
 /**
  * NOTE: LIKELY HARD TO TEST! LEAVE FOR LATER AS LUXURY 
- * Handles the update of column positions. 
+ * Handles the update of column indexs. 
  * Used for when the drags-and-drop actions are used to 
  * rearrange the project columns in the kanban.
  * This function expects to receive an arrat of column objects with their _id and
- * UPDATED positions
+ * UPDATED indexs
  * @param {*} req
  * @param {*} res 
  * @returns 
@@ -196,7 +199,7 @@ export const updateColumnPositions = async (req, res) => {
     const updatePromises = columns.map(col =>
         Column.findOneAndUpdate(
         { _id: col._id, projectId: projectId },
-        { position: col.position },
+        { index: col.index },
         { new: true } // Optional: return updated documents
         )
     );
