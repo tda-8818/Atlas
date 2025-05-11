@@ -6,7 +6,7 @@ import DeleteTaskPopup from '../components/DeleteTaskPopup';
 import AddTaskPopup from '../components/AddTaskPopup-1';
 import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
-import {useGetProjectTasksQuery} from "../redux/slices/projectSlice";
+import {useCreateColumnMutation, useDeleteColumnMutation, useGetProjectTasksQuery, useUpdateColumnMutation} from "../redux/slices/projectSlice";
 // Sample team members data
 const teamMembers = [
   { id: "user-1", name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", initials: "AJ" },
@@ -119,6 +119,10 @@ const Kanban = () => {
   const [deleteTask] = useDeleteTaskMutation();
   const [editTask] = useUpdateTaskMutation();
 
+  const [createColumn] = useCreateColumnMutation();
+  const [updateColumn] = useUpdateColumnMutation();
+  const [deleteColumn] = useDeleteColumnMutation();
+
   const { data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
   // Effect to handle click outside and keydown for the card detail modal
   useEffect(() => {
@@ -129,9 +133,8 @@ const Kanban = () => {
     
     console.log("Got tasks:", projectTasks);
 
-    const groupedTasks = {
-
-    }
+    // const groupedTasks = {
+    // }
 
     if (selectedCard) {
       const handleClickOutside = (event) => {
@@ -259,7 +262,7 @@ const Kanban = () => {
 
   const addColumn = () => {
     if (!newColumnName.trim()) return;
-    const columnId = generateId("column")
+    //const columnId = generateId("column")
     setColumns([
       ...columns,
       {
@@ -275,7 +278,7 @@ const Kanban = () => {
   const handleAddTaskFromPopup = (cardData) => {
     // Ensure card has a valid id for drag-and-drop
     if (!cardData.id) {
-      cardData.id = generateId("card");
+      //cardData.id = generateId("card");
     }
   
     if (
@@ -316,7 +319,7 @@ const Kanban = () => {
     });
   };
   
-  const deleteColumn = () => {
+  const removeColumn = () => {
     if (!confirmDelete || confirmDelete.type !== 'column') return;
     if (columns.length <= 1) return;
 
@@ -389,7 +392,7 @@ const Kanban = () => {
     if (!newSubtaskTitle.trim() || !selectedCard) return;
   
     const newSubtask = {
-      id: generateId("subtask"), // Ensure draggableId exists
+      //id: generateId("subtask"), // Ensure draggableId exists
       title: newSubtaskTitle.trim(),
       completed: false,
       priority: "none",
@@ -1210,7 +1213,7 @@ const Kanban = () => {
         {confirmDelete && confirmDelete.type === 'column' && (
           <DeleteTaskPopup
             toggle={true}
-            onSubmit={deleteColumn}
+            onSubmit={removeColumn}
             onClose={() => setConfirmDelete(null)}
           />
         )}

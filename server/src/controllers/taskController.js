@@ -109,6 +109,41 @@ export const createTask = async (req, res) => {
     }
 };
 
+export const createSubTask = async(req, res) => {
+    try {
+        const { taskId } = req.params
+        const { title, priority } = req.body;
+
+        if (!taskId){
+            return res.status(400).json({message: "Error in createSubTask. TaskID undefined!"})
+        }
+
+        const mainTask = await Task.findById(taskId);
+
+        if (!mainTask) {
+            return res.status(400).json({message: "Error in createSubTask. Cannot find task to insert!"})
+        }
+
+        const newSubtask = new Task({
+            title: title,
+            priority: priority
+        })
+        
+        // insert subtask into mainTask
+        mainTask.tasks.push(newSubtask);
+        await mainTask.save();
+
+        console.log(`Subtask ${newSubtask} inserted into ${mainTask}!`);
+        
+        return res.status(201).json(newSubtask);
+
+    } catch (error) {
+        console.error("Error in createSubTask", error);
+        res.status(500).json({message: "Error creating subtask", error});
+    }
+
+};
+
 export const updateTask = async (req, res) => {
    console.log("EDIT TASK EXECUTED");
     const { id } = req.params;
