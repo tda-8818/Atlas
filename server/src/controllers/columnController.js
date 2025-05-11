@@ -52,6 +52,7 @@ export const createColumn = async(req, res) => {
  */
 export const getProjectColumns = async(req, res) => {
     try {
+        console.log("getProjectColumns Executed!");
         const { projectId } = req.params;
         if (!projectId){ 
             return res.status(400).json({message: "Error in getProjectColumn. MISSING PROJECT ID! Did you send the projectId properly???"})
@@ -62,7 +63,7 @@ export const getProjectColumns = async(req, res) => {
         if (!columns || columns.length ===0){
             return res.status(400).json({message: "NO COLUMNS FOUND FOR THIS PROJECT. THIS SHOULD BE IMPOSSIBLE"})// All projects are created with a default column
         }
-
+        
         return res.status(200).json(columns);
 
     } catch (error) {

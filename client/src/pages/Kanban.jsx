@@ -6,7 +6,7 @@ import DeleteTaskPopup from '../components/DeleteTaskPopup';
 import AddTaskPopup from '../components/AddTaskPopup-1';
 import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
-import {useCreateColumnMutation, useDeleteColumnMutation, useGetProjectTasksQuery, useUpdateColumnMutation} from "../redux/slices/projectSlice";
+import {useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation} from "../redux/slices/projectSlice";
 // Sample team members data
 const teamMembers = [
   { id: "user-1", name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", initials: "AJ" },
@@ -124,6 +124,7 @@ const Kanban = () => {
   const [deleteColumn] = useDeleteColumnMutation();
 
   const { data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
+  const { data: columnData} = useGetProjectColumnsQuery(currentProject._id);
   // Effect to handle click outside and keydown for the card detail modal
   useEffect(() => {
 
@@ -131,8 +132,9 @@ const Kanban = () => {
 
     console.log("current Project", currentProject);
     
-    console.log("Got tasks:", projectTasks);
+    console.log("Got tasks in Kanban:", projectTasks);
 
+    console.log("Got columns from project:", columnData);
     // const groupedTasks = {
     // }
 
@@ -486,13 +488,13 @@ const Kanban = () => {
     setSelectedCard(null);
   };
 
-   // Function to close the modal WITHOUT saving changes
-   const handleCloseCardDetails = () => {
-      // This function should strictly close the modal and discard changes.
-      setSelectedCard(null);
-      setShowMemberSearch(false);
-      setSearchMember('');
-   };
+  // Function to close the modal WITHOUT saving changes
+  const handleCloseCardDetails = () => {
+    // This function should strictly close the modal and discard changes.
+    setSelectedCard(null);
+    setShowMemberSearch(false);
+    setSearchMember('');
+  };
 
   // Find a team member by ID
   const getTeamMember = (userId) => {
