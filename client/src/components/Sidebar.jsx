@@ -26,14 +26,6 @@ const Sidebar = () => {
       refetch,
   } = useGetCurrentUserProjectsQuery();
 
-  // Use RTK Query hook to fetch projects
-  const {
-      data: projectsData = [],
-      isLoading: projectsLoading,
-      isError: projectsError,
-      refetch,
-  } = useGetCurrentUserProjectsQuery();
-
   useEffect(() => {
     console.log("projectsData:", projectsData);
   }, [projectsData]);
