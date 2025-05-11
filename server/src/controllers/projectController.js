@@ -1,6 +1,7 @@
 import Project from "../models/ProjectModel.js";
 import UserModel from "../models/UserModel.js";
 import Column from  "../models/ColumnModel.js"
+import Task from "../models/TaskModel.js";
 const cookieOptions = {
     httpOnly: true,
     secure: false, // false for localhost development
@@ -67,7 +68,7 @@ export const createProject = async (req, res) => {
         // add the project to that user's list of projects
         user.projects.push(savedProject._id);
         await user.save();
-        
+
         res.status(201).json(savedProject);
 
     } catch (error) {
@@ -81,17 +82,16 @@ export const createProject = async (req, res) => {
 // Deletes a project; RTK Query will later use the response to invalidate its cache.
 export const deleteProject = async (req, res) => {
     try {
-        const { id } = req.params;
-        console.log("deleteProject executed with id:", id);
-
-        
-
+        const { projectId } = req.params;
+        console.log("deleteProject executed with id:", projectId);
         // Optionally, you can check if req.user is allowed to delete the project.
-        const projectToDelete = await Project.findByIdAndDelete(id);
+        const projectToDelete = await Project.findByIdAndDelete(projectId);
         if (!projectToDelete) {
             return res.status(404).json({ message: "Project not found" });
         }
 
+        await Column.deleteMany({projectId});
+        await Task.deleteMany({ projectId });
         const columnDeleteOperation = await Column.deleteMany({projectId:id});
         console.log(`Deleted ${columnDeleteOperation.deletedCount} columns related to project`);
 

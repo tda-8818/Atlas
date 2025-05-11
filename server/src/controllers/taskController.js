@@ -97,6 +97,10 @@ export const createTask = async (req, res) => {
         // 8. Save the project document
         await project.save()
 
+        // // Optionally link the task back to the project
+        // project.tasks.push(savedTask._id);
+        // await project.save();
+
         // 9. Send the oid for the task back to the frontend.
         res.status(201).json(savedTask);
     } catch (error) {

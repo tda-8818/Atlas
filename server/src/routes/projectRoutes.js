@@ -23,7 +23,7 @@ router.get('/:id/users', authMiddleware, getProjectUsers);
 
 router.put('/:id/users', authMiddleware, updateProjectUsers);
 
-router.delete('/:id', authMiddleware, deleteProject);
+router.delete('/:projectId', authMiddleware, deleteProject);
 
 
 
