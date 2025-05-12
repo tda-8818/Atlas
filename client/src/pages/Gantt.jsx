@@ -386,25 +386,25 @@ const handleDeleteTaskFromPopup = async() =>{
       startDate: formData.startDate, // Keep the string from the popup
       dueDate: formData.dueDate // Keep the string from the popup
     };
-      setTasks(prevTasks => {
-  const existingIndex = prevTasks.data.findIndex(task => task.id === taskDataToStoreGantt.id);
-  
-  if (existingIndex !== -1) {
-    // Editing existing task
-    const updatedData = [...prevTasks.data];
-    updatedData[existingIndex] = taskDataToStoreGantt;
+    setTasks(prevTasks => {
+      const existingIndex = prevTasks.data.findIndex(task => task.id === taskDataToStoreGantt.id);
+      
+      if (existingIndex !== -1) {
+        // Editing existing task
+        const updatedData = [...prevTasks.data];
+        updatedData[existingIndex] = taskDataToStoreGantt;
 
-    return {
-      ...prevTasks,
-      data: updatedData
-    };
-  } else {
-    // Adding new task
-    return {
-      ...prevTasks,
-      data: [...prevTasks.data, taskDataToStoreGantt]
-    };
-  }
+        return {
+          ...prevTasks,
+          data: updatedData
+        };
+      } else {
+        // Adding new task
+        return {
+          ...prevTasks,
+          data: [...prevTasks.data, taskDataToStoreGantt]
+        };
+      }
 });
 
     }catch(error){
