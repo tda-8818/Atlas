@@ -292,7 +292,7 @@ const toggleUserAssignment = (member) => {
   return (
     <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
       {/* Add onKeyDown listener to the modal content div */}
-      <div ref={modalRef} className="bg-white rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto" onKeyDown={handleModalKeyDown}>
+      <div ref={modalRef} className="bg-[var(--background)] rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto" onKeyDown={handleModalKeyDown}>
 
         {/* Top row: Task Title, Tag, Priority */}
         <div className="flex items-center gap-3 mb-4">
@@ -305,7 +305,7 @@ const toggleUserAssignment = (member) => {
                  value={title}
                  onChange={(e) => setTitle(e.target.value)}
                  placeholder="Task Title"
-                 className="w-full text-lg font-semibold focus:outline-none border-b border-gray-300 focus:border-blue-500 pb-1" // Styled as a line
+                 className="w-full text-[var(--text)] text-lg font-semibold focus:outline-none border-b border-gray-300 focus:border-blue-500 pb-1" // Styled as a line
                />
                {/* Optional: Add a subtle indicator if title is required when adding */}
                {!isEditing && !title.trim() && (
@@ -354,7 +354,7 @@ const toggleUserAssignment = (member) => {
             <div className="flex flex-wrap items-center gap-3">
                  {/* Start Date */}
                  <div className="flex-grow flex-shrink-0 basis-[100px]">
-                     <label htmlFor="taskStartDate" className="block text-sm font-semibold mb-1 text-gray-700">Start Date</label>
+                     <label htmlFor="taskStartDate" className="block text-sm font-semibold mb-1 text-[var(--text)]">Start Date</label>
                      <input
                          type="date"
                          id="taskStartDate"
@@ -365,7 +365,7 @@ const toggleUserAssignment = (member) => {
                  </div>
                   {/* Due Date */}
                  <div className="flex-grow flex-shrink-0 basis-[100px]">
-                     <label htmlFor="taskDueDate" className="block text-sm font-semibold mb-1 text-gray-700">Due Date</label>
+                     <label htmlFor="taskDueDate" className="block text-sm font-semibold mb-1 text-[var(--text)]">Due Date</label>
                      <input
                          type="date"
                          id="taskDueDate"
@@ -376,7 +376,7 @@ const toggleUserAssignment = (member) => {
                  </div>
                  {/* Assigned To */}
                  <div className="flex-grow basis-[120px] relative">
-                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Assigned To</h3>
+                   <h3 className="text-sm font-semibold text-[var(--text)] mb-2">Assigned To</h3>
                    <div className="flex items-center flex-wrap gap-1">
                     {(assignedTo || []).map((user) => (
   <div key={user._id} className="flex items-center bg-gray-100 rounded-full border border-gray-200 p-0.5 pr-1">
@@ -440,7 +440,7 @@ const toggleUserAssignment = (member) => {
                             !assignedTo.some(m => m._id === member._id)
 
                            ).length === 0 && (
-                             <div className="text-center text-sm text-gray-500">No members found</div>
+                             <div className="text-center text-sm text-[var(--text)]">No members found</div>
                            )}
                          </div>
                        </div>
@@ -454,7 +454,7 @@ const toggleUserAssignment = (member) => {
         {/* Description Section (Collapsible) */}
         <div className="mb-4">
            <button
-               className="flex items-center justify-between w-full py-3 text-sm font-semibold text-left text-gray-700 hover:text-gray-900 focus:outline-none" // Removed border-b
+               className="flex items-center justify-between w-full py-3 text-sm font-semibold text-left text-[var(--text)] hover:text-[var(--text-muted)] focus:outline-none" // Removed border-b
                onClick={() => setIsDescriptionCollapsed(!isDescriptionCollapsed)}
            >
                Description (Optional)
@@ -473,7 +473,7 @@ const toggleUserAssignment = (member) => {
                  value={description || ''}
                  onChange={(e) => setDescription(e.target.value)}
                  placeholder="Add a detailed description..."
-                 className="w-full border rounded px-3 py-2 text-sm min-h-[80px] focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                 className="w-full border rounded px-3 py-2 text-[var(--text)] text-sm min-h-[80px] focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                />
            </div>
         </div>
@@ -482,7 +482,7 @@ const toggleUserAssignment = (member) => {
         {/* Subtasks Section (Collapsible) */}
         <div className="mb-4">
            <button
-               className="flex items-center justify-between w-full py-3 text-sm font-semibold text-left text-gray-700 hover:text-gray-900 focus:outline-none" // Removed border-b
+               className="flex items-center justify-between w-full py-3 text-sm font-semibold text-left text-[var(--text)] hover:text-[var(--text-muted)] focus:outline-none" // Removed border-b
                onClick={() => setIsSubtasksCollapsed(!isSubtasksCollapsed)}
            >
                Subtasks (Optional)
@@ -545,7 +545,7 @@ const toggleUserAssignment = (member) => {
                      value={newSubtaskTitle}
                      onChange={(e) => setNewSubtaskTitle(e.target.value)}
                      placeholder="Add a subtask..."
-                     className="flex-1 border rounded px-3 py-2 text-sm mr-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                     className="flex-1 border rounded px-3 text-[var(--text)] py-2 text-sm mr-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSubtask(); } }}
                    />
                    <button

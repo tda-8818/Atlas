@@ -999,7 +999,8 @@ const Kanban = () => {
           <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
             {/* Add ref to the modal content div */}
             {/* Removed onKeyDown from this div */}
-            <div ref={cardModalRef} className="rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto kanban-card-modal-content">
+
+            <div ref={cardModalRef} className="rounded shadow-lg bg-[var(--background)] p-6 w-[500px] max-h-[80vh] overflow-y-auto kanban-card-modal-content">
               {/* Title and Tag/Priority */}
               <div className="mb-4">
                 <div className="flex items-center mb-1">
