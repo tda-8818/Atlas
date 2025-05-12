@@ -11,13 +11,13 @@ import {
   useGetProjectTasksQuery
 } from '../redux/slices/projectSlice';
 import { isProjectOwner } from '../utils/projectUtils';
-import { getTaskStats, calculateProjectProgress } from '../utils/taskUtils';
+import { getTaskStats, calculateProjectProgress, isTaskOverdue } from '../utils/taskUtils';
 import { useGetCurrentUserQuery, useGetAllUsersQuery } from '../redux/slices/userSlice';
 import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';
 
 const Dashboard = () => {
-  const {currentProject} = useOutletContext();
+  const { currentProject } = useOutletContext();
   const id = currentProject._id;
   const [isProjectUsersModalOpen, setProjectUsersModalOpen] = useState(false);
   // Mutation for updating project team
@@ -118,12 +118,13 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Bottom Panels */}
+          {/* Current User's a */}
           <div className="col-span-12 xl:col-span-6">
             <div className="h-full min-h-[35vh]">
               <StatBox title="Your Tasks">
                 <ul className="text-xs space-y-1">
-                  {tasks.map((task) => (
+                  {tasks
+                  .map((task) => (
                     <li
                       key={task.id}
                       className={`
@@ -133,8 +134,8 @@ const Dashboard = () => {
                       `}
                     >
                       <strong className="truncate text-[var(--text)]">{task.title}</strong>
-                      <span className="ml-2 text-[var(--text-muted)]">
-                        {task.status? "Completed":"Incomplete"} • {task.dueDate}
+                      <span className={`ml-2 ${isTaskOverdue(task) ? 'text-red-500' : 'text-[var(--text-muted)]'}`}>
+                        {new Date(task.dueDate).toLocaleDateString('en-GB')}
                       </span>
                     </li>
                   ))}
@@ -193,7 +194,7 @@ const Dashboard = () => {
         onSave={handleUpdateProjectUsers}
         allTeamMembers={allUsers} // Pass all users to allow searching
       />
-      
+
     </>
   );
 };
