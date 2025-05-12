@@ -6,7 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import AddTaskPopup from "./AddTaskPopup";
 import "./css/CalendarComp.css"
 import taskApiSlice, { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
-import { useGetProjectTasksQuery } from "../redux/slices/projectSlice";
+import { useGetProjectTasksQuery, useGetProjectUsersQuery } from "../redux/slices/projectSlice";
 const CalendarComp = ({ project }) => {
 
   const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
@@ -21,9 +21,10 @@ const CalendarComp = ({ project }) => {
   const [deleteTask] = useDeleteTaskMutation();
   const [editTask] = useUpdateTaskMutation();
 
-  const {data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(project._id);
-  
 
+  const {data: projectTasks} = useGetProjectTasksQuery(project._id);
+  
+  const {data: projectUsers} = useGetProjectUsersQuery(project._id);
 
   /// RTK QUERY FUNCTIONS ///
 
@@ -34,6 +35,7 @@ const CalendarComp = ({ project }) => {
     if (!project || !projectTasks) return;
 
     console.log("Got these tasks:", projectTasks);
+    console.log("got these users: ",projectUsers);
     
     const transformedTasks = projectTasks.map(task => ({
       id: task._id,
@@ -42,8 +44,12 @@ const CalendarComp = ({ project }) => {
       title: task.title,
       start: task.startDate,
       end: task.dueDate,
-      allDay: task.allDay,
-      description: task.description
+      description: task.description,
+      assignedTo:task.assignedTo,
+      subtasks: task.subtasks,
+      priority: task.priority,
+      
+
     }));
 
     setCurrentEvents(transformedTasks);
@@ -69,7 +75,12 @@ const CalendarComp = ({ project }) => {
       start: new Date(selectedDateInfo.startStr) || new Date(formData.startDate),
       end: new Date(formData.dueDate),
       allDay: selectedDateInfo.allDay,
-      description: formData.description // extra info from your modal
+      description: formData.description, // extra info from your modal
+      assignedTo: formData.assignedTo,
+      subtasks: formData.subtasks,
+      priority: formData.priority,
+      status: formData.status,
+
     };
     try {
       // Optionally save the new event to a server.
@@ -123,7 +134,7 @@ const CalendarComp = ({ project }) => {
         subtasks: event.extendedProps?.subtasks || [],
         priority: event.extendedProps?.priority || 'none',
         dueDate: new Date(event.end),
-        startDate: new Date(event.start)
+        startDate: new Date(event.start),
       };
       
       console.log("Prepared task data:", taskData);
@@ -141,10 +152,12 @@ const CalendarComp = ({ project }) => {
         eventRef: event,
         startDate: new Date(event.startStr),
         dueDate: new Date(event.endStr) || new Date(event.startStr),
+        assignedTo: taskData.assignedTo,
+        status: taskData.status,
         allDay: event.allDay,
         view: { calendar: calendarApi },
         taskData: taskData,
-        isEditing: true
+        isEditing: true,
       });
       
       // Open the popup
@@ -184,6 +197,10 @@ console.log("formData: ",formData)
     dueDate: new Date(formData.dueDate),
     allDay: formData.allDay,
     description: formData.description,
+    assignedTo: formData.assignedTo,
+    subtasks: formData.subtasks,
+    priority: formData.priority,
+    
   };
 
   try {
@@ -196,6 +213,9 @@ calendarEvent.setStart(formData.startDate);
 calendarEvent.setEnd(formData.dueDate);
 calendarEvent.setExtendedProp("description", newEvent.description);
 calendarEvent.setExtendedProp("status",formData.status);
+calendarEvent.setExtendedProp("assignedTo",formData.assignedTo);
+calendarEvent.setExtendedProp("subtasks",formData.subtasks);
+calendarEvent.setExtendedProp("priority",formData.priority);
 
   } catch (error) {
     console.error("error modifying task: ", error);
@@ -235,6 +255,7 @@ calendarEvent.setExtendedProp("status",formData.status);
           }}
           onDelete={handleEventDelete}
           onEdit = {handleEventEdit}
+          teamMembers={projectUsers}
           {...(selectedEvent?.isEditing && selectedEvent?.taskData 
               ? { initialValues: selectedEvent.taskData } 
               : {})}

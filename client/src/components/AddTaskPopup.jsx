@@ -1,5 +1,5 @@
 // AddTaskPopup-1.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, use } from 'react';
 
 // Sample team members data (you might want to fetch this from a shared source later)
 // This data is duplicated here and in Gantt.jsx - ideally, it should be in a shared context or store.
@@ -12,7 +12,7 @@ const teamMembers = [
 ];
 
 // Define priority levels
-const priorityLevels = ['none', '!', '!!', '!!!'];
+const priorityLevels = ['', '!', '!!', '!!!'];
 
 // Helper function to generate IDs (can be moved to a utility file)
 const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -252,18 +252,14 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
   };
 
 
-  const toggleUserAssignment = (userId) => {
-    setAssignedTo(prevAssignedTo =>
-      prevAssignedTo.includes(userId)
-        ? prevAssignedTo.filter(id => id !== userId)
-        : [...prevAssignedTo, userId]
-    );
-  };
+const toggleUserAssignment = (member) => {
+  setAssignedTo(prev =>
+    prev.some(m => m._id === member._id)
+      ? prev.filter(m => m._id !== member._id)
+      : [...prev, member]
+  );
+};
 
-  const getTeamMember = (userId) => {
-    // Use the teamMembers prop passed to the popup
-    return teamMembers.find(member => member.id === userId);
-  };
 
    // Key down handler for the entire modal content
    const handleModalKeyDown = (e) => {
@@ -382,19 +378,21 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
                  <div className="flex-grow basis-[120px] relative">
                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Assigned To</h3>
                    <div className="flex items-center flex-wrap gap-1">
-                     {(assignedTo || []).map(userId => (
-                       <div key={userId} className="flex items-center bg-gray-100 rounded-full border border-gray-200 p-0.5 pr-1">
-                         <Avatar user={getTeamMember(userId)} size="small" />
-                         <button
-                           onClick={() => toggleUserAssignment(userId)}
-                           className="ml-0.5 text-gray-400 hover:text-red-500 text-xs"
-                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                            </svg>
-                         </button>
-                       </div>
-                     ))}
+                    {(assignedTo || []).map((user) => (
+  <div key={user._id} className="flex items-center bg-gray-100 rounded-full border border-gray-200 p-0.5 pr-1">
+    {/* <Avatar user={user} size="small" /> */}
+    <span className='text-sm m-auto'>{user.firstName}</span>
+    <button
+      onClick={() => toggleUserAssignment(user)}
+      className="ml-0.5 text-gray-400 hover:text-red-500 text-xs"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+      </svg>
+    </button>
+  </div>
+))}
+
 
                      <div
                        className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 flex-shrink-0"
@@ -420,26 +418,27 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
                          <div className="max-h-40 overflow-y-auto">
                            {teamMembers
                              .filter(member =>
-                               member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
-                               !(assignedTo || []).includes(member.id)
+                               member.firstName.toLowerCase().includes(searchMember.toLowerCase()) &&
+                               !assignedTo.some(m => m._id === member._id)
+
                              )
                              .map(member => (
                                <div
-                                 key={member.id}
+                                 key={member._id}
                                  className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded cursor-pointer"
                                  onClick={() => {
-                                   toggleUserAssignment(member.id);
+                                   toggleUserAssignment(member);
                                    setSearchMember("");
                                    setShowMemberSearch(false);
                                  }}
                                >
-                                 <Avatar user={member} size="small" />
-                                 <span className="text-sm">{member.name}</span>
+                                 <span className="text-sm">{member.firstName} {member.lastName}</span>
                                </div>
                              ))}
                            {teamMembers.filter(member =>
-                             member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
-                             !(assignedTo || []).includes(member.id)
+                             member.firstName.toLowerCase().includes(searchMember.toLowerCase()) &&
+                            !assignedTo.some(m => m._id === member._id)
+
                            ).length === 0 && (
                              <div className="text-center text-sm text-gray-500">No members found</div>
                            )}

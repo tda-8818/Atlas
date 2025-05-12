@@ -112,7 +112,7 @@ const Dashboard = () => {
           </div>
 
           {/* Bottom Panels */}
-          {/* <div className="col-span-12 xl:col-span-6">
+          <div className="col-span-12 xl:col-span-6">
             <div className="h-full min-h-[35vh]">
               <StatBox title="Your Tasks">
                 <ul className="text-xs space-y-1">
@@ -127,14 +127,14 @@ const Dashboard = () => {
                     >
                       <strong className="truncate text-[var(--text)]">{task.title}</strong>
                       <span className="ml-2 text-[var(--text-muted)]">
-                        {task.status} • {task.dueDate}
+                        {task.status? "Completed":"Incomplete"} • {task.dueDate}
                       </span>
                     </li>
                   ))}
                 </ul>
               </StatBox>
             </div>
-          </div> */}
+          </div>
 
           {/* Members list */}
           <div className="col-span-12 xl:col-span-6">
