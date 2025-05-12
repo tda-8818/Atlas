@@ -844,7 +844,10 @@ const Kanban = () => {
 
                           {editingColumnIndex !== columnIndex && (
                             <button
-                              onClick={() => confirmDeleteColumn(columnIndex)}
+                              onClick={()=>{ setConfirmDelete({
+      type: 'column',
+      index: columnIndex
+    }); removeColumn();}}
                               className="text-gray-400 hover:text-red-500 transition-colors"
                               disabled={columns.length <= 1}
                             >
@@ -1316,26 +1319,6 @@ const Kanban = () => {
         )}
 
         {/* Integration with DeleteTaskPopup for card deletion */}
-        {confirmDelete && confirmDelete.type === 'card' && (
-          <DeleteTaskPopup
-            toggle={true}
-            onSubmit={() => {
-              const { columnIndex, cardIndex } = confirmDelete;
-              deleteCard(columnIndex, cardIndex, { stopPropagation: () => {} });
-              setConfirmDelete(null);
-            }}
-            onClose={() => setConfirmDelete(null)}
-          />
-        )}
-
-        {/* Confirm Delete Column Modal */}
-        {confirmDelete && confirmDelete.type === 'column' && (
-          <DeleteTaskPopup
-            toggle={true}
-            onSubmit={removeColumn}
-            onClose={() => setConfirmDelete(null)}
-          />
-        )}
       </div>
     </div>
   );

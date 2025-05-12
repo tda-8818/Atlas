@@ -315,11 +315,12 @@ const handleDeleteTaskFromPopup = async() =>{
     // Handler to open the popup for editing an existing task
   const handleEditTask = (ganttTask) => {
        console.log("Editing Gantt task:", ganttTask);
-       const taskDB = projectTasks.find(task => task._id === ganttTask.id);
+       console.log("tasks data stored ",tasks)
+       const taskDB = tasks.data.find(task => task._id === ganttTask.id);
        // Prepare task data for the popup, including custom properties
        const startDate = new Date(ganttTask.start_date);
        const endDate = new Date(startDate);
-       console.log("task from db")
+       console.log("task from db", taskDB)
        endDate.setDate(startDate.getDate() + Math.round(ganttTask.duration));
        const taskDataForPopup = {
            id: ganttTask.id,
@@ -388,24 +389,20 @@ const handleDeleteTaskFromPopup = async() =>{
     };
       setTasks(prevTasks => {
   const existingIndex = prevTasks.data.findIndex(task => task.id === taskDataToStoreGantt.id);
-  
-  if (existingIndex !== -1) {
-    // Editing existing task
-    const updatedData = [...prevTasks.data];
-    updatedData[existingIndex] = taskDataToStoreGantt;
 
-    return {
-      ...prevTasks,
-      data: updatedData
-    };
-  } else {
-    // Adding new task
-    return {
-      ...prevTasks,
-      data: [...prevTasks.data, taskDataToStoreGantt]
-    };
-  }
+  const updatedData =
+    existingIndex !== -1
+      ? prevTasks.data.map(task =>
+          task.id === taskDataToStoreGantt.id ? taskDataToStoreGantt : task
+        )
+      : [...prevTasks.data, taskDataToStoreGantt];
+
+  return {
+    ...prevTasks,
+    data: updatedData
+  };
 });
+
 
     }catch(error){
       console.error("Error occured while editing task: ",error)
