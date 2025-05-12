@@ -74,8 +74,8 @@ const CalendarComp = ({ project }) => {
     const newEvent = {
       projectId: project._id,
       title: formData.title, // from modal input
-      start: new Date(selectedDateInfo.startStr) || new Date(formData.startDate),
-      end: new Date(selectedDateInfo.end),
+      startDate: new Date(selectedDateInfo.startStr) || new Date(formData.startDate),
+      dueDate: new Date(selectedDateInfo.end),
       allDay: selectedDateInfo.allDay,
       description: formData.description, // extra info from your modal
       assignedTo: formData.assignedTo,
@@ -85,12 +85,6 @@ const CalendarComp = ({ project }) => {
 
     };
     try {
-      // Optionally save the new event to a server.
-      //ROUTING ISSUE EXISTS
-      // const response = await axios.post(`http://localhost:5001/calendar`, newEvent, {
-      //   withCredentials: true
-      // }, { withCredentials: true });
-
       const response = await addTask(newEvent).unwrap(); // NOW USING RTK Query instead of axios
       console.log("RESPONSE FROM SERVER: TASK RECEIVED -> ", response);
       if (response) {
@@ -102,6 +96,7 @@ const CalendarComp = ({ project }) => {
           id: savedTask._id,
           ...newEvent
         });
+        await refetch();
       }
     } catch (error) {
       console.error("Error adding event:", error);
