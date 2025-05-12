@@ -5,7 +5,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AddTaskPopup from '../components/AddTaskPopup';
 import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
-import {useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation} from "../redux/slices/projectSlice";
+import { useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation } from "../redux/slices/projectSlice";
 // Sample team members data
 const teamMembers = [
   { id: "user-1", name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", initials: "AJ" },
@@ -45,18 +45,18 @@ const defaultColumns = [
 
 // Generate a color based on a string (name)
 const stringToColor = (str) => {
-    if (!str) return '#000000';
+  if (!str) return '#000000';
 
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    let color = '#';
-    for (let i = 0; i < 3; i++) {
-      const value = (hash >> (i * 8)) & 0xFF;
-      color += ('00' + value.toString(16)).substr(-2);
-    }
-    return color;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  let color = '#';
+  for (let i = 0; i < 3; i++) {
+    const value = (hash >> (i * 8)) & 0xFF;
+    color += ('00' + value.toString(16)).substr(-2);
+  }
+  return color;
 };
 
 // Avatar component with fallback to initials
@@ -134,8 +134,8 @@ const Kanban = () => {
       id: column._id,
       title: column.title,
       cards: projectTasks
-        .filter( task => task.columnId === column._id)
-        .map( task => ({
+        .filter(task => task.columnId === column._id)
+        .map(task => ({
           ...task,
           id: String(task._id),
         }))
@@ -152,7 +152,7 @@ const Kanban = () => {
     // console.log("Got columns from project:", columnData);
     console.log('projectTasks changed:', projectTasks);
     const formatted = mapTasksToColumns();
- 
+
     //console.log("FORMATTED COLUMN OBJECTS:", formatted);
     setColumns(formatted);
 
@@ -160,28 +160,28 @@ const Kanban = () => {
       const handleClickOutside = (event) => {
         // Check if the click is outside the modal content AND not within the member assignment area
         if (cardModalRef.current && !cardModalRef.current.contains(event.target) &&
-            !event.target.closest('.member-assignment-area')) {
+          !event.target.closest('.member-assignment-area')) {
           handleCloseCardDetails(); // Close without saving
         }
       };
 
       const handleKeyDown = (event) => {
-           // Only trigger save on Enter if the modal is open and the key is Enter
-           if (event.key === 'Enter') {
-                // Prevent default ONLY if we are going to handle the save action
-                // This prevents adding new lines in textareas or submitting forms
-                // when we intend to save the modal.
+        // Only trigger save on Enter if the modal is open and the key is Enter
+        if (event.key === 'Enter') {
+          // Prevent default ONLY if we are going to handle the save action
+          // This prevents adding new lines in textareas or submitting forms
+          // when we intend to save the modal.
 
-                // Check if the focused element is NOT a textarea or the new subtask input
-                if (event.target.tagName !== 'TEXTAREA' && event.target.id !== 'newSubtaskInput') {
-                    event.preventDefault(); // Prevent default behavior for other inputs/elements
-                    handleSaveChanges(); // Trigger the save and close
-                }
-                // If the target IS a textarea or new subtask input,
-                // we do NOT prevent default, allowing new lines or subtask addition.
-           } else if (event.key === 'Escape') {
-               handleCloseCardDetails(); // Close without saving on Escape
-           }
+          // Check if the focused element is NOT a textarea or the new subtask input
+          if (event.target.tagName !== 'TEXTAREA' && event.target.id !== 'newSubtaskInput') {
+            event.preventDefault(); // Prevent default behavior for other inputs/elements
+            handleSaveChanges(); // Trigger the save and close
+          }
+          // If the target IS a textarea or new subtask input,
+          // we do NOT prevent default, allowing new lines or subtask addition.
+        } else if (event.key === 'Escape') {
+          handleCloseCardDetails(); // Close without saving on Escape
+        }
       };
 
 
@@ -193,16 +193,16 @@ const Kanban = () => {
         document.removeEventListener('keydown', handleKeyDown); // Clean up keydown listener
       };
     }
-     // Clean up listeners when modal closes
-     const handleCleanupKeyDown = (event) => {
-        if (event.key === 'Escape') {
-           handleCloseCardDetails(); // Still allow escape to close if somehow stuck open
-        }
-     };
-     document.addEventListener('keydown', handleCleanupKeyDown);
-     return () => {
-        document.removeEventListener('keydown', handleCleanupKeyDown);
-     };
+    // Clean up listeners when modal closes
+    const handleCleanupKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        handleCloseCardDetails(); // Still allow escape to close if somehow stuck open
+      }
+    };
+    document.addEventListener('keydown', handleCleanupKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleCleanupKeyDown);
+    };
 
 
   }, [columnData, projectTasks]); // Added columns to dependencies because handleSaveChanges uses it
@@ -281,7 +281,7 @@ const Kanban = () => {
     });
   };
 
-  const addColumn = async() => {
+  const addColumn = async () => {
     if (!newColumnName.trim()) return;
     //const columnId = generateId("column")
 
@@ -290,7 +290,7 @@ const Kanban = () => {
       index: columns.length,
     }
     console.log("Attempting to create new column: ", currentProject._id, newColumn);
-    const response = await createColumn({projectId: currentProject._id, columnData:newColumn}).unwrap();
+    const response = await createColumn({ projectId: currentProject._id, columnData: newColumn }).unwrap();
     console.log("RESPONSE FROM CREATING A COLUMN", response);
 
     setColumns([
@@ -305,7 +305,7 @@ const Kanban = () => {
     setNewColumnName("");
   };
 
-  const handleTaskEdit = async(cardData) =>{
+  const handleTaskEdit = async (cardData) => {
     try {
       console.log("Attempting to edit with new cardData:", cardData);
 
@@ -329,7 +329,7 @@ const Kanban = () => {
   }
 
 
-  const handleAddTaskFromPopup = async(cardData) => {
+  const handleAddTaskFromPopup = async (cardData) => {
 
     if (!cardData.title) {
       console.warn("Missing task title!")
@@ -360,13 +360,13 @@ const Kanban = () => {
         startDate: cardData.startDate ? new Date(cardData.startDate) : undefined,
         dueDate: cardData.dueDate ? new Date(cardData.dueDate) : undefined,
       }).unwrap();
-      
+
       console.log("Received response after creating task", response);
 
       const updated = [...columns];
       updated[addTaskColumnIndex].cards.push({
         ...response,
-        id: response._id, 
+        id: response._id,
       });
       setColumns(updated);
     } catch (error) {
@@ -376,7 +376,7 @@ const Kanban = () => {
     setShowAddTaskPopup(false);
     setAddTaskColumnIndex(null);
   };
-  
+
 
   const openAddTaskPopup = (columnIndex) => {
     setAddTaskColumnIndex(columnIndex);
@@ -392,8 +392,8 @@ const Kanban = () => {
       index: columnIndex
     });
   };
-  
-  const removeColumn = async() => {
+
+  const removeColumn = async () => {
     if (!confirmDelete || confirmDelete.type !== 'column') return;
     if (columns.length <= 1) return;
 
@@ -404,7 +404,7 @@ const Kanban = () => {
     const columnToDelete = columns[columnIndex];
     console.log("Trying to delete column with ID:", columnToDelete.id);
     try {
-      await deleteColumn({projectId: currentProject._id, columnId:columnToDelete.id}).unwrap();
+      await deleteColumn({ projectId: currentProject._id, columnId: columnToDelete.id }).unwrap();
 
       const updated = [...columns];
       updated.splice(columnIndex, 1);
@@ -417,7 +417,7 @@ const Kanban = () => {
 
   };
 
-  const deleteCard = async(columnIndex, cardIndex, e) => {
+  const deleteCard = async (columnIndex, cardIndex, e) => {
     if (e && e.stopPropagation) {
       e.stopPropagation();
     }
@@ -425,7 +425,7 @@ const Kanban = () => {
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
 
-    
+
     const cardToDelete = columns[columnIndex].cards[cardIndex];
     //const columnId = columns[columnIndex].id;
     console.log("Attempting to delete:", cardToDelete._id);
@@ -433,11 +433,11 @@ const Kanban = () => {
       await deleteTask(
         cardToDelete._id,
       ).unwrap();
-  
+
       const updated = [...columns];
       updated[columnIndex].cards.splice(cardIndex, 1);
       setColumns(updated);
-  
+
       setSelectedCard(null);
       setConfirmDelete(null);
     } catch (error) {
@@ -467,7 +467,7 @@ const Kanban = () => {
     if (selectedCard) setSelectedCard({ ...selectedCard, dueDate });
   };
 
-   // Updated to handle multiple user assignments (within Card Modal)
+  // Updated to handle multiple user assignments (within Card Modal)
   const toggleUserAssignmentInCard = (userId) => {
     if (!selectedCard) return;
 
@@ -488,19 +488,19 @@ const Kanban = () => {
 
   const addSubtaskToCard = () => {
     if (!newSubtaskTitle.trim() || !selectedCard) return;
-  
+
     const newSubtask = {
       id: generateId("subtask"), // Ensure draggableId exists
       title: newSubtaskTitle.trim(),
       completed: false,
       priority: "none",
     };
-  
+
     setSelectedCard({
       ...selectedCard,
       subtasks: [...(selectedCard.subtasks || []), newSubtask],
     });
-  
+
     setNewSubtaskTitle("");
   };
   const toggleSubtaskCompletionInCard = (subtaskId) => {
@@ -519,19 +519,19 @@ const Kanban = () => {
   };
 
   const handleUpdateSubtaskPriorityInCard = (subtaskId, newPriority) => {
-      if (!selectedCard) return;
+    if (!selectedCard) return;
 
-      const subtasks = selectedCard.subtasks || [];
+    const subtasks = selectedCard.subtasks || [];
 
-      const updatedSubtasks = subtasks.map(st =>
-         st.id === subtaskId ? { ...st, priority: newPriority } : st
-      );
+    const updatedSubtasks = subtasks.map(st =>
+      st.id === subtaskId ? { ...st, priority: newPriority } : st
+    );
 
-      setSelectedCard({
-         ...selectedCard,
-         subtasks: updatedSubtasks
-      });
-   };
+    setSelectedCard({
+      ...selectedCard,
+      subtasks: updatedSubtasks
+    });
+  };
 
 
   const deleteSubtaskFromCard = (subtaskId) => {
@@ -552,30 +552,30 @@ const Kanban = () => {
   // Function to save changes from the selectedCard state to the main columns state
   const handleSaveChanges = async () => {
     if (!selectedCard) {
-        console.error("No card selected to save.");
-        return;
+      console.error("No card selected to save.");
+      return;
     }
 
-     // We allow saving even if the title is empty when triggered by Enter,
-     // but the Save button itself remains disabled.
-     // If triggered by the button and title is empty, the disabled state prevents this.
-     // If triggered by Enter and title is empty, we still update the state,
-     // which might lead to unexpected behavior, but fulfills the "save even if no changes"
-     // and "save on enter" requirements, including when only assignment changed.
-     // Consider adding a more robust check here if saving an empty title is problematic.
+    // We allow saving even if the title is empty when triggered by Enter,
+    // but the Save button itself remains disabled.
+    // If triggered by the button and title is empty, the disabled state prevents this.
+    // If triggered by Enter and title is empty, we still update the state,
+    // which might lead to unexpected behavior, but fulfills the "save even if no changes"
+    // and "save on enter" requirements, including when only assignment changed.
+    // Consider adding a more robust check here if saving an empty title is problematic.
 
 
     const { columnIndex, cardIndex, ...cardDataToSave } = selectedCard;
 
     // Check if the card still exists at the original index before saving
-    if (columnIndex === undefined || 
-      cardIndex === undefined || 
-      columnIndex < 0 || 
+    if (columnIndex === undefined ||
+      cardIndex === undefined ||
+      columnIndex < 0 ||
       columnIndex >= columns.length ||
       cardIndex < 0 ||
       cardIndex >= columns[columnIndex].cards.length ||
       columns[columnIndex].cards[cardIndex].id !== selectedCard.id
-    ){
+    ) {
       console.error("Card not found at original index for saving. It may have been moved or deleted.");
       // In this case, we might just close the modal without saving,
       // as the original card is no longer there.
@@ -595,7 +595,7 @@ const Kanban = () => {
         ...updatedColumns[columnIndex].cards[cardIndex],
         ...response, // Overwrite with fresh backend data
       };
-      
+
       console.log("updated card", updatedColumns[columnIndex].cards[cardIndex]);
 
       // Set selectedCard to null AFTER the state update to close the modal
@@ -635,37 +635,37 @@ const Kanban = () => {
       return;
     }
 
-     // If we're dragging subtasks (within the card modal)
-     if (type === "subtask" && selectedCard) {
-        // Ensure the destination droppableId matches the source droppableId for subtasks
-        if (source.droppableId !== destination.droppableId) return;
+    // If we're dragging subtasks (within the card modal)
+    if (type === "subtask" && selectedCard) {
+      // Ensure the destination droppableId matches the source droppableId for subtasks
+      if (source.droppableId !== destination.droppableId) return;
 
-        const { columnIndex, cardIndex } = selectedCard;
-         // Check if the card still exists at the original index
-        if (!columnsCopy[columnIndex]?.cards[cardIndex] || columnsCopy[columnIndex].cards[cardIndex].id !== selectedCard.id) {
-           console.error("State mismatch during subtask drag: Card not found or id mismatch.");
-           return;
-        }
-
-        const updatedCard = { ...columnsCopy[columnIndex].cards[cardIndex] };
-        const subtasks = Array.from(updatedCard.subtasks || []);
-
-        const [removed] = subtasks.splice(source.index, 1);
-        subtasks.splice(destination.index, 0, removed);
-
-        updatedCard.subtasks = subtasks;
-        columnsCopy[columnIndex].cards[cardIndex] = updatedCard;
-
-        // Important: When subtasks are reordered by D&D, update the selectedCard state immediately
-        // so the modal reflects the new order.
-        setSelectedCard({
-           ...selectedCard,
-           subtasks: [...subtasks]
-        });
-
-        setColumns(columnsCopy); // Also update the main columns state
+      const { columnIndex, cardIndex } = selectedCard;
+      // Check if the card still exists at the original index
+      if (!columnsCopy[columnIndex]?.cards[cardIndex] || columnsCopy[columnIndex].cards[cardIndex].id !== selectedCard.id) {
+        console.error("State mismatch during subtask drag: Card not found or id mismatch.");
         return;
-     }
+      }
+
+      const updatedCard = { ...columnsCopy[columnIndex].cards[cardIndex] };
+      const subtasks = Array.from(updatedCard.subtasks || []);
+
+      const [removed] = subtasks.splice(source.index, 1);
+      subtasks.splice(destination.index, 0, removed);
+
+      updatedCard.subtasks = subtasks;
+      columnsCopy[columnIndex].cards[cardIndex] = updatedCard;
+
+      // Important: When subtasks are reordered by D&D, update the selectedCard state immediately
+      // so the modal reflects the new order.
+      setSelectedCard({
+        ...selectedCard,
+        subtasks: [...subtasks]
+      });
+
+      setColumns(columnsCopy); // Also update the main columns state
+      return;
+    }
 
 
     // If the destination is the same as the source (same column)
@@ -706,23 +706,23 @@ const Kanban = () => {
       columnsCopy[sourceColumnIndex].cards = sourceCards;
       columnsCopy[destColumnIndex].cards = destCards;
 
-        // If the card being moved is the one currently open in the modal,
-        // update its columnIndex and cardIndex in the selectedCard state.
-        if (selectedCard && selectedCard.id === removed.id) {
-            // Find the new index in the destination column
-            const newCardIndex = destCards.findIndex(card => card.id === removed.id);
-            if (newCardIndex !== -1) {
-                setSelectedCard(prev => ({
-                    ...prev,
-                    columnIndex: destColumnIndex,
-                    cardIndex: newCardIndex,
-                    colTitle: columnsCopy[destColumnIndex].title // Update column title display
-                }));
-            } else {
-                 // If for some reason the card isn't found in the destination, close the modal
-                 setSelectedCard(null);
-            }
+      // If the card being moved is the one currently open in the modal,
+      // update its columnIndex and cardIndex in the selectedCard state.
+      if (selectedCard && selectedCard.id === removed.id) {
+        // Find the new index in the destination column
+        const newCardIndex = destCards.findIndex(card => card.id === removed.id);
+        if (newCardIndex !== -1) {
+          setSelectedCard(prev => ({
+            ...prev,
+            columnIndex: destColumnIndex,
+            cardIndex: newCardIndex,
+            colTitle: columnsCopy[destColumnIndex].title // Update column title display
+          }));
+        } else {
+          // If for some reason the card isn't found in the destination, close the modal
+          setSelectedCard(null);
         }
+      }
     }
 
     setColumns(columnsCopy);
@@ -783,7 +783,7 @@ const Kanban = () => {
   return (
     <div>
       <Sidebar />
-      <div className=" ml-[15%] w-[85%] h-[9vh]">
+      <div className=" ml-[15%] w-[85%] h-[9vh] bg-[var(--background-primary)] text-[var(--text)]">
         <Navbar project={currentProject} />
       </div>
       <div className="p-4 ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
@@ -865,9 +865,8 @@ const Kanban = () => {
                             <div
                               ref={provided.innerRef}
                               {...provided.droppableProps}
-                              className={`flex-1 p-1 rounded min-h-[150px] transition-colors ${
-                                snapshot.isDraggingOver ? "bg-blue-50" : ""
-                              }`}
+                              className={`flex-1 p-1 rounded min-h-[150px] transition-colors ${snapshot.isDraggingOver ? "bg-blue-50" : ""
+                                }`}
                             >
                               {column.cards.map((card, cardIndex) => (
                                 <Draggable
@@ -880,9 +879,8 @@ const Kanban = () => {
                                       ref={provided.innerRef}
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
-                                      className={`kanban-card p-3 rounded shadow mb-2 flex flex-col cursor-pointer hover:shadow-md transition-shadow relative ${
-                                        snapshot.isDragging ? "shadow-lg" : ""
-                                      }`}
+                                      className={`kanban-card p-3 rounded shadow mb-2 flex flex-col cursor-pointer hover:shadow-md transition-shadow relative ${snapshot.isDragging ? "shadow-lg" : ""
+                                        }`}
                                       onClick={() => openCardDetails(columnIndex, cardIndex)}
                                     >
                                       <div className="flex justify-between items-start mb-2">
@@ -967,20 +965,17 @@ const Kanban = () => {
                   width: "270px",
                   minWidth: "270px"
                 }}>
-                  <h2 className="font-bold text-[var(--text)] text-sm uppercase mb-3 p-2 bg-[var(--background-secondary)] rounded-t">
-                    Add Column
-                  </h2>
                   <input
                     value={newColumnName}
                     onChange={(e) => setNewColumnName(e.target.value)}
-                    placeholder="Column name"
-                    className="w-full px-2 py-1 text-sm border rounded mb-2 bg-white text-gray-800"
+                    placeholder="New Column Title"
+                    className="font-bold text-[var(--text)] text-sm uppercase mb-3 p-2 bg-[var(--background-secondary)] rounded-t border-none focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                   <button
                     onClick={addColumn}
                     className="w-full py-1 bg-[var(--background-secondary)] rounded text-sm text-gray-700 hover:text-black"
                   >
-                    + Add Column
+                    Save
                   </button>
                 </div>
               </div>
@@ -1002,48 +997,48 @@ const Kanban = () => {
         {/* Card Detail Modal */}
         {selectedCard && (
           <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
-             {/* Add ref to the modal content div */}
-             {/* Removed onKeyDown from this div */}
+            {/* Add ref to the modal content div */}
+            {/* Removed onKeyDown from this div */}
             <div ref={cardModalRef} className="rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto kanban-card-modal-content">
               {/* Title and Tag/Priority */}
               <div className="mb-4">
-                 <div className="flex items-center mb-1">
+                <div className="flex items-center mb-1">
+                  <input
+                    type="text"
+                    id="cardTitle"
+                    value={selectedCard.title}
+                    onChange={(e) => handleUpdateSelectedCardTitle(e.target.value)}
+                    placeholder="Task Title"
+                    className="text-xl font-bold flex-grow border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none p-1 mr-2"
+                  />
+                  {/* Tag and Priority on the same line */}
+                  <div className="flex items-center gap-2">
+                    {/* Tag Input (Editable) */}
                     <input
                       type="text"
-                      id="cardTitle"
-                      value={selectedCard.title}
-                      onChange={(e) => handleUpdateSelectedCardTitle(e.target.value)}
-                      placeholder="Task Title"
-                      className="text-xl font-bold flex-grow border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none p-1 mr-2"
+                      id="cardTag"
+                      value={selectedCard.tag || ''}
+                      onChange={(e) => handleUpdateSelectedCardTag(e.target.value)}
+                      placeholder="Add tag"
+                      className="text-xs border rounded px-1 py-0.5 w-20 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
-                    {/* Tag and Priority on the same line */}
-                    <div className="flex items-center gap-2">
-                        {/* Tag Input (Editable) */}
-                        <input
-                           type="text"
-                           id="cardTag"
-                           value={selectedCard.tag || ''}
-                           onChange={(e) => handleUpdateSelectedCardTag(e.target.value)}
-                           placeholder="Add tag"
-                           className="text-xs border rounded px-1 py-0.5 w-20 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        />
 
-                        {/* Priority dropdown for the main card */}
-                        <select
-                           id="cardPriority"
-                           value={selectedCard.priority || 'none'}
-                           onChange={(e) => handleUpdateSelectedCardPriority(e.target.value)}
-                           className="text-xs border rounded px-1 py-0.5 text-gray-700"
-                        >
-                           {priorityLevels.map(level => (
-                              <option key={level} value={level}>
-                                 {level === 'none' ? 'Priority' : level}
-                               </option>
-                           ))}
-                        </select>
-                    </div>
-                 </div>
-                  <p className="text-sm text-gray-500">in list {selectedCard.colTitle}</p>
+                    {/* Priority dropdown for the main card */}
+                    <select
+                      id="cardPriority"
+                      value={selectedCard.priority || 'none'}
+                      onChange={(e) => handleUpdateSelectedCardPriority(e.target.value)}
+                      className="text-xs border rounded px-1 py-0.5 text-gray-700"
+                    >
+                      {priorityLevels.map(level => (
+                        <option key={level} value={level}>
+                          {level === 'none' ? 'Priority' : level}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500">in list {selectedCard.colTitle}</p>
               </div>
 
 
@@ -1054,7 +1049,7 @@ const Kanban = () => {
                   <div className="flex items-center">
                     <input
                       type="date"
-                       id="cardDueDate"
+                      id="cardDueDate"
                       value={selectedCard.dueDate ? selectedCard.dueDate.split('T')[0] : ""}
                       onChange={(e) => handleUpdateSelectedCardDueDate(e.target.value)}
                       className="border rounded px-2 py-1 text-sm"
@@ -1131,20 +1126,20 @@ const Kanban = () => {
                                 <span className="text-sm">{member.name}</span>
                               </div>
                             ))}
-                             {teamMembers.filter(member =>
-                              member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
-                              !(selectedCard.assignedTo || []).includes(member.id)
-                            ).length === 0 && (
-                                <div className="text-center text-sm text-gray-500">No members found</div>
-                             )}
+                          {teamMembers.filter(member =>
+                            member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
+                            !(selectedCard.assignedTo || []).includes(member.id)
+                          ).length === 0 && (
+                              <div className="text-center text-sm text-gray-500">No members found</div>
+                            )}
                         </div>
                         <div className="mt-2 text-right">
-                           <button
-                               onClick={() => { setShowMemberSearch(false); setSearchMember(''); }}
-                               className="text-xs text-blue-600 hover:underline"
-                           >
-                               Close
-                           </button>
+                          <button
+                            onClick={() => { setShowMemberSearch(false); setSearchMember(''); }}
+                            className="text-xs text-blue-600 hover:underline"
+                          >
+                            Close
+                          </button>
                         </div>
                       </div>
                     )}
@@ -1176,106 +1171,106 @@ const Kanban = () => {
 
               {/* Subtasks Section (within Card Modal) */}
               <div className="mb-4">
-                 <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-semibold">Subtasks ({selectedCard.subtasks?.filter(st => st.completed).length || 0}/{selectedCard.subtasks?.length || 0})</h3>
-                   <button
+                  <button
                     onClick={toggleSubtasksSection}
                     className="text-gray-500 hover:text-gray-700 text-xs"
-                   >
+                  >
                     {showSubtasks ? 'Collapse' : 'Expand'}
-                   </button>
-                 </div>
+                  </button>
+                </div>
 
                 {/* Conditional rendering for subtasks */}
                 {showSubtasks && (
-                   <DragDropContext onDragEnd={onDragEnd}>
-                      <Droppable droppableId={`subtasks-${selectedCard.id}`} type="subtask">
-                         {(provided) => (
-                            <div
-                               {...provided.droppableProps}
-                               ref={provided.innerRef}
-                               className="space-y-2 mb-3"
-                            >
-                              {(selectedCard.subtasks || []).map((subtask, index) => (
-                                <Draggable key={subtask.id} draggableId={subtask.id} index={index}>
-                                  {(provided, snapshot) => (
-                                     <div
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        {...provided.dragHandleProps}
-                                        className={`flex items-center bg-gray-50 p-2 rounded group cursor-grab ${snapshot.isDragging ? 'shadow-md bg-gray-100' : ''}`}
-                                     >
-                                       <button
-                                         onClick={() => toggleSubtaskCompletionInCard(subtask.id)}
-                                         className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
-                                         style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
-                                       >
-                                         {subtask.completed && (
-                                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
-                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                           </svg>
-                                         )}
-                                       </button>
+                  <DragDropContext onDragEnd={onDragEnd}>
+                    <Droppable droppableId={`subtasks-${selectedCard.id}`} type="subtask">
+                      {(provided) => (
+                        <div
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                          className="space-y-2 mb-3"
+                        >
+                          {(selectedCard.subtasks || []).map((subtask, index) => (
+                            <Draggable key={subtask.id} draggableId={subtask.id} index={index}>
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={`flex items-center bg-gray-50 p-2 rounded group cursor-grab ${snapshot.isDragging ? 'shadow-md bg-gray-100' : ''}`}
+                                >
+                                  <button
+                                    onClick={() => toggleSubtaskCompletionInCard(subtask.id)}
+                                    className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
+                                    style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
+                                  >
+                                    {subtask.completed && (
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                      </svg>
+                                    )}
+                                  </button>
 
-                                       <span
-                                         onClick={() => toggleSubtaskCompletionInCard(subtask.id)}
-                                         className={`text-sm flex-1 cursor-pointer mr-1 ${subtask.completed ? "line-through text-gray-400" : ""}`}
-                                       >
-                                         {subtask.title}
-                                       </span>
+                                  <span
+                                    onClick={() => toggleSubtaskCompletionInCard(subtask.id)}
+                                    className={`text-sm flex-1 cursor-pointer mr-1 ${subtask.completed ? "line-through text-gray-400" : ""}`}
+                                  >
+                                    {subtask.title}
+                                  </span>
 
-                                        <select
-                                           value={subtask.priority || 'none'}
-                                           onChange={(e) => handleUpdateSubtaskPriorityInCard(subtask.id, e.target.value)}
-                                           className="text-xs border rounded px-1 py-0.5 text-gray-700"
-                                        >
-                                           {priorityLevels.map(level => (
-                                              <option key={level} value={level}>
-                                                 {level === 'none' ? 'Prio' : level}
-                                              </option>
-                                           ))}
-                                        </select>
+                                  <select
+                                    value={subtask.priority || 'none'}
+                                    onChange={(e) => handleUpdateSubtaskPriorityInCard(subtask.id, e.target.value)}
+                                    className="text-xs border rounded px-1 py-0.5 text-gray-700"
+                                  >
+                                    {priorityLevels.map(level => (
+                                      <option key={level} value={level}>
+                                        {level === 'none' ? 'Prio' : level}
+                                      </option>
+                                    ))}
+                                  </select>
 
 
-                                      <button
-                                        onClick={() => deleteSubtaskFromCard(subtask.id)}
-                                        className="ml-2 text-gray-400 hover:text-red-500 text-xs"
-                                      >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                        </svg>
-                                      </button>
-                                    </div>
-                                 )}
-                               </Draggable>
-                             ))}
-                             {provided.placeholder}
-                           </div>
-                         )}
-                      </Droppable>
-                   </DragDropContext>
+                                  <button
+                                    onClick={() => deleteSubtaskFromCard(subtask.id)}
+                                    className="ml-2 text-gray-400 hover:text-red-500 text-xs"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
                 )}
-                 {/* Input for adding new subtask */}
-                 {showSubtasks && (
-                   <div className="flex items-center mt-3">
-                     <input
-                       type="text"
-                       id="newSubtaskInput"
-                       value={newSubtaskTitle}
-                       onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                       placeholder="Add a subtask..."
-                       className="flex-1 border rounded px-2 py-1 text-sm mr-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSubtaskToCard(); } }}
-                     />
-                     <button
-                       onClick={addSubtaskToCard}
-                       className="px-3 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed bg-blue-500 text-white hover:bg-blue-600" // Added blue background and white text
-                       disabled={!newSubtaskTitle.trim()}
-                     >
-                       Add
-                     </button>
-                   </div>
-                 )}
+                {/* Input for adding new subtask */}
+                {showSubtasks && (
+                  <div className="flex items-center mt-3">
+                    <input
+                      type="text"
+                      id="newSubtaskInput"
+                      value={newSubtaskTitle}
+                      onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                      placeholder="Add a subtask..."
+                      className="flex-1 border rounded px-2 py-1 text-sm mr-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSubtaskToCard(); } }}
+                    />
+                    <button
+                      onClick={addSubtaskToCard}
+                      className="px-3 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed bg-blue-500 text-white hover:bg-blue-600" // Added blue background and white text
+                      disabled={!newSubtaskTitle.trim()}
+                    >
+                      Add
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Footer Buttons */}
@@ -1307,9 +1302,9 @@ const Kanban = () => {
                   </button>
                   {/* Save Button (Right) */}
                   <button
-                     onClick={handleSaveChanges}
-                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                     disabled={!selectedCard.title.trim()} // Still disable button if title is empty
+                    onClick={handleSaveChanges}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!selectedCard.title.trim()} // Still disable button if title is empty
                   >
                     Save
                   </button>
@@ -1320,6 +1315,26 @@ const Kanban = () => {
         )}
 
         {/* Integration with DeleteTaskPopup for card deletion */}
+        {confirmDelete && confirmDelete.type === 'card' && (
+          <DeleteTaskPopup
+            toggle={true}
+            onSubmit={() => {
+              const { columnIndex, cardIndex } = confirmDelete;
+              deleteCard(columnIndex, cardIndex, { stopPropagation: () => { } });
+              setConfirmDelete(null);
+            }}
+            onClose={() => setConfirmDelete(null)}
+          />
+        )}
+
+        {/* Confirm Delete Column Modal */}
+        {confirmDelete && confirmDelete.type === 'column' && (
+          <DeleteTaskPopup
+            toggle={true}
+            onSubmit={removeColumn}
+            onClose={() => setConfirmDelete(null)}
+          />
+        )}
       </div>
     </div>
   );

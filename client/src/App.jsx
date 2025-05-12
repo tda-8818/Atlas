@@ -12,7 +12,7 @@ import Settings from "./pages/Settings";
 import ProjectLayout from "./layouts/ProjectLayout.jsx";
 import { useEffect, useState, useRef } from "react";
 import { useGetCurrentUserQuery } from './redux/slices/userSlice.js';
-import { handleApiError } from "./components/errorToast.jsx"; 
+import { handleApiError } from "./components/errorToast.jsx";
 import { useLocation } from "react-router-dom";
 
 // The main App component that defines the routes for the application
@@ -24,27 +24,27 @@ function App() {
   const location = useLocation();
   // Add a ref to track if we're in the process of logging out
   const isLoggingOut = useRef(false);
-  
+
   // Check if we're on the login page and just arrived from another page
   useEffect(() => {
     if (location.pathname === '/login') {
       // If we just landed on the login page, assume we might be logging out
       isLoggingOut.current = true;
-      
+
       // Reset this flag after a short delay
       const timer = setTimeout(() => {
         isLoggingOut.current = false;
       }, 2000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [location.pathname]);
-  
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme); // apply theme to <html>
     localStorage.setItem("theme", theme); // persist
   }, [theme]);
-  
+
   useEffect(() => {
     if (!isLoading && !isError && user) {
       // User is authenticated
@@ -72,30 +72,32 @@ function App() {
     <div className={theme}>
       {/* Add the Toaster component here */}
       <Toaster />
-      
-      <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Navigate to="/presignup" replace />} />
-          <Route path="/presignup" element={!user ? <Presignup /> : <Navigate to="/projects" replace />} />
-          <Route path="/login" element={!user ? <Login /> : <Navigate to="/projects" replace />} />
-          <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/projects" replace />} />
 
-          {/* Protected Routes (Require Authentication) */}
-          <Route path="/projects" element={user ? <Projects /> : <Navigate to="/" replace />} />
-          <Route path="/settings" element={user ? <Settings setTheme={setTheme} /> : <Navigate to="/" replace />} />
+      {isLoading ? (
+        <div>Loading...</div>
+      ) : (<Routes>
+        {/* Public Routes */}
+        <Route path="/" element={isLoading ? null : user ? <Navigate to="/projects" replace /> : <Navigate to="/presignup" replace />} />
+        <Route path="/presignup" element={!user ? <Presignup /> : <Navigate to="/projects" replace />} />
+        <Route path="/login" element={!user ? <Login /> : <Navigate to="/projects" replace />} />
+        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/projects" replace />} />
 
-          {/* Project-Specific Routes (Nested) */}
-          <Route path="/projects/:id" element={user ? <ProjectLayout /> : <Navigate to="/" replace />}>
-            <Route index element={<Navigate to="dashboard" replace />} /> {/* Default project page */}
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="kanban" element={<Kanban />} />
-            <Route path="calendar" element={<Calendar />} />
-            <Route path="gantt" element={<Gantt />} />
-          </Route>
+        {/* Protected Routes (Require Authentication) */}
+        <Route path="/projects" element={user ? <Projects /> : <Navigate to="/" replace />} />
+        <Route path="/settings" element={user ? <Settings setTheme={setTheme} /> : <Navigate to="/" replace />} />
 
-          {/* Catch-All Route (404 equivalent) */}
-          <Route path="*" element={<Navigate to={user ? "/projects" : "/presignup"} replace />} />
-        </Routes>
+        {/* Project-Specific Routes (Nested) */}
+        <Route path="/projects/:id" element={user ? <ProjectLayout /> : <Navigate to="/" replace />}>
+          <Route index element={<Navigate to="dashboard" replace />} /> {/* Default project page */}
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="kanban" element={<Kanban />} />
+          <Route path="calendar" element={<Calendar />} />
+          <Route path="gantt" element={<Gantt />} />
+        </Route>
+
+        {/* Catch-All Route (404 equivalent) */}
+        <Route path="*" element={<Navigate to={user ? "/projects" : "/presignup"} replace />} />
+      </Routes>)}
     </div>
   );
 }

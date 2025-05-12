@@ -50,7 +50,7 @@ const ProjectUsersModal = ({
     isUserAvailable(user) &&
     `${user.firstName} ${user.lastName} ${user.email}`
       .toLowerCase()
-      .includes(query.toLowerCase())
+      .includes(query)
   );
 
   const handleSave = () => {

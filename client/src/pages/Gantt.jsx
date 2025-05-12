@@ -423,7 +423,7 @@ const handleDeleteTaskFromPopup = async() =>{
   return (
     <div>
       <Sidebar />
-      <div className="ml-[15%] w-[85%] h-[9vh]">
+      <div className="ml-[15%] w-[85%] h-[9vh] bg-[var(--background-primary)] text-[var(--text)]">
         <Navbar project={currentProject} />
       </div>
       <div className="p-4 font-sans ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
