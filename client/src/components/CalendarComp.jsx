@@ -22,7 +22,7 @@ const CalendarComp = ({ project }) => {
   const [editTask] = useUpdateTaskMutation();
 
 
-  const {data: projectTasks} = useGetProjectTasksQuery(project._id);
+  const {data: projectTasks, refetch} = useGetProjectTasksQuery(project._id);
   
   const {data: projectUsers} = useGetProjectUsersQuery(project._id);
 
@@ -31,7 +31,8 @@ const CalendarComp = ({ project }) => {
 
   //fetches tasks from database 
   useEffect(() => {
-
+    console.log('refetching tasks');
+    refetch();
     if (!project || !projectTasks) return;
 
     console.log("Got these tasks:", projectTasks);
@@ -51,6 +52,7 @@ const CalendarComp = ({ project }) => {
       
 
     }));
+    console.log("transformed Tasks",transformedTasks);
 
     setCurrentEvents(transformedTasks);
   }, [project, projectTasks]);
@@ -73,7 +75,7 @@ const CalendarComp = ({ project }) => {
       projectId: project._id,
       title: formData.title, // from modal input
       start: new Date(selectedDateInfo.startStr) || new Date(formData.startDate),
-      end: new Date(formData.dueDate),
+      end: new Date(selectedDateInfo.end),
       allDay: selectedDateInfo.allDay,
       description: formData.description, // extra info from your modal
       assignedTo: formData.assignedTo,

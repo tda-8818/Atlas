@@ -122,7 +122,7 @@ const Kanban = () => {
   const [updateColumn] = useUpdateColumnMutation();
   const [deleteColumn] = useDeleteColumnMutation();
 
-  const { data: projectTasks, isLoading, isError} = useGetProjectTasksQuery(currentProject._id);
+  const { data: projectTasks, isLoading, isError, refetch} = useGetProjectTasksQuery(currentProject._id);
   const { data: columnData} = useGetProjectColumnsQuery(currentProject._id);
   
 
@@ -144,6 +144,7 @@ const Kanban = () => {
 
   // Effect to handle click outside and keydown for the card detail modal
   useEffect(() => {
+    refetch();
     if (!currentProject || !projectTasks) return;
 
     // console.log("current Project", currentProject);
@@ -356,8 +357,8 @@ const Kanban = () => {
         ...cardData,
         columnId,
         projectId: currentProject._id,
-        start: cardData.startDate ? new Date(cardData.startDate) : undefined,
-        end: cardData.dueDate ? new Date(cardData.dueDate) : undefined,
+        startDate: cardData.startDate ? new Date(cardData.startDate) : undefined,
+        dueDate: cardData.dueDate ? new Date(cardData.dueDate) : undefined,
       }).unwrap();
       
       console.log("Received response after creating task", response);

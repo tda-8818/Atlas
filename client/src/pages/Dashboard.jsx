@@ -24,7 +24,7 @@ const Dashboard = () => {
   const [updateProjectUsers] = useUpdateProjectUsersMutation();
 
   // RTK Query hooks to fetch tasks, project details, and project users
-  const { data: tasks = [], isLoading: loadingTasks, error: tasksError, } = useGetProjectTasksQuery(id, { skip: !id, });
+  const { data: tasks = [], isLoading: loadingTasks, error: tasksError, refetch} = useGetProjectTasksQuery(id, { skip: !id, });
 
   const { data: allUsers = [], isLoading: loadingAllUsers } = useGetAllUsersQuery();
 
@@ -36,6 +36,12 @@ const Dashboard = () => {
 
   // fetch current user
   const { data: currentUser, isLoading: loadingMe, error: meError } = useGetCurrentUserQuery();
+
+    
+  useEffect(() => {
+      refetch();
+  }, []);
+
 
   // Handler to update team members
   const handleUpdateProjectUsers = async (updatedMemberIds, newOwnerId) => {
@@ -49,6 +55,7 @@ const Dashboard = () => {
     try {
       await updateProjectUsers({ id: id, users: updatedMemberIds, owner: newOwnerId, }).unwrap();
       toast("Team updated successfully!");
+
     } catch (error) {
       showErrorToast("Error saving team: ", error);
     } finally {

@@ -92,7 +92,7 @@ export const deleteProject = async (req, res) => {
 
         await Column.deleteMany({projectId});
         await Task.deleteMany({ projectId });
-        const columnDeleteOperation = await Column.deleteMany({projectId:id});
+        const columnDeleteOperation = await Column.deleteMany({projectId:projectId});
         console.log(`Deleted ${columnDeleteOperation.deletedCount} columns related to project`);
 
         res.status(200).json({ message: "Project deleted successfully", project: projectToDelete });
