@@ -198,39 +198,54 @@ export const getProjectById = async (req, res) => {
  * Returns the updated project.
  */
 export const updateProjectUsers = async (req, res) => {
-    const { id } = req.params;
-    const { owner, users } = req.body;
-  
-    try {
-      // Validate incoming data
-      if (!owner || !Array.isArray(users)) {
-        return res.status(400).json({ error: 'Invalid request data. Provide both owner and users (as an array).' });
-      }
-  
-      // Find the project by its ID
-      const project = await Project.findById(id);
-      if (!project) {
-        return res.status(404).json({ error: 'Project not found.' });
-      }
-  
-      // Optional: Check if the current user (from req.user or session) has permission
-      // to update this project. This logic depends on how you've implemented authentication.
-      // For example:
-      // if (req.user.id !== project.owner.toString()) {
-      //   return res.status(403).json({ error: 'Unauthorized: Only the owner may update project users.' });
-      // }
-  
-      // Update the project's owner and users
-      project.owner = owner;
-      project.users = users;
-  
-      // Save the updated project
-      const updatedProject = await project.save();
-  
-      // Return the updated project data
-      res.status(200).json(updatedProject);
-    } catch (error) {
-      console.error('Error updating project users:', error);
-      res.status(500).json({ error: 'Server error updating project users' });
+  const { id } = req.params;
+  const { owner, users } = req.body;
+
+  try {
+    // Validate incoming data
+    if (!owner || !Array.isArray(users)) {
+      return res.status(400).json({ error: 'Invalid request data. Provide both owner and users (as an array).' });
     }
-  };
+
+    // Find the project by its ID
+    const project = await Project.findById(id);
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found.' });
+    }
+
+    
+
+    // Update the project's owner and users
+    project.owner = owner;
+    project.users = users;
+    await project.save();
+
+    // Update the users' projects (Example - Adapt to your schema!)
+    await UserModel.updateMany(
+      { _id: { $in: users } },
+      { $addToSet: { projects: id } } // Add project ID to user's projects array
+    );
+
+    console.log("user's projects list updated ")
+    // Remove the project from users that were removed (if needed)
+    await UserModel.updateMany(
+      { _id: { $nin: users } },
+      { $pull: { projects: id } }  // Remove project ID from users no longer in the project
+    );
+
+    // Update the owner's projects (if needed - depends on your logic)
+    await UserModel.updateOne(
+      { _id: owner },
+      { $addToSet: { projects: id } }
+    );
+
+    // Save the updated project
+    const updatedProject = await Project.findById(id).populate('users', 'firstName lastName email');
+
+    // Return the updated project data
+    res.status(200).json(updatedProject);
+  } catch (error) {
+    console.error('Error updating project users:', error);
+    res.status(500).json({ error: 'Server error updating project users' });
+  }
+};

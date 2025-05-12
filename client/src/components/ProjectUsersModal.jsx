@@ -1,6 +1,7 @@
-// ProjectUsersModal.jsx
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, Transition, DialogTitle, TransitionChild } from '@headlessui/react';
+import { Combobox } from '@headlessui/react';
+import { UserMinusIcon } from '@heroicons/react/24/solid';
 
 const ProjectUsersModal = ({
   show,
@@ -8,44 +9,96 @@ const ProjectUsersModal = ({
   initialSelectedMemberIds = [],
   currentProjectOwnerId,
   onSave,
-  allTeamMembers = []
+  allTeamMembers = [],
 }) => {
-  // Local state to track which users are selected
-  const [selectedMembers, setSelectedMembers] = useState(initialSelectedMemberIds);
-  // State for current search term
-  const [searchTerm, setSearchTerm] = useState('');
-
-  // Filter users based on search term (client-side filtering)
-  const filteredUsers = allTeamMembers.filter((user) =>
-    `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [query, setQuery] = useState('');
+  const [selectedUsersToAdd, setSelectedUsersToAdd] = useState([]);
+  const [usersToRemove, setUsersToRemove] = useState(initialSelectedMemberIds);
+  const [currentMembers, setCurrentMembers] = useState([]);
 
   useEffect(() => {
-    // Initialize selected members when modal opens
     if (show) {
-      setSelectedMembers(initialSelectedMemberIds);
+      setCurrentMembers(
+        allTeamMembers.filter((user) => initialSelectedMemberIds.includes(user._id))
+      );
+      setSelectedUsersToAdd([]);
+      setUsersToRemove(initialSelectedMemberIds);
+      setQuery('');
     }
-  }, [show, initialSelectedMemberIds]);
+  }, [show, initialSelectedMemberIds, allTeamMembers]);
 
-  // Toggle user selection from list
-  const handleToggleUser = (userId) => {
-    setSelectedMembers((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
-    );
+  const filteredUsers =
+    query === ''
+      ? allTeamMembers.filter(
+        (user) => !initialSelectedMemberIds.includes(user._id) && !selectedUsersToAdd.some(addedUser => addedUser._id === user._id)
+      )
+      : allTeamMembers
+        .filter(
+          (user) =>
+            !initialSelectedMemberIds.includes(user._id) &&
+            !selectedUsersToAdd.some(addedUser => addedUser._id === user._id) &&
+            `${user.firstName} ${user.lastName} ${user.email}`
+              .toLowerCase()
+              .includes(query)
+        );
+
+  const handleAddUser = (user) => {
+    //  Get the latest query value directly
+    const currentQuery = query;
+
+    //  Only add the user if they match the current filter
+    const matchesFilter =
+      currentQuery === '' ||
+      `${user.firstName} ${user.lastName} ${user.email}`
+        .includes(currentQuery);
+
+    if (matchesFilter) {
+      setSelectedUsersToAdd([...selectedUsersToAdd, user]);
+    }
   };
 
-  // Handler to update owner (for simplicity, you might allow owner selection separately)
-  const handleOwnerChange = (e) => {
-    // For example, you can allow the modal to pick an owner from the filtered list
-    // This is a simple stub: for a production app, you might use a dropdown.
-    // If needed, add new state for newOwner and pass it with onSave.
+  const handleRemoveFromAdd = (userToRemove) => {
+    setSelectedUsersToAdd(selectedUsersToAdd.filter((user) => user._id !== userToRemove._id));
   };
 
-  const handleSave = () => {
-    // Here you would also send back the new owner if that is modifiable
-    const newOwnerId = currentProjectOwnerId;
-    onSave(selectedMembers, newOwnerId);
+  const handleRemoveCurrentUser = (userIdToRemove) => {
+    if (userIdToRemove !== currentProjectOwnerId) {
+      setUsersToRemove(usersToRemove.filter((id) => id !== userIdToRemove));
+    }
   };
+
+  // Inside ProjectUsersModal.jsx
+  // Inside ProjectUsersModal.jsx
+const handleSave = () => {
+  const ownerId = currentProjectOwnerId;
+
+  // `usersToRemove` (state variable) now contains the IDs of initial members who should REMAIN.
+  // Filter out the owner's ID from this list if it's present, as ownerId is added explicitly.
+  const remainingInitialMemberIds = usersToRemove.filter(id => id !== ownerId);
+
+  // Combine owner, remaining initial members (who were not removed), and newly added user IDs.
+  let combinedUserIds = [
+    ownerId, // Owner is always first
+    ...remainingInitialMemberIds, // IDs of initial members who are to be kept (excluding owner if they were there)
+    ...selectedUsersToAdd.map(user => user._id) // IDs of newly selected users
+  ];
+
+  // Ensure all IDs in the final list are unique. This is crucial.
+  const finalUserIds = [...new Set(combinedUserIds)];
+
+  console.log('Data to send to onSave:', {
+    owner: ownerId, // The current owner ID
+    users: finalUserIds // The complete list of user IDs for the project
+  });
+
+  // onSave is `handleUpdateProjectUsers` in Dashboard.jsx
+  // It expects (updatedMemberIds, newOwnerId)
+  // newOwnerId here is still the currentProjectOwnerId as we're not changing owners in this modal.
+  onSave(finalUserIds, ownerId);
+  onClose();
+};
+
+
 
   return (
     <Transition appear show={show} as="div">
@@ -72,43 +125,108 @@ const ProjectUsersModal = ({
             enterFrom="opacity-0 scale-95"
             enterTo="opacity-100 scale-100"
             leave="ease-in duration-200"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95"
+            leaveFrom="opacity-100 scale-95"
+            leaveTo="opacity-0"
           >
             <DialogTitle as="h3" className="text-lg font-medium leading-6 text-gray-900 mb-4">
-              Update Project Members
+              Team Members
             </DialogTitle>
             <div className="mb-4">
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700">
-                Search Users
-              </label>
-              <input
-                id="search"
-                type="text"
-                className="mt-1 block w-full border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300 p-2"
-                placeholder="Type a name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <Combobox value={''} onChange={setQuery}>
+                <div className="relative mt-1">
+                  <Combobox.Input
+                    className="w-full border border-gray-300 rounded-md shadow-sm py-2 pl-3 pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    onChange={(event) => setQuery(event.target.value)}
+                    displayValue={() => ''}
+                    placeholder="Search users to add..."
+                  />
+                  <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+                    {/* Optional: Icon for the button */}
+                  </Combobox.Button>
+
+                  <Transition
+                    as={React.Fragment}
+                    leave="transition ease-in duration-100"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                    afterLeave={() => setQuery('')}
+                  >
+                    <Combobox.Options className="absolute z-10 mt-1 w-full border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto focus:outline-none sm:text-sm">
+                      {filteredUsers.length > 0 ? (
+                        filteredUsers.map((user) => (
+                          <Combobox.Option
+                            key={user._id}
+                            className={({ active }) =>
+                              `cursor-default select-none px-4 py-2 ${active ? 'bg-blue-500 text-white' : 'text-gray-900'
+                              }`
+                            }
+                            value={user}
+                            onClick={() => handleAddUser(user)}
+                          >
+                            {({ active }) => (
+                              <>
+                                <span className={`block truncate ${active ? 'font-semibold' : 'font-normal'}`}>
+                                  {user.firstName} {user.lastName} ({user.email})
+                                </span>
+                                {/* Optional: Checkmark when selected */}
+                              </>
+                            )}
+                          </Combobox.Option>
+                        ))
+                      ) : query !== '' ? (
+                        <div className="px-4 py-2 text-gray-700">No users found.</div>
+                      ) : null}
+                    </Combobox.Options>
+                  </Transition>
+                </div>
+              </Combobox>
             </div>
-            <div className="max-h-60 overflow-y-auto mb-4">
-              <ul>
-                {filteredUsers.map((user) => (
-                  <li key={user._id} className="flex items-center justify-between py-1">
+
+            <div>
+              <h3 className="mt-4 font-semibold text-gray-700">Add Users</h3>
+              <ul className="mt-2 divide-y divide-gray-200">
+                {selectedUsersToAdd.map((user) => (
+                  <li key={user._id} className="py-3 flex items-center justify-between">
                     <span>{user.firstName} {user.lastName}</span>
-                    <input
-                      type="checkbox"
-                      checked={selectedMembers.includes(user._id)}
-                      onChange={() => handleToggleUser(user._id)}
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-                    />
+                    <button
+                      onClick={() => handleRemoveFromAdd(user)}
+                      className="ml-2 focus:outline-none"
+                      title="Remove from Add"
+                    >
+                      <UserMinusIcon className="h-5 w-5 text-red-500" />
+                    </button>
                   </li>
                 ))}
-                {filteredUsers.length === 0 && (
-                  <li className="text-gray-500 text-sm">No users found.</li>
-                )}
+                {selectedUsersToAdd.length === 0 && <li className="py-3 text-gray-500">No users selected to add.</li>}
               </ul>
             </div>
+
+            <div className="mt-4">
+              <h3 className="font-semibold text-gray-700">Current Members</h3>
+              <ul className="mt-2 divide-y divide-gray-200">
+                {currentMembers.map((user) => (
+                  <li key={user._id} className="py-3 flex items-center justify-between">
+                    <div className="flex items-center">
+                      <span>{user.firstName} {user.lastName}</span>
+                      {user._id === currentProjectOwnerId && (
+                        <span className="ml-2 text-xs text-gray-500 italic">(Owner)</span>
+                      )}
+                    </div>
+                    {user._id !== currentProjectOwnerId && (
+                      <button
+                        onClick={() => handleRemoveCurrentUser(user._id)}
+                        className="ml-2 focus:outline-none"
+                        title="Remove User"
+                      >
+                        <UserMinusIcon className="h-5 w-5 text-red-500" />
+                      </button>
+                    )}
+                  </li>
+                ))}
+                {currentMembers.length === 0 && <li className="py-3 text-gray-500">No current members.</li>}
+              </ul>
+            </div>
+
             <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"
