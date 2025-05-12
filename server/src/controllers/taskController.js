@@ -48,7 +48,7 @@ export const createEvent = async (req, res) => {
 export const createTask = async (req, res) => {
     try {
         // Optionally remove reliance on the cookie if the client includes projectId in the body.
-        const { projectId, title, description, start, end, columnId,assignedTo, priority, status } = req.body;
+        const { projectId, title, description, startDate, dueDate, columnId,assignedTo, priority, status } = req.body;
 
         if (!projectId) {
             return res.status(400).json({ message: 'Project ID is required' });
@@ -66,8 +66,8 @@ export const createTask = async (req, res) => {
             projectId: project,
             title,
             description,
-            startDate: start,
-            dueDate: end,
+            startDate: startDate,
+            dueDate: dueDate,
             columnId:columnId,
             assignedTo: assignedTo,
             priority: priority,

@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 
 const projectSchema = new mongoose.Schema({
     title: {type: String, required: true},
-    description: {type: String, required: true},
+    description: {type: String},
     owner: {type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true},
     users: [{type: mongoose.Schema.Types.ObjectId, ref: 'user'}],
     tasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],

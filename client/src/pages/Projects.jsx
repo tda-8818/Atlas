@@ -28,7 +28,7 @@ const Projects = () => {
     // Local UI state to handle modal visibility and new project form inputs.
     const [showModal, setShowModal] = useState(false);
     const [showDeleteConfirmModal,setShowDeleteConfirmModal] = useState(false);
-    const [selectedProject,setSelectedProject] = useState({title:'',title:'',});
+    const [selectedProject,setSelectedProject] = useState({title:''});
     // Show error toasts when API errors occur
     useEffect(() => {
         if (projectsError && projectsErrorData) {
