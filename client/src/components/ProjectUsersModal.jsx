@@ -13,92 +13,60 @@ const ProjectUsersModal = ({
 }) => {
   const [query, setQuery] = useState('');
   const [selectedUsersToAdd, setSelectedUsersToAdd] = useState([]);
-  const [usersToRemove, setUsersToRemove] = useState(initialSelectedMemberIds);
   const [currentMembers, setCurrentMembers] = useState([]);
 
   useEffect(() => {
     if (show) {
-      setCurrentMembers(
-        allTeamMembers.filter((user) => initialSelectedMemberIds.includes(user._id))
+      const members = allTeamMembers.filter(user =>
+        initialSelectedMemberIds.includes(user._id)
       );
+      setCurrentMembers(members);
       setSelectedUsersToAdd([]);
-      setUsersToRemove(initialSelectedMemberIds);
       setQuery('');
     }
   }, [show, initialSelectedMemberIds, allTeamMembers]);
 
-  const filteredUsers =
-    query === ''
-      ? allTeamMembers.filter(
-        (user) => !initialSelectedMemberIds.includes(user._id) && !selectedUsersToAdd.some(addedUser => addedUser._id === user._id)
-      )
-      : allTeamMembers
-        .filter(
-          (user) =>
-            !initialSelectedMemberIds.includes(user._id) &&
-            !selectedUsersToAdd.some(addedUser => addedUser._id === user._id) &&
-            `${user.firstName} ${user.lastName} ${user.email}`
-              .toLowerCase()
-              .includes(query)
-        );
-
   const handleAddUser = (user) => {
-    //  Get the latest query value directly
-    const currentQuery = query;
-
-    //  Only add the user if they match the current filter
-    const matchesFilter =
-      currentQuery === '' ||
-      `${user.firstName} ${user.lastName} ${user.email}`
-        .includes(currentQuery);
-
-    if (matchesFilter) {
-      setSelectedUsersToAdd([...selectedUsersToAdd, user]);
+    if (!selectedUsersToAdd.some(u => u._id === user._id)) {
+      setSelectedUsersToAdd(prev => [...prev, user]);
     }
   };
 
   const handleRemoveFromAdd = (userToRemove) => {
-    setSelectedUsersToAdd(selectedUsersToAdd.filter((user) => user._id !== userToRemove._id));
+    setSelectedUsersToAdd(prev => prev.filter(user => user._id !== userToRemove._id));
   };
 
-  const handleRemoveCurrentUser = (userIdToRemove) => {
-    if (userIdToRemove !== currentProjectOwnerId) {
-      setUsersToRemove(usersToRemove.filter((id) => id !== userIdToRemove));
+  const handleRemoveCurrentUser = (userId) => {
+    if (userId !== currentProjectOwnerId) {
+      setCurrentMembers(prev => prev.filter(user => user._id !== userId));
     }
   };
 
-  // Inside ProjectUsersModal.jsx
-  // Inside ProjectUsersModal.jsx
-const handleSave = () => {
-  const ownerId = currentProjectOwnerId;
+  const isUserAvailable = (user) =>
+    !currentMembers.some(u => u._id === user._id) &&
+    !selectedUsersToAdd.some(u => u._id === user._id);
 
-  // `usersToRemove` (state variable) now contains the IDs of initial members who should REMAIN.
-  // Filter out the owner's ID from this list if it's present, as ownerId is added explicitly.
-  const remainingInitialMemberIds = usersToRemove.filter(id => id !== ownerId);
+  const filteredUsers = allTeamMembers.filter(user =>
+    isUserAvailable(user) &&
+    `${user.firstName} ${user.lastName} ${user.email}`
+      .toLowerCase()
+      .includes(query.toLowerCase())
+  );
 
-  // Combine owner, remaining initial members (who were not removed), and newly added user IDs.
-  let combinedUserIds = [
-    ownerId, // Owner is always first
-    ...remainingInitialMemberIds, // IDs of initial members who are to be kept (excluding owner if they were there)
-    ...selectedUsersToAdd.map(user => user._id) // IDs of newly selected users
-  ];
+  const handleSave = () => {
+    const finalUserIds = [
+      currentProjectOwnerId,
+      ...currentMembers
+        .filter(user => user._id !== currentProjectOwnerId)
+        .map(user => user._id),
+      ...selectedUsersToAdd.map(user => user._id),
+    ];
 
-  // Ensure all IDs in the final list are unique. This is crucial.
-  const finalUserIds = [...new Set(combinedUserIds)];
+    const uniqueUserIds = [...new Set(finalUserIds)];
 
-  console.log('Data to send to onSave:', {
-    owner: ownerId, // The current owner ID
-    users: finalUserIds // The complete list of user IDs for the project
-  });
-
-  // onSave is `handleUpdateProjectUsers` in Dashboard.jsx
-  // It expects (updatedMemberIds, newOwnerId)
-  // newOwnerId here is still the currentProjectOwnerId as we're not changing owners in this modal.
-  onSave(finalUserIds, ownerId);
-  onClose();
-};
-
-
+    onSave(uniqueUserIds, currentProjectOwnerId);
+    onClose();
+  };
 
   return (
     <Transition appear show={show} as="div">
@@ -114,10 +82,7 @@ const handleSave = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           />
-          {/* Trick the browser into centering the modal contents */}
-          <span className="inline-block h-screen align-middle" aria-hidden="true">
-            &#8203;
-          </span>
+          <span className="inline-block h-screen align-middle" aria-hidden="true">&#8203;</span>
           <TransitionChild
             as="div"
             className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl"
@@ -131,18 +96,17 @@ const handleSave = () => {
             <DialogTitle as="h3" className="text-lg font-medium leading-6 text-gray-900 mb-4">
               Team Members
             </DialogTitle>
+
             <div className="mb-4">
               <Combobox value={''} onChange={setQuery}>
                 <div className="relative mt-1">
                   <Combobox.Input
                     className="w-full border border-gray-300 rounded-md shadow-sm py-2 pl-3 pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    onChange={(event) => setQuery(event.target.value)}
+                    onChange={(e) => setQuery(e.target.value)}
                     displayValue={() => ''}
                     placeholder="Search users to add..."
                   />
-                  <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-                    {/* Optional: Icon for the button */}
-                  </Combobox.Button>
+                  <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2" />
 
                   <Transition
                     as={React.Fragment}
@@ -157,20 +121,14 @@ const handleSave = () => {
                           <Combobox.Option
                             key={user._id}
                             className={({ active }) =>
-                              `cursor-default select-none px-4 py-2 ${active ? 'bg-blue-500 text-white' : 'text-gray-900'
+                              `cursor-default select-none px-4 py-2 ${
+                                active ? 'bg-blue-500 text-white' : 'text-gray-900'
                               }`
                             }
                             value={user}
                             onClick={() => handleAddUser(user)}
                           >
-                            {({ active }) => (
-                              <>
-                                <span className={`block truncate ${active ? 'font-semibold' : 'font-normal'}`}>
-                                  {user.firstName} {user.lastName} ({user.email})
-                                </span>
-                                {/* Optional: Checkmark when selected */}
-                              </>
-                            )}
+                            {user.firstName} {user.lastName} ({user.email})
                           </Combobox.Option>
                         ))
                       ) : query !== '' ? (
@@ -185,45 +143,51 @@ const handleSave = () => {
             <div>
               <h3 className="mt-4 font-semibold text-gray-700">Add Users</h3>
               <ul className="mt-2 divide-y divide-gray-200">
-                {selectedUsersToAdd.map((user) => (
-                  <li key={user._id} className="py-3 flex items-center justify-between">
-                    <span>{user.firstName} {user.lastName}</span>
-                    <button
-                      onClick={() => handleRemoveFromAdd(user)}
-                      className="ml-2 focus:outline-none"
-                      title="Remove from Add"
-                    >
-                      <UserMinusIcon className="h-5 w-5 text-red-500" />
-                    </button>
-                  </li>
-                ))}
-                {selectedUsersToAdd.length === 0 && <li className="py-3 text-gray-500">No users selected to add.</li>}
+                {selectedUsersToAdd.length > 0 ? (
+                  selectedUsersToAdd.map((user) => (
+                    <li key={user._id} className="py-3 flex items-center justify-between">
+                      <span>{user.firstName} {user.lastName}</span>
+                      <button
+                        onClick={() => handleRemoveFromAdd(user)}
+                        className="ml-2 focus:outline-none"
+                        title="Remove from Add"
+                      >
+                        <UserMinusIcon className="h-5 w-5 text-red-500" />
+                      </button>
+                    </li>
+                  ))
+                ) : (
+                  <li className="py-3 text-gray-500">No users selected to add.</li>
+                )}
               </ul>
             </div>
 
             <div className="mt-4">
               <h3 className="font-semibold text-gray-700">Current Members</h3>
               <ul className="mt-2 divide-y divide-gray-200">
-                {currentMembers.map((user) => (
-                  <li key={user._id} className="py-3 flex items-center justify-between">
-                    <div className="flex items-center">
-                      <span>{user.firstName} {user.lastName}</span>
-                      {user._id === currentProjectOwnerId && (
-                        <span className="ml-2 text-xs text-gray-500 italic">(Owner)</span>
+                {currentMembers.length > 0 ? (
+                  currentMembers.map((user) => (
+                    <li key={user._id} className="py-3 flex items-center justify-between">
+                      <div className="flex items-center">
+                        <span>{user.firstName} {user.lastName}</span>
+                        {user._id === currentProjectOwnerId && (
+                          <span className="ml-2 text-xs text-gray-500 italic">(Owner)</span>
+                        )}
+                      </div>
+                      {user._id !== currentProjectOwnerId && (
+                        <button
+                          onClick={() => handleRemoveCurrentUser(user._id)}
+                          className="ml-2 focus:outline-none"
+                          title="Remove User"
+                        >
+                          <UserMinusIcon className="h-5 w-5 text-red-500" />
+                        </button>
                       )}
-                    </div>
-                    {user._id !== currentProjectOwnerId && (
-                      <button
-                        onClick={() => handleRemoveCurrentUser(user._id)}
-                        className="ml-2 focus:outline-none"
-                        title="Remove User"
-                      >
-                        <UserMinusIcon className="h-5 w-5 text-red-500" />
-                      </button>
-                    )}
-                  </li>
-                ))}
-                {currentMembers.length === 0 && <li className="py-3 text-gray-500">No current members.</li>}
+                    </li>
+                  ))
+                ) : (
+                  <li className="py-3 text-gray-500">No current members.</li>
+                )}
               </ul>
             </div>
 
