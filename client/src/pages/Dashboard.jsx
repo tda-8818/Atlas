@@ -39,7 +39,8 @@ const Dashboard = () => {
 
     
   useEffect(() => {
-      refetch();
+      refetchTasks();
+      refetchUsers();
   }, []);
 
 
