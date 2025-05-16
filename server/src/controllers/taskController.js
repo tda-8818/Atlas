@@ -47,8 +47,18 @@ export const createEvent = async (req, res) => {
 
 export const createTask = async (req, res) => {
     try {
-        // Optionally remove reliance on the cookie if the client includes projectId in the body.
-        const { projectId, title, description, startDate, dueDate, columnId,assignedTo, priority, status } = req.body;
+        const {
+            _id, // optional custom ID
+            projectId,
+            title,
+            description,
+            startDate,
+            dueDate,
+            columnId,
+            assignedTo,
+            priority,
+            status
+        } = req.body;
 
         if (!projectId) {
             return res.status(400).json({ message: 'Project ID is required' });
@@ -59,53 +69,46 @@ export const createTask = async (req, res) => {
             return res.status(404).json({ message: "Project not found" });
         }
 
-        // 5. Create Task object
-        // Refer to TaskSchema data points required.
-        // Ensure the HTML request sends information which is congruent with the TaskSchema.
-        const newTask = new Task({
-            projectId: project,
+        // Build task data conditionally including _id
+        const taskData = {
+            ...(!!_id && { _id }), // only include _id if it's provided
+            projectId,
             title,
             description,
-            startDate: startDate,
-            dueDate: dueDate,
-            columnId:columnId,
-            assignedTo: assignedTo,
-            priority: priority,
-            status: status,
-        });
+            startDate,
+            dueDate,
+            columnId,
+            assignedTo,
+            priority,
+            status
+        };
 
+        const newTask = new Task(taskData);
+
+        // Assign to column (default or specified)
         if (!columnId) {
             console.log("No columnId provided, inserting into default column");
-            const defaultColumn = await Column.findOne({projectId, isDefault:true});
+            const defaultColumn = await Column.findOne({ projectId, isDefault: true });
+            if (!defaultColumn) {
+                return res.status(404).json({ message: "Default column not found" });
+            }
             newTask.columnId = defaultColumn._id;
-
             defaultColumn.tasks.push(newTask._id);
             await defaultColumn.save();
-        }
-        else{
-            const columnToInsert = await Column.findOne({_id:columnId, projectId})
-
-            if (!columnToInsert) return res.status(404).json({message: "Target column not found in project"});
-            
+        } else {
+            const columnToInsert = await Column.findOne({ _id: columnId, projectId });
+            if (!columnToInsert) {
+                return res.status(404).json({ message: "Target column not found in project" });
+            }
             columnToInsert.tasks.push(newTask._id);
-            await columnToInsert.save(); 
+            await columnToInsert.save();
         }
 
-        console.log("New task created:", newTask);
+        const savedTask = await newTask.save();
 
-        // 6. Save task document in database
-        const savedTask = await newTask.save(); // savedTask is the task object.
-
-        // 7. Append the task to the project. This stores the task in a project.tasks array
         project.tasks.push(savedTask._id);
-        // 8. Save the project document
-        await project.save()
+        await project.save();
 
-        // // Optionally link the task back to the project
-        // project.tasks.push(savedTask._id);
-        // await project.save();
-
-        // 9. Send the oid for the task back to the frontend.
         res.status(201).json(savedTask);
     } catch (error) {
         console.error("Error creating task:", error);

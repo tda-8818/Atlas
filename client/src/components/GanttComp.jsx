@@ -81,35 +81,25 @@ export default class GanttComp extends Component {
       return false; // Prevent the default lightbox from showing
     });
 
-    // Override double-click to open our edit modal
-    gantt.attachEvent("onTaskDblClick", (id, e) => {
-         const task = gantt.getTask(id);
-         console.log("THE GANTT TASK FORMAT: ",task);
-         if (onEditTask && typeof onEditTask === 'function') {
-              onEditTask(task);
-         }
-         return false; // Prevent default lightbox
-    });
-
     // Override single click to open our edit modal
-     if (!this.taskClickEventAttached) {
-         gantt.attachEvent("onTaskClick", (id, e) => {
-             // Check if the click target is the '+' button in the grid
-             const target = e.target;
-             if (target.classList.contains('gantt-add-btn') || target.closest('.gantt_grid_head_add')) {
-                  return true; // Let the onGridClick handler handle this
-             }
+    // --- Single click to open our edit modal ---
+    if (!this.taskClickEventAttached) {
+      gantt.attachEvent("onTaskClick", (id, e) => {
+        const target = e.target;
+        if (target.classList.contains('gantt-add-btn') || target.closest('.gantt_grid_head_add')) {
+          return true;
+        }
 
-             // Otherwise, handle task editing on single click
-             const task = gantt.getTask(id);
-             console.log("THE GANTT TASK FORMAT: ",task);
-             if (onEditTask && typeof onEditTask === 'function') {
-                  onEditTask(task);
-             }
-             return true; // Allow default selection behavior
-         });
-         this.taskClickEventAttached = true;
-     }
+        const task = gantt.getTask(id);
+        console.log("THE GANTT TASK FORMAT: ", task);
+        if (onEditTask && typeof onEditTask === 'function') {
+          onEditTask(task);
+        }
+        return true; // Allow default selection behavior
+      });
+      this.taskClickEventAttached = true;
+    }
+
 
 
     // --- Attach CRUD events to call parent callbacks ---
@@ -199,12 +189,12 @@ export default class GanttComp extends Component {
 
     // Custom tooltip template
     gantt.templates.tooltip_text = function(start, end, task) {
-        const assignedNames = (task.assignedTo || [])
-           .map(userId => {
-               const member = teamMembers.find(m => m.id === userId); // Use teamMembers prop
-               return member ? member.name : 'Unknown';
-           })
-           .join(', ');
+        // const assignedNames = (task.assignedTo || [])
+        //    .map(userId => {
+        //        const member = teamMembers.find(m => m.id === userId); // Use teamMembers prop
+        //        return member ? member.name : 'Unknown';
+        //    })
+        //    .join(', ');
 
         // Format dates for display in tooltip
         // Use task.start_date and task.end_date from Gantt's internal object
@@ -219,7 +209,6 @@ export default class GanttComp extends Component {
             <b>End date:</b> ${endDateFormatted}<br/>
             <b>Duration:</b> ${task.duration || 0} days<br/>
             <b>Progress:</b> ${Math.round((task.progress || 0) * 100)}%<br/>
-            ${assignedNames ? `<b>Assigned To:</b> ${assignedNames}<br/>` : ''}
             ${task.priority && task.priority !== 'none' ? `<b>Priority:</b> ${task.priority}<br/>` : ''}
             ${task.tag ? `<b>Tag:</b> ${task.tag}<br/>` : ''}
             ${task.description ? `<b>Description:</b> ${task.description.substring(0, 100)}${task.description.length > 100 ? '...' : ''}<br/>` : ''}

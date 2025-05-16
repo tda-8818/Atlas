@@ -68,6 +68,7 @@ export const projectApiSlice = createApi({
       query: (projectId) => `/tasks/${projectId}`,                        // change task route to fetch project tasks
       providesTags: (result, error, projectId) => [{ type: 'Task', id: projectId }],
     }),
+    invalidatesTags: (result, error, projectId) => [{ type: 'Task', id: projectId }],
 
     /** USER-PROJECT RELATED QUERIES */
     // Get all users in a project
