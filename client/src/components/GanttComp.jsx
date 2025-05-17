@@ -83,22 +83,33 @@ export default class GanttComp extends Component {
 
     // Override single click to open our edit modal
     // --- Single click to open our edit modal ---
-    if (!this.taskClickEventAttached) {
-      gantt.attachEvent("onTaskClick", (id, e) => {
-        const target = e.target;
-        if (target.classList.contains('gantt-add-btn') || target.closest('.gantt_grid_head_add')) {
-          return true;
-        }
+if (!this.taskClickEventAttached) {
+  gantt.attachEvent("onTaskClick", (id, e) => {
+    const target = e.target;
 
-        const task = gantt.getTask(id);
-        console.log("THE GANTT TASK FORMAT: ", task);
-        if (onEditTask && typeof onEditTask === 'function') {
-          onEditTask(task);
-        }
-        return true; // Allow default selection behavior
-      });
-      this.taskClickEventAttached = true;
+    // Ignore add button clicks
+    if (target.classList.contains('gantt-add-btn') || target.closest('.gantt_grid_head_add')) {
+      return true;
     }
+
+    // Ensure click is from the grid (left side)
+    const gridCell = target.closest(".gantt_cell");
+    if (!gridCell) return true;
+
+    // Check if it's the "text" column specifically (task name)
+    // const isTextColumn = gridCell.classList.contains("gantt_column_name_text");
+    // if (!isTextColumn) return true;
+
+    const task = gantt.getTask(id);
+    if (this.props.onEditTask && typeof this.props.onEditTask === 'function') {
+      this.props.onEditTask(task);
+    }
+
+    return true;
+  });
+  this.taskClickEventAttached = true;
+}
+
 
 
 
@@ -107,16 +118,20 @@ export default class GanttComp extends Component {
     if (!this.eventAttached) {
 
       // This fires after a task is updated (e.g., dragged, resized, or updated via gantt.updateTask)
-      gantt.attachEvent("onAfterTaskUpdate", (id, task) => {
-           console.log("Gantt onAfterTaskUpdate:", id, task);
-           // Call the parent component's handler to update React state
-           // Pass the task ID and the updated task object from Gantt
-           // This will contain the new start_date and end_date/duration after a drag/resize
-           if (onGanttTaskUpdate && typeof onGanttTaskUpdate === 'function') {
-               onGanttTaskUpdate(id, task);
-           }
-           // Backend integration logic here (optional) - could be in the parent or here
-      });
+      // Fires after a drag or resize is completed
+  gantt.attachEvent("onAfterTaskDrag", (id, mode, e) => {
+    const task = gantt.getTask(id);
+
+    // Only trigger onEditTask after actual drag or resize
+    if (mode === "move" || mode === "resize") {
+      if (this.props.onEditTask && typeof this.props.onEditTask === 'function') {
+        this.props.onGanttTaskUpdate(id,task);
+      }
+    }
+
+    return true; // Allow default behavior
+  });
+
 
        // This fires after a task is deleted (e.g., using Gantt's delete key)
        gantt.attachEvent("onAfterTaskDelete", (id) => {

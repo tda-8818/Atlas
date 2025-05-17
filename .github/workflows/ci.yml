@@ -50,6 +50,7 @@ jobs:
         npm install dhtmlx-gantt
         npm install axios
         npm install eslint
+        npm install bson-objectid
 
 
     # - name: Run client tests

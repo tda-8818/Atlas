@@ -84,6 +84,7 @@ const Gantt = () => {
         text: task.title,
         start_date: formatDateForGantt(task.startDate), // make sure this is in Gantt-compatible format
         duration: (new Date(task.dueDate)-new Date(task.startDate))/(1000*60*60*24),
+        dueDate: task.dueDate,
         progress: task.progress || 0,
         projectId: task._id,
         description: task.description,
@@ -94,22 +95,7 @@ const Gantt = () => {
         })),
         links: [] // optionally add real links here
     };
-    const taskFromDB = [
-      ...projectTasks.map(task => ({
-        _id: task._id,
-        projectId: task._id,
-        title: task.title,
-        startDate: task.startDate,
-        dueDate: task.dueDate,
-        description: task.description,
-        assignedTo: task.assignedTo,
-        priority: task.priority,
-        status: task.status,
-        subtasks: task.subtasks,
-      })),
-    ]
       setTasks(formattedData);
-      setCurrentTasks(taskFromDB);
     }, [currentProject, projectTasks])
     
 
@@ -141,11 +127,25 @@ const Gantt = () => {
                        dueDate: updatedGanttTask.end_date ? formatDateForPopup(gantt.date.add(updatedGanttTask.end_date, -1, 'day')) : '' // Due date is the day before Gantt's end_date
                    };
                     console.log("Updated state for task (from Gantt update):", taskId, updatedTask);
+                  
                    return updatedTask;
                }
                return task;
            })
        }));
+       const formattedUpdatedGanttTask = {
+           id: new ObjectId(updatedGanttTask.id),
+            projectId: currentProject._id,
+            title: updatedGanttTask.text,
+            startDate: updatedGanttTask.start_date,
+            dueDate: updatedGanttTask.dueDate,
+            description: updatedGanttTask.description,
+            assignedTo: updatedGanttTask.assignedTo,
+            priority: updatedGanttTask.priority,
+            status: updatedGanttTask.status,
+            subtasks: updatedGanttTask.subtasks,
+        };
+       handleEditTaskConfirm(formattedUpdatedGanttTask);
    };
 
    // Handler to delete tasks from state when Gantt deletes them
@@ -346,8 +346,7 @@ const handleDeleteTaskFromPopup = async() =>{
        console.log("Editing Gantt task:", ganttTask);
        // Prepare task data for the popup, including custom properties
        const startDate = new Date(ganttTask.start_date);
-       const endDate = new Date(startDate);
-       endDate.setDate(startDate.getDate() + Math.round(ganttTask.duration));
+       const endDate = new Date(ganttTask.dueDate);
        const taskDataForPopup = {
            id: ganttTask.id,
            title: ganttTask.text || '',
