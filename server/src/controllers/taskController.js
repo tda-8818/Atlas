@@ -1,6 +1,7 @@
 import Project from '../models/ProjectModel.js';
 import Task from '../models/TaskModel.js';
 import Column from '../models/ColumnModel.js';
+import Subtask from '../models/subtaskModel.js';
 /**
  * Gets task details based on the projectId query parameter.
  * If no projectId is provided, it fetches all tasks.
@@ -114,41 +115,6 @@ export const createTask = async (req, res) => {
         console.error("Error creating task:", error);
         res.status(500).json({ message: "Error creating task", error });
     }
-};
-
-export const createSubTask = async(req, res) => {
-    try {
-        const { taskId } = req.params
-        const { title, priority } = req.body;
-
-        if (!taskId){
-            return res.status(400).json({message: "Error in createSubTask. TaskID undefined!"})
-        }
-
-        const mainTask = await Task.findById(taskId);
-
-        if (!mainTask) {
-            return res.status(400).json({message: "Error in createSubTask. Cannot find task to insert!"})
-        }
-
-        const newSubtask = new Task({
-            title: title,
-            priority: priority
-        })
-        
-        // insert subtask into mainTask
-        mainTask.tasks.push(newSubtask);
-        await mainTask.save();
-
-        console.log(`Subtask ${newSubtask} inserted into ${mainTask}!`);
-        
-        return res.status(201).json(newSubtask);
-
-    } catch (error) {
-        console.error("Error in createSubTask", error);
-        res.status(500).json({message: "Error creating subtask", error});
-    }
-
 };
 
 export const updateTask = async (req, res) => {
@@ -277,3 +243,86 @@ export const assignUsersToTask = async (req, res) => {
       return res.status(500).json({ message: 'Server error', error: error.message });
     }
   };
+////////////////////////////////////////////////////
+//     BEGINNING OF SUBTASK RELATED FUNCTIONS     //
+////////////////////////////////////////////////////
+
+/**
+ *  
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+  export const createSubTask = async(req, res) => {
+    try {
+        const { taskId } = req.params
+        const { title, priority } = req.body;
+
+        if (!taskId){
+            return res.status(400).json({message: "Error in createSubTask. TaskID undefined!"})
+        }
+
+        const mainTask = await Task.findById(taskId);
+
+        if (!mainTask) {
+            return res.status(400).json({message: "Error in createSubTask. Cannot find task to insert!"})
+        }
+        
+        // Create a new subtask with a reference to the parent task
+        const newSubtask = await Subtask.create({
+            title,
+            priority,
+            parentTaskId: taskId
+        });
+        
+        // insert subtask into mainTask
+        mainTask.subtasks.push(newSubtask._id);
+        await mainTask.save();
+
+        console.log(`Subtask ${title} inserted into ${mainTask.title}!`);
+        
+        return res.status(201).json(newSubtask);
+
+    } catch (error) {
+        console.error("Error in createSubTask", error);
+        res.status(500).json({message: "Error creating subtask", error});
+    }
+
+};
+
+/**
+ *  
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+  export const deleteSubtask = async(req, res) => {
+    try {
+        const { subtaskId } = req.params
+        console.log('deleteSubTasks has been executed received taskId', subtaskId);
+
+        const task_to_delete = await Subtask.findById(subtaskId);
+    
+        if (!task_to_delete) {
+            return res.status(404).json({ message: "Task not found"});
+        }
+
+        // remove subtask from parent's list of tasks
+        await Task.findByIdAndUpdate(
+          { _id: task_to_delete.parentTaskId},
+          { $pull: { subtasks: task_to_delete._id}}
+        );
+
+        // remove subtask from Subtask database
+        await Subtask.findByIdAndDelete(subtaskId);
+
+        res.status(200).json({ message: "Task deleted successfully", deletedTask: task_to_delete });
+    } catch (error) {
+        console.error("Error deleting task in deleteSubtask: ", error);
+        res.status(500).json({ message: "Server error while deleting subtask"});
+    }
+};
+
+////////////////////////////////////////////////////
+//     END OF SUBTASK RELATED FUNCTIONS           //
+////////////////////////////////////////////////////

@@ -10,7 +10,8 @@ const userSchema = new mongoose.Schema({
     profilePic: { type: String, default: '' },
     projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}],
     favourite_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}],
-    recent_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}]
+    recent_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}],
+    notifications: [{type: mongoose.Schema.Types.ObjectId, ref: 'notifications', default: []}]
 }, {timestamps: true});
 
 /*
