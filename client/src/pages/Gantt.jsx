@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import GanttComp from '../components/GanttComp';
 import { useOutletContext } from "react-router-dom";
-import AddTaskPopup from '../components/AddTaskPopup';
+import AddTaskPopup from '../components/modals/AddTaskPopup';
 import { gantt } from 'dhtmlx-gantt';
 import Sidebar from '../components/Sidebar';
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from '../redux/slices/taskSlice';

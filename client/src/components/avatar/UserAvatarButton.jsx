@@ -1,15 +1,15 @@
 import { Menu } from '@headlessui/react';
-import UserAvatarButton from './UserAvatarButton';
+import UserAvatar from './UserAvatar';
 import UserDropdownMenu from './UserDropdownMenu';
 
-const UserAvatar = () => {
+const UserAvatarButton = () => {
 
   return (
     <Menu as="div" className="relative">
-      <UserAvatarButton />
+      <UserAvatar />
       <UserDropdownMenu />
     </Menu>
   );
 };
 
-export default UserAvatar;
+export default UserAvatarButton;

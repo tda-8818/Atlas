@@ -2,60 +2,8 @@
 import React, { useState, useEffect, useRef, use } from 'react';
 import { useGetSubTasksQuery,useCreateSubTaskMutation,useDeleteSubTaskMutation,useUpdateSubTaskMutation } from '../redux/slices/taskSlice';
 
-// Sample team members data (you might want to fetch this from a shared source later)
-// This data is duplicated here and in Gantt.jsx - ideally, it should be in a shared context or store.
-
 // Define priority levels
 const priorityLevels = ['', '!', '!!', '!!!'];
-
-// Helper function to generate IDs (can be moved to a utility file)
-// const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
-// // Avatar component (can be moved to a shared component file)
-// const Avatar = ({ user, size = "small" }) => {
-//   if (!user) return null;
-
-//   const sizeClass = size === "small" ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm";
-
-//   return (
-//     <div className={`relative rounded-full overflow-hidden ${sizeClass} flex items-center justify-center flex-shrink-0`}>
-//       {user.avatar ? (
-//         <img
-//           src={user.avatar}
-//           alt={user.name}
-//           className="w-full h-full object-cover"
-//           onError={(e) => {
-//             e.target.style.display = 'none';
-//             e.target.nextSibling.style.display = 'flex';
-//           }}
-//         />
-//       ) : null}
-//       <div
-//         className={`absolute inset-0 bg-blue-500 text-white flex items-center justify-center ${user.avatar ? 'hidden' : ''}`}
-//         style={{ backgroundColor: stringToColor(user.name) }}
-//       >
-//         {user.initials}
-//       </div>
-//     </div>
-//   );
-// };
-
-// Generate a color based on a string (name) (can be moved to a utility file)
-// const stringToColor = (str) => {
-//   if (!str) return '#000000';
-
-//   let hash = 0;
-//   for (let i = 0; i < str.length; i++) {
-//     hash = str.charCodeAt(i) + ((hash << 5) - hash);
-//   }
-//   let color = '#';
-//   for (let i = 0; i < 3; i++) {
-//     const value = (hash >> (i * 8)) & 0xFF;
-//     color += ('00' + value.toString(16)).substr(-2);
-//   }
-//   return color;
-// };
-
 
 const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers = [], initialValues = null }) => {
   const [title, setTitle] = useState('');
@@ -313,38 +261,12 @@ const toggleUserAssignment = (member) => {
 };
 
 
-   // Key down handler for the entire modal content
-   const handleModalKeyDown = (e) => {
-        // Prevent saving on Enter if member search is open and focused
-        if (showMemberSearch && memberSearchRef.current?.contains(e.target)) {
-            return;
-        }
-        // Prevent saving on Enter if the new subtask input is focused (Enter adds subtask)
-        if (e.target.id === 'newSubtaskInput') {
-            return;
-        }
-        // Prevent saving on Enter if a textarea is focused
-        if (e.target.tagName === 'TEXTAREA') {
-             return;
-        }
-
-        if (e.key === 'Enter') {
-            e.preventDefault(); // Prevent default (e.g., form submission)
-            handleSave(); // Trigger save
-        } else if (e.key === 'Escape') {
-            onCancel(); // Close on Escape
-        }
-   };
-
-  //  const handleTaskDelete = () =>{
-  //     onDelete();
-  //     onCancel();
-  //  };
+  
 
   return (
     <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
       {/* Add onKeyDown listener to the modal content div */}
-      <div ref={modalRef} className="bg-[var(--background)] rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto" onKeyDown={handleModalKeyDown}>
+      <div ref={modalRef} className="bg-[var(--background)] rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto">
 
         {/* Top row: Task Title, Tag, Priority */}
         <div className="flex items-center gap-3 mb-4">
@@ -598,7 +520,7 @@ const toggleUserAssignment = (member) => {
                      onChange={(e) => setNewSubtaskTitle(e.target.value)}
                      placeholder="Add a subtask..."
                      className="flex-1 border rounded px-3 text-[var(--text)] py-2 text-sm mr-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSubtask(); } }}
+            
                    />
                    <button
                      onClick={addSubtask}

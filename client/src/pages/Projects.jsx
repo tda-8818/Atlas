@@ -3,12 +3,12 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { useGetCurrentUserProjectsQuery, useCreateProjectMutation, useDeleteProjectMutation } from '../redux/slices/projectSlice';
 import { useNavigate } from "react-router-dom";
-import UserAvatar from "../components/UserAvatar";
+import UserAvatar from "../components/avatar/UserAvatarButton.jsx";
 import { LuClock } from "react-icons/lu";
 import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';
 import AddProjectModal from "../components/modals/AddProjectModal.jsx";
-import DeleteProjectModal from "../components/DeleteProjectModal.jsx"
+import DeleteProjectModal from "../components/modals/DeleteProjectModal.jsx"
 
 const Projects = () => {
     const navigate = useNavigate();

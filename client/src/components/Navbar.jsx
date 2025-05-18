@@ -2,7 +2,7 @@ import React from 'react';
 import { RxDashboard, RxCalendar } from "react-icons/rx";
 import { LuChartGantt, LuSquareKanban } from "react-icons/lu";
 import { useLocation, useNavigate } from 'react-router-dom';
-import UserAvatar from './UserAvatar';
+import UserAvatar from './avatar/UserAvatarButton';
 
 const Navbar = ({ project }) => {
   const location = useLocation();

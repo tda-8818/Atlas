@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import { MenuItems, MenuItem, Transition } from '@headlessui/react';
 import { LuSettings, LuCircleArrowOutUpLeft } from 'react-icons/lu';
 import { useNavigate } from 'react-router-dom';
-import { useLogoutMutation } from '../redux/slices/userSlice';
+import { useLogoutMutation } from '../../redux/slices/userSlice';
 
 const UserDropdownMenu = () => {
   const navigate = useNavigate();

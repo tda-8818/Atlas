@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import AddTaskPopup from '../components/AddTaskPopup';
+import AddTaskPopup from '../components/modals/AddTaskPopup';
 import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 import { useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation } from "../redux/slices/projectSlice";

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { MenuButton } from '@headlessui/react';
 import { LuUser } from 'react-icons/lu';
-import { getInitials } from '../utils/userUtils';
-import { useGetCurrentUserQuery } from '../redux/slices/userSlice';
+import { getInitials } from '../../utils/userUtils';
+import { useGetCurrentUserQuery } from '../../redux/slices/userSlice';
 
-const UserAvatarButton = () => {
+const UserAvatar = () => {
   const { data: currentUser } = useGetCurrentUserQuery();
   const user = currentUser?.user;
   const profileImage = user?.profilePic;
@@ -41,4 +41,4 @@ const UserAvatarButton = () => {
   );
 };
 
-export default UserAvatarButton;
+export default UserAvatar;

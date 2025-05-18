@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import StatBox from '../components/StatBox';
 import Navbar from '../components/Navbar';
-import ProjectUsersModal from '../components/ProjectUsersModal';
+import ProjectUsersModal from '../components/modals/ProjectUsersModal.jsx';
 import { useOutletContext } from 'react-router-dom';
 import {
   useGetProjectByIdQuery,
