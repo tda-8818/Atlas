@@ -161,6 +161,7 @@ export const {
   useUpdateColumnMutation,
   useDeleteColumnMutation,
   useReorderColumnsMutation,
+  useLazyGetProjectUsersQuery
 } = projectApiSlice;
 
 export default projectApiSlice;
