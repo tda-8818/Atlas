@@ -257,6 +257,9 @@ export const assignUsersToTask = async (req, res) => {
     try {
         const { taskId } = req.params
         const { title, priority } = req.body;
+        console.log('createSubTask has been executed received taskId', taskId);
+        console.log('createSubTask has been executed received title', title);
+        console.log('createSubTask has been executed received priority', priority);
 
         if (!taskId){
             return res.status(400).json({message: "Error in createSubTask. TaskID undefined!"})

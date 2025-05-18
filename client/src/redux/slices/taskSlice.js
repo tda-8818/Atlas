@@ -3,6 +3,7 @@
  * Manages all task-related API queries and mutations with RTK Query.
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { get } from 'mongoose';
 
 const TASK_API_URL = import.meta.env.VITE_API_URL;
 
@@ -78,6 +79,44 @@ export const taskApiSlice = createApi({
         { type: 'Task', id: taskId }
       ]
     }),
+
+    /** SUBTASK RELATED QUERIES */
+    getSubTasks: builder.query({
+      query: (taskId) => `/tasks/${taskId}`,
+      providesTags: (result, error, taskId) => [
+        { type: 'Task', id: taskId }
+      ]
+    }),
+
+    createSubTask: builder.mutation({
+      query: ({ taskId, subTask }) => ({
+        url: `/tasks/${taskId}/subtasks`,
+        method: 'POST',
+        body: subTask,
+      }),
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: 'Task', id: taskId }
+      ],
+    }),
+    deleteSubTask: builder.mutation({
+      query: ({ taskId, subTaskId }) => ({
+        url: `/tasks/${taskId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: 'Task', id: taskId }
+      ],
+    }),
+    updateSubTask: builder.mutation({
+      query: ({ taskId, subTaskId, subTask }) => ({
+        url: `/tasks/${taskId}`,
+        method: 'PUT',
+        body: { subTaskId, subTask },
+      }),
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: 'Task', id: taskId }
+      ],
+    }),
   }),
 });
 
@@ -89,6 +128,10 @@ export const {
   useAssignUserToTaskMutation,
   useUnassignUserFromTaskMutation,
   useGetTaskAssigneesQuery,
+  useGetSubTasksQuery,
+  useCreateSubTaskMutation,
+  useDeleteSubTaskMutation,
+  useUpdateSubTaskMutation,
 } = taskApiSlice;
 
 export default taskApiSlice;

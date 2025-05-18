@@ -1,66 +1,60 @@
 // AddTaskPopup-1.jsx
 import React, { useState, useEffect, useRef, use } from 'react';
+import { useGetSubTasksQuery,useCreateSubTaskMutation,useDeleteSubTaskMutation,useUpdateSubTaskMutation } from '../redux/slices/taskSlice';
 
 // Sample team members data (you might want to fetch this from a shared source later)
 // This data is duplicated here and in Gantt.jsx - ideally, it should be in a shared context or store.
-const teamMembers = [
-  { id: "user-1", name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", initials: "AJ" },
-  { id: "user-2", name: "Sarah Wilson", avatar: "https://i.pravatar.cc/150?img=3", initials: "SW" },
-  { id: "user-3", name: "David Chen", avatar: "https://i.pravatar.cc/150?img=5", initials: "DC" },
-  { id: "user-4", name: "Emma Rodriguez", avatar: "https://i.pravatar.cc/150?img=7", initials: "ER" },
-  { id: "user-5", name: "Michael Brown", avatar: "https://i.pravatar.cc/150?img=9", initials: "MB" },
-];
 
 // Define priority levels
 const priorityLevels = ['', '!', '!!', '!!!'];
 
 // Helper function to generate IDs (can be moved to a utility file)
-const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+// const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-// Avatar component (can be moved to a shared component file)
-const Avatar = ({ user, size = "small" }) => {
-  if (!user) return null;
+// // Avatar component (can be moved to a shared component file)
+// const Avatar = ({ user, size = "small" }) => {
+//   if (!user) return null;
 
-  const sizeClass = size === "small" ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm";
+//   const sizeClass = size === "small" ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm";
 
-  return (
-    <div className={`relative rounded-full overflow-hidden ${sizeClass} flex items-center justify-center flex-shrink-0`}>
-      {user.avatar ? (
-        <img
-          src={user.avatar}
-          alt={user.name}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.target.style.display = 'none';
-            e.target.nextSibling.style.display = 'flex';
-          }}
-        />
-      ) : null}
-      <div
-        className={`absolute inset-0 bg-blue-500 text-white flex items-center justify-center ${user.avatar ? 'hidden' : ''}`}
-        style={{ backgroundColor: stringToColor(user.name) }}
-      >
-        {user.initials}
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div className={`relative rounded-full overflow-hidden ${sizeClass} flex items-center justify-center flex-shrink-0`}>
+//       {user.avatar ? (
+//         <img
+//           src={user.avatar}
+//           alt={user.name}
+//           className="w-full h-full object-cover"
+//           onError={(e) => {
+//             e.target.style.display = 'none';
+//             e.target.nextSibling.style.display = 'flex';
+//           }}
+//         />
+//       ) : null}
+//       <div
+//         className={`absolute inset-0 bg-blue-500 text-white flex items-center justify-center ${user.avatar ? 'hidden' : ''}`}
+//         style={{ backgroundColor: stringToColor(user.name) }}
+//       >
+//         {user.initials}
+//       </div>
+//     </div>
+//   );
+// };
 
 // Generate a color based on a string (name) (can be moved to a utility file)
-const stringToColor = (str) => {
-  if (!str) return '#000000';
+// const stringToColor = (str) => {
+//   if (!str) return '#000000';
 
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  let color = '#';
-  for (let i = 0; i < 3; i++) {
-    const value = (hash >> (i * 8)) & 0xFF;
-    color += ('00' + value.toString(16)).substr(-2);
-  }
-  return color;
-};
+//   let hash = 0;
+//   for (let i = 0; i < str.length; i++) {
+//     hash = str.charCodeAt(i) + ((hash << 5) - hash);
+//   }
+//   let color = '#';
+//   for (let i = 0; i < 3; i++) {
+//     const value = (hash >> (i * 8)) & 0xFF;
+//     color += ('00' + value.toString(16)).substr(-2);
+//   }
+//   return color;
+// };
 
 
 const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers = [], initialValues = null }) => {
@@ -71,6 +65,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
   const [assignedTo, setAssignedTo] = useState([]);
   const [description, setDescription] = useState('');
   const [subtasks, setSubtasks] = useState([]);
+  const [subtaskIds, setSubtaskIds] = useState([]); // New state for subtask ID
   const [priority, setPriority] = useState('none');
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
 
@@ -81,6 +76,9 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
   const [isDescriptionCollapsed, setIsDescriptionCollapsed] = useState(true);
   const [isSubtasksCollapsed, setIsSubtasksCollapsed] = useState(true);
 
+  const [createSubTask] = useCreateSubTaskMutation();
+  const [deleteSubTask] = useDeleteSubTaskMutation();
+  const [updateSubTask] = useUpdateSubTaskMutation();
 
   // Track if we're in edit mode
   const [isEditing, setIsEditing] = useState(false);
@@ -89,6 +87,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
   const memberSearchRef = useRef(null); // Ref for member search dropdown
   const titleInputRef = useRef(null); // Ref for the title input
 
+  const { data: subtasksData, isLoading: isSubtasksLoading } = useGetSubTasksQuery(initialValues?.id);
   // Handler to populate form with initialValues when editing an existing task
   useEffect(() => {
     if (show) {
@@ -102,7 +101,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
         setDueDate(formatDateToInputValue(initialValues.dueDate) || '');
         setAssignedTo(initialValues.assignedTo || []);
         setDescription(initialValues.description || '');
-        setSubtasks(initialValues.subtasks || []);
+        setSubtaskIds(initialValues.subtasks || []);
         setPriority(initialValues.priority || 'none');
         setIsEditing(true);
         // If description or subtasks have content, expand those sections by default when editing
@@ -117,7 +116,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
         setDueDate('');
         setAssignedTo([]);
         setDescription('');
-        setSubtasks([]);
+        setSubtaskIds([]);
         setPriority('none');
         setIsEditing(false);
         // Collapse sections by default when adding
@@ -138,6 +137,22 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
 
     }
   }, [show, initialValues]); // Added initialValues to dependencies
+
+  //fetch and display current subtasks 
+  useEffect(() => {
+    if (!subtasksData) return; // Ensure data is available
+    console.log("Subtasks: ", subtaskIds);
+
+    const fetchedSubtasks = subtasksData.map((subtask) => ({
+      id: subtask._id,
+      title: subtask.title,
+      completed: subtask.status,
+      priority: subtask.priority,
+    }));
+    setSubtasks(fetchedSubtasks);
+    const fetchedSubtaskIds = subtasksData.map((subtask) => subtask._id);
+    setSubtaskIds(fetchedSubtaskIds);
+  }, [subtasksData]);
 
   function formatDateToInputValue(date) {
   if (!date) return '';
@@ -219,26 +234,39 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
     onEdit(taskData);
   };
 
-  const addSubtask = () => {
+  const addSubtask = async() => {
     if (!newSubtaskTitle.trim()) return;
-
+    try{
+      console.log("Adding subtask:", newSubtaskTitle.trim());
     const newSubtask = {
-      id: generateId("subtask"),
       title: newSubtaskTitle.trim(),
-      completed: false,
       priority: 'none' // Default priority for subtask
     };
-
+    console.log("Subtask data:", newSubtask);
+    await createSubTask({ taskId: initialValues.id, subtask: newSubtask }).unwrap();
     setSubtasks([...subtasks, newSubtask]);
+  }catch (error) {
+    console.error("Error adding subtask:", error);
+  }
+    
     setNewSubtaskTitle('');
      // Ensure subtasks section is expanded when a new subtask is added
     setIsSubtasksCollapsed(false);
   };
 
-  const deleteSubtask = (subtaskId) => {
-    setSubtasks(subtasks.filter(st => st.id !== subtaskId));
+  const deleteSubtask = async(subtaskId) => {
+    try{
+      await deleteSubTask({ taskId: initialValues.id, subtaskId }).unwrap();
+      console.log("Subtask deleted successfully");
+      setSubtasks(subtasks.filter(st => st.id !== subtaskId));
+    }catch (error) {
+      console.error("Error deleting subtask:", error);
+    }
   };
 
+
+  // COMPLETE THIS TO UPDATE THE SUBTASKS
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const toggleSubtask = (subtaskId) => {
     setSubtasks(subtasks.map(st =>
       st.id === subtaskId ? { ...st, completed: !st.completed } : st
@@ -250,7 +278,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
       st.id === subtaskId ? { ...st, priority: newPriority } : st
     ));
   };
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const toggleUserAssignment = (member) => {
   setAssignedTo(prev =>
@@ -587,7 +615,7 @@ const toggleUserAssignment = (member) => {
     </button>
     <button
       onClick={handleEdit}
-      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+      className="px-4 py-2  text-white rounded bg-[#187cb4] hover:bg-[#12547a] text-sm disabled:opacity-50 disabled:cursor-not-allowed"
       disabled={!title.trim() && !isEditing}
     >
       {isEditing ? 'Save Changes' : 'Add Task'}
@@ -599,7 +627,7 @@ const toggleUserAssignment = (member) => {
 <div className="flex justify-end gap-2">
     <button
       onClick={onCancel}
-      className="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm"
+      className="px-4 py-2 bg-white border border-[#187cb4] text-[#187cb4] rounded hover:bg-blue-50 text-sm"
     >
       Cancel
     </button>
