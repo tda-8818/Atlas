@@ -1,43 +1,41 @@
+// components/avatar/UserAvatar.jsx
+
 import { useState } from 'react';
-import { MenuButton } from '@headlessui/react';
-import { LuUser } from 'react-icons/lu';
 import { getInitials } from '../../utils/userUtils';
-import { useGetCurrentUserQuery } from '../../redux/slices/userSlice';
 
-const UserAvatar = () => {
-  const { data: currentUser } = useGetCurrentUserQuery();
-  const user = currentUser?.user;
-  const profileImage = user?.profilePic;
-
+/**
+ * Props:
+ * - user: { firstName, lastName, profilePic }
+ * - size: number (e.g., 6, 8, 10 for Tailwind)
+ * - className: optional extra classes
+ */
+const UserAvatar = ({ user }) => {
   const [imageError, setImageError] = useState(false);
+  const profileImage = user?.profilePic;
+  const initials = getInitials(user?.firstName, user?.lastName);
+ 
 
   return (
-    <MenuButton
-      className="
-        w-8 h-8 flex items-center justify-center
-        rounded-full bg-[var(--background-secondary)]
-        hover:bg-[var(--background-hover)]
-        shadow-sm border border-gray-300
-        transition-all duration-200 cursor-pointer overflow-hidden
-      "
+    <div
+      className={`
+        w-8 h-8 rounded-full border border-gray-300
+        bg-[var(--background-secondary)] text-[var(--text)]
+        flex items-center justify-center overflow-hidden
+      `}
     >
-      {user ? (
-        profileImage && !imageError ? (
-          <img
-            src={profileImage}
-            alt="User profile"
-            onError={() => setImageError(true)}
-            className="w-full h-full object-cover rounded-full"
-          />
-        ) : (
-          <span className="text-base font-semibold text-[var(--text)]">
-            {getInitials(user.firstName, user.lastName)}
-          </span>
-        )
+      {profileImage && !imageError ? (
+        <img
+          src={profileImage}
+          alt={`${user?.firstName || ''} ${user?.lastName || ''}`}
+          onError={() => setImageError(true)}
+          className="w-full h-full object-cover rounded-full"
+        />
       ) : (
-        <LuUser className="w-4 h-4 text-[var(--text)]" />
+        <span className="text-xs font-semibold">
+          {initials}
+        </span>
       )}
-    </MenuButton>
+    </div>
   );
 };
 

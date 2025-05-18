@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { useGetCurrentUserProjectsQuery, useCreateProjectMutation, useDeleteProjectMutation } from '../redux/slices/projectSlice';
 import { useNavigate } from "react-router-dom";
-import UserAvatar from "../components/avatar/UserAvatarButton.jsx";
+import UserAvatar from "../components/avatar/CurrentUserAvatar.jsx";
 import { LuClock } from "react-icons/lu";
 import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';

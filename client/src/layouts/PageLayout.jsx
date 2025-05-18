@@ -1,9 +1,10 @@
 // PageLayout.jsx
 import React from 'react';
 import Sidebar from '../components/Sidebar'; // Assuming your Sidebar component is in the same directory
-import UserAvatarButton from '../components/avatar/UserAvatarButton'; // Adjust the path as necessary
+import CurrentUserAvatar from '../components/avatar/CurrentUserAvatar';
 
 const PageLayout = ({ children, title }) => {
+
     return (
         <div className="flex h-screen bg-[var(--background-primary)]">
             <Sidebar />
@@ -11,7 +12,7 @@ const PageLayout = ({ children, title }) => {
                 <div className="flex justify-start items-center mb-8 pr-5">
                     <h1 className="text-3xl font-bold text-[var(--text)] mr-4">{title}</h1>
                     <div className="flex-grow" />
-                    <UserAvatarButton /> {/* Assuming UserAvatar is a globally available component */}
+                    <CurrentUserAvatar/> {/* Assuming UserAvatar is a globally available component */}
                 </div>
                 {children} {/* This is where the content of your specific pages will go */}
             </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import { RxDashboard, RxCalendar } from "react-icons/rx";
 import { LuChartGantt, LuSquareKanban } from "react-icons/lu";
 import { useLocation, useNavigate } from 'react-router-dom';
-import UserAvatar from './avatar/UserAvatarButton';
+import UserAvatar from './avatar/CurrentUserAvatar';
 
 const Navbar = ({ project }) => {
   const location = useLocation();
@@ -47,7 +47,7 @@ const Navbar = ({ project }) => {
               </li>
             ))}
           </ul>
-          <UserAvatar />
+          <CurrentUserAvatar />
         </div>
       </div>
     </header>
