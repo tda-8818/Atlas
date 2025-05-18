@@ -323,6 +323,50 @@ export const assignUsersToTask = async (req, res) => {
     }
 };
 
+/**
+ *  Similar to the existing edit task function, updates an existing subtask
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+  export const updateSubtask = async(req, res) => {
+    try { 
+
+        console.log("EDIT SUBTASK EXECUTED");
+        const { subtaskId } = req.params;
+        const {
+            title,
+            status,
+            priority,
+        } = req.body;
+
+        if (title === undefined && status === undefined && priority === undefined) {
+            return res.status(400).json({message: "Nothing to update"});
+        }
+
+        console.log("subtaskId: ", subtaskId);
+        // Extract only the fields that have been modified
+        const updatedFields = {};
+        if (title !== undefined) updatedFields.title = title;
+        if (status !== undefined) updatedFields.status = status;
+        if (priority !== undefined) updatedFields.priority = priority;
+
+        const updatedSubtask = await Subtask.findByIdAndUpdate(
+            subtaskId, 
+            {$set: updatedFields},
+            {new: true},
+        );
+        if (!updatedSubtask) {
+            return res.status(404).json({message: "Subtask not found"});
+        }
+
+        return res.status(200).json(updatedSubtask);
+    
+    } catch (error) {
+        console.error("Error updating task:", error);
+        res.status(500).json({ message: "Error updating task", error });
+    }
+};
 ////////////////////////////////////////////////////
 //     END OF SUBTASK RELATED FUNCTIONS           //
 ////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTasksByProject, createTask, deleteTask, updateTask, createSubTask } from "../controllers/taskController.js";
+import { getTasksByProject, createTask, deleteTask, updateTask, createSubTask, deleteSubtask, updateSubtask } from "../controllers/taskController.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -8,13 +8,20 @@ router.get('/:id', authMiddleware, getTasksByProject);
 
 router.post('/', authMiddleware, createTask);
 
-router.post('/:taskId', authMiddleware, createSubTask);
 
 router.delete('/:taskId', authMiddleware, deleteTask);
 
 router.put('/:id', authMiddleware, updateTask);
 
 //router.put('/:id', authMiddleware, updateTask);
+
+// Subtask functions
+
+router.post('/:taskId', authMiddleware, createSubTask);
+
+router.delete('/:subtaskId', authMiddleware, deleteSubtask);
+
+router.put('/:subtaskId', updateSubtask);
 
 export default router;
 
