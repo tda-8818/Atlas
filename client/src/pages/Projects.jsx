@@ -7,7 +7,7 @@ import UserAvatar from "../components/UserAvatar";
 import { LuClock } from "react-icons/lu";
 import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';
-import AddProjectModal from "../components/AddProjectModal.jsx";
+import AddProjectModal from "../components/modals/AddProjectModal.jsx";
 import DeleteProjectModal from "../components/DeleteProjectModal.jsx"
 
 const Projects = () => {
