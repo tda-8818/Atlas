@@ -846,9 +846,9 @@ const Kanban = () => {
                           {editingColumnIndex !== columnIndex && (
                             <button
                               onClick={()=>{ setConfirmDelete({
-      type: 'column',
-      index: columnIndex
-    }); removeColumn();}}
+                                type: 'column',
+                                index: columnIndex
+                              }); removeColumn();}}
                               className="text-gray-400 hover:text-red-500 transition-colors"
                               disabled={columns.length <= 1}
                             >
@@ -891,13 +891,13 @@ const Kanban = () => {
                                             </div>
                                           )}
                                           <div className="text-sm font-medium flex items-center">
-                                            {card.title}
-                                            {/* Display Priority on the card */}
+                                            {/* Display Priority in front of task name */}
                                             {card.priority && card.priority !== 'none' && (
-                                              <span className="ml-1 text-xs font-bold text-gray-600">
+                                              <span className="mr-1 text-xs font-bold text-red-500">
                                                 {card.priority}
                                               </span>
                                             )}
+                                            {card.title}
                                           </div>
                                         </div>
                                       </div>
@@ -910,22 +910,36 @@ const Kanban = () => {
                                       )}
 
                                       <div className="flex justify-between items-center mt-auto pt-2">
-                                        {/* Due Date on the left */}
+                                        {/* Due Date on the left with red color if overdue */}
                                         {card.dueDate && (
                                           <div className="flex items-center">
-                                            <div className="text-xs text-gray-500">
+                                            <div className={`text-xs ${getEmergencyLevel(card.dueDate) === 'overdue' ? 'text-red-500 font-medium' : 'text-gray-500'}`}>
                                               {formatDate(card.dueDate)}
                                             </div>
-                                            {getEmergencyLevel(card.dueDate) === 'overdue' && (
-                                              <div className="ml-1 text-xs px-1 py-0.5 rounded bg-red-500 text-white">
-                                                overdue
-                                              </div>
-                                            )}
                                           </div>
                                         )}
 
-                                        {/* Assigned User Avatars on the right */}
-                                        <div className="flex items-center ml-auto">
+                                        {/* Right side with subtask counter and assigned users */}
+                                        <div className="flex items-center ml-auto gap-2">
+                                          {/* Subtask counter */}
+                                          {card.subtasks && card.subtasks.length > 0 && (
+                                            <div className={`text-xs rounded-full px-1.5 py-0.5 flex items-center ${
+                                              card.subtasks.filter(st => st.completed).length === card.subtasks.length 
+                                                ? 'bg-green-100 text-green-800' 
+                                                : (card.subtasks.filter(st => st.completed).length > 0 
+                                                  ? 'bg-orange-100 text-orange-800' 
+                                                  : 'bg-gray-100 text-gray-600')
+                                            }`}>
+                                              {card.subtasks.filter(st => st.completed).length === card.subtasks.length && (
+                                                <svg className="w-3 h-3 mr-0.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                              )}
+                                              {card.subtasks.filter(st => st.completed).length}/{card.subtasks.length}
+                                            </div>
+                                          )}
+                                          
+                                          {/* Assigned User Avatars */}
                                           <MultiAvatar assignedUsers={card.assignedTo} />
                                         </div>
                                       </div>
