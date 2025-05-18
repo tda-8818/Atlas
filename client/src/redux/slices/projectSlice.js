@@ -65,12 +65,13 @@ export const projectApiSlice = createApi({
 
      // Fetch tasks by project ID
     getProjectTasks: builder.query({
-      query: (projectId) => `/tasks/${projectId}`,                        // change task route to fetch project tasks
+      query: (projectId) => `/tasks/${projectId}`,                      
       providesTags: (result, error, projectId) => [{ type: 'Task', id: projectId }],
     }),
     invalidatesTags: (result, error, projectId) => [{ type: 'Task', id: projectId }],
 
     /** USER-PROJECT RELATED QUERIES */
+
     // Get all users in a project
     getProjectUsers: builder.query({
       query: (id) => `/projects/${id}/users`,
@@ -93,8 +94,6 @@ export const projectApiSlice = createApi({
     }),
 
     /**
-     * START OF COLUMN OPERATIONS FOR KANBAN
-     * START OF COLUMN OPERATIONS FOR KANBAN
      * START OF COLUMN OPERATIONS FOR KANBAN
      */
     // Get all columns in a project
