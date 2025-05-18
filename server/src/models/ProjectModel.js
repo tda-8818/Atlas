@@ -12,7 +12,6 @@ const projectSchema = new mongoose.Schema({
     columns: [{type: mongoose.Schema.Types.ObjectId, ref:'column',  default: []}],
     startDate: {type: Date},
     endDate: {type: Date},
-    progress: {type: Number, default: 0}
 }, {timestamps: true});
 
 

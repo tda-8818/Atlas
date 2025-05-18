@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGetCurrentUserProjectsQuery } from '../redux/slices/projectSlice';
 
 const navItems = [
-  { label: "Home", icon: <RxHome />, href: "/Home" }
+  { label: "Projects", icon: <RxHome />, href: "/projects" }
 ];
 
 const Sidebar = () => {

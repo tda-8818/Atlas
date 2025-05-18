@@ -9,6 +9,9 @@ import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';
 import AddProjectModal from "../components/modals/AddProjectModal.jsx";
 import DeleteProjectModal from "../components/modals/DeleteProjectModal.jsx"
+import { calculateDaysLeft } from "../utils/projectUtils.jsx";
+import PageLayout from "../layouts/PageLayout.jsx";
+import { useGetCurrentUserQuery } from "../redux/slices/userSlice.js";
 
 const Projects = () => {
     const navigate = useNavigate();
@@ -22,40 +25,36 @@ const Projects = () => {
         refetch,
     } = useGetCurrentUserProjectsQuery();
     
-    const [createProject, { error: createError }] = useCreateProjectMutation();
-    const [deleteProject, { error: deleteError }] = useDeleteProjectMutation();
+    const [createProject, { error: createProjectError }] = useCreateProjectMutation();
+    const [deleteProject, { error: deleteProjectError }] = useDeleteProjectMutation();
+    const {id: userId} = useGetCurrentUserQuery();
 
     // Local UI state to handle modal visibility and new project form inputs.
     const [showModal, setShowModal] = useState(false);
     const [showDeleteConfirmModal,setShowDeleteConfirmModal] = useState(false);
     const [selectedProject,setSelectedProject] = useState({title:''});
+    
     // Show error toasts when API errors occur
     useEffect(() => {
         if (projectsError && projectsErrorData) {
-            showErrorToast(
+            toast.error(
                 `Failed to load projects: ${projectsErrorData.data?.message || 'Unknown error'}`,
-                projectsErrorData.status || '400'
+                { duration: 5000 }
             );
         }
-    }, [projectsError, projectsErrorData]);
-    
-    useEffect(() => {
-        if (createError) {
-            showErrorToast(
-                `Failed to create project: ${createError.data?.message || 'Unknown error'}`,
-                createError.status || '400'
+        if (createProjectError) {
+            toast.error(
+                `Failed to create project: ${createProjectError.data?.message || 'Unknown error'}`,
+                { duration: 5000 }
             );
         }
-    }, [createError]);
-    
-    useEffect(() => {
-        if (deleteError) {
-            showErrorToast(
-                `Failed to delete project: ${deleteError.data?.message || 'Unknown error'}`,
-                deleteError.status || '400'
+        if (deleteProjectError) {
+             toast.error(
+                `Failed to delete project: ${deleteProjectError.data?.message || 'Unknown error'}`,
+                { duration: 5000 }
             );
         }
-    }, [deleteError]);
+    }, [projectsError, projectsErrorData, createProjectError, deleteProjectError]);
 
     // Optional: Transform projectsData if needed. For example, if your API returns data with _id etc.
     const projects = Array.isArray(projectsData)
@@ -75,7 +74,7 @@ const Projects = () => {
             navigate(`/projects/${project.id}/dashboard`);
         } catch (error) {
             console.error("Error in handleProjectClick:", error);
-            showErrorToast("Error navigating to project", "400");
+            toast.error("Error navigating to project", "400");
         }
     };
 
@@ -90,7 +89,7 @@ const Projects = () => {
              
             } catch (error) {
                 console.error("Error deleting project", error);
-                showErrorToast(
+                toast.error(
                     `Failed to delete project: ${error.data?.message || 'Unknown error'}`,
                     error.status || '400'
                 );
@@ -106,27 +105,23 @@ const Projects = () => {
     //function for creating a project one user completes modal inputs
     const handleCreateProject = async (formData) => {
         if (!formData.title  || !formData.dueDate) {
-            showErrorToast("Please fill all fields!", "400");
+            toast.error("Please fill all fields!", { duration: 3000 });
             return;
         }
    
         console.log("current new project " ,formData);
-        // Calculate daysLeft
-        const today = new Date();
-        const deadline = new Date(formData.dueDate);
-        const daysLeft = Math.max(
-            Math.ceil((deadline - today) / (1000 * 60 * 60 * 24)),
-            0
-        );
-      
-        const projectData = {
-            title: formData.title,
-            description: formData.description,
-            startDate: today,
-            endDate: deadline   
-        };
+    
       
         try {
+
+            const projectData = {
+                title: formData.title,
+                description: formData.description,
+                startDate: new Date(), // Backend should handle consistent date formatting
+                endDate: new Date(formData.dueDate), // Ensure backend can parse this format
+                owner: userId,  //  Include the owner.  You'll need the current user's ID.
+            };
+
             // createProject RTK Query mutation hook
             await createProject(projectData).unwrap();
           
@@ -143,7 +138,7 @@ const Projects = () => {
             refetch();
         } catch (error) {
             console.error("Error creating project", error);
-            showErrorToast(
+            toast.error(
                 `Failed to create project: ${error.data?.message || 'Unknown error'}`,
                 error.status || '400'
             );
@@ -151,13 +146,13 @@ const Projects = () => {
     };
 
     return (
-        <div className="flex h-screen bg-[var(--background-primary)]">
-            <Sidebar />
-            <div className="flex-grow p-10 ml-[240px] overflow-y-auto">
-                <div className="flex justify-between items-center mb-8 pr-5">
-                    <h1 className="text-3xl font-bold text-[var(--text)]">Projects</h1>
-                    <UserAvatar />
-                </div>
+        <PageLayout title="Projects">
+            <button
+            onClick={handleAddProjectClick}
+            className="bg-[#187cb4] text-white px-4 py-2 rounded-md hover:bg-[#0f5b8c] transition-colors duration-200 mb-4"
+        >
+            +Add Project
+        </button>
 
                 <div className="flex flex-wrap gap-5">
                     {projects.map((project, index) => (
@@ -199,7 +194,7 @@ const Projects = () => {
                                 <div className="flex justify-between items-center text-xs text-[var(--text)] mt-3">
                                     <div className="flex items-center gap-1">
                                         <LuClock />
-                                        <span>{project.daysLeft} Days Left</span>
+                                        <span>{calculateDaysLeft(project.dueDate)} Days Left</span>
                                     </div>
                                     <div className="flex -space-x-2">
                                         {project.team.map((avatar, i) => (
@@ -215,57 +210,11 @@ const Projects = () => {
                             </div>
                         </div>
                     ))}
-
-                    {/* Add Project Card */}
-                    <div
-                        onClick={handleAddProjectClick}
-                        className="bg-[var(--background)] border-2 border-dashed border-gray-300 rounded-2xl w-[300px] h-[200px] flex justify-center items-center cursor-pointer hover:border-[#187cb4] hover:bg-[var(--background-primary)] transition-all"
-                    >
-                        <div className="flex flex-col items-center text-gray-500">
-                            <div className="text-[40px] font-bold text-[#187cb4]">+</div>
-                            <div className="mt-2 text-base">New Project</div>
-                        </div>
-                    </div>
                 </div>
-            </div>
+            
             <AddProjectModal show = {showModal} onAddProject = {handleCreateProject} onCancel={()=>{setShowModal(false);}} />
             <DeleteProjectModal show={showDeleteConfirmModal} projectName={selectedProject.title} onDeleteConfirm={handleDeleteProject} onCancel={()=>{setShowDeleteConfirmModal(false);}} />
-            {/* Modal */}
-            {/* {showModal && (
-                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex justify-center items-center z-50">
-                    <div className="bg-white p-8 rounded-xl w-[400px] text-center animate-fadeIn">
-                        <h2 className="text-xl font-bold mb-4">Create New Project</h2>
-                        <input
-                            type="text"
-                            name="title"
-                            value={newProject.title}
-                            onChange={handleInputChange}
-                            placeholder="Project Name"
-                            className="w-full p-2 mb-3 border border-gray-300 rounded"
-                        />
-                        <input
-                            type="text"
-                            name="description"
-                            value={newProject.description}
-                            onChange={handleInputChange}
-                            placeholder="Description"
-                            className="w-full p-2 mb-3 border border-gray-300 rounded"
-                        />
-                        <input
-                            type="date"
-                            name="deadline"
-                            value={newProject.deadline}
-                            onChange={handleInputChange}
-                            className="w-full p-2 mb-3 border border-gray-300 rounded"
-                        />
-                        <div className="flex justify-between mt-5">
-                            <button onClick={handleCreateProject} className="px-4 py-2 bg-[#5b5fc7] text-white rounded">Create</button>
-                            <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-300 text-white rounded">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            )} */}
-        </div>
+        </PageLayout>
     );
 };
 
