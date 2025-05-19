@@ -15,6 +15,8 @@ import { getTaskStats, calculateProjectProgress, isTaskOverdue } from '../utils/
 import { useGetCurrentUserQuery, useGetAllUsersQuery } from '../redux/slices/userSlice';
 import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';
+import { LuCheck } from 'react-icons/lu';
+import { useUpdateTaskMutation } from '../redux/slices/taskSlice.js';
 
 const Dashboard = () => {
   const { currentProject } = useOutletContext();
@@ -22,6 +24,8 @@ const Dashboard = () => {
   const [isProjectUsersModalOpen, setProjectUsersModalOpen] = useState(false);
   // Mutation for updating project team
   const [updateProjectUsers] = useUpdateProjectUsersMutation();
+
+  const [updateTask] = useUpdateTaskMutation(); 
 
   // RTK Query hooks to fetch tasks, project details, and project users
   const { data: tasks = [], isLoading: loadingTasks, error: tasksError, refetch: refetchTasks } = useGetProjectTasksQuery(id, { skip: !id, });
@@ -34,13 +38,17 @@ const Dashboard = () => {
   // fetch project by id number
   const { data: projectData, isLoading: loadingProject, error: projectError, } = useGetProjectByIdQuery(id, { skip: !id, });
 
+
+
   // fetch current user
   const { data: currentUser, isLoading: loadingMe, error: meError } = useGetCurrentUserQuery();
+  const loadingProjectData = loadingTasks || loadingProject || loadingUsers || loadingMe || loadingAllUsers;
+  const loadingProjectError = projectError || tasksError || userError || meError;
 
-    
+
   useEffect(() => {
-      refetchTasks();
-      refetchUsers();
+    refetchTasks();
+    refetchUsers();
   }, []);
 
 
@@ -62,6 +70,25 @@ const Dashboard = () => {
       showErrorToast("Error saving team: ", error);
     } finally {
       setProjectUsersModalOpen(false);
+    }
+  };
+
+
+  // Handler to toggle task status
+  const handleToggleTask = async (task) => {
+    try {
+      // Optimistically update the UI immediately
+      const updatedStatus = !task.status;
+      // Update the task status in the backend using the updateTask mutation
+      await updateTask({ ...task, status: updatedStatus }).unwrap();
+
+      // After a successful update, refetch tasks to get the latest data
+      refetchTasks();
+      toast.success("Task completed!");
+    } catch (error) {
+      console.error("Error updating task status:", error);
+      showErrorToast("Error updating task status", "500");
+      // Optionally, revert the UI if the update fails (for better UX)
     }
   };
 
@@ -120,27 +147,42 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Current User's a */}
+          {/* Current User's tasks sorted by due date */}
           <div className="col-span-12 xl:col-span-6">
             <div className="h-full min-h-[35vh]">
-              <StatBox title="Your Tasks">
+              <StatBox title="Tasks To Do">
                 <ul className="text-xs space-y-1">
                   {tasks
-                  .map((task) => (
-                    <li
-                      key={task.id}
-                      className={`
+                    .filter(task => !task.status)
+                    .filter(task => task.assignedTo && task.assignedTo.some(user => user._id === currentUser.user.id))
+                    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+                    .map((task) => (
+                      <li
+                        key={task.id}
+                        className={`
                         flex items-center justify-between 
                         p-1 rounded whitespace-nowrap overflow-hidden 
                         bg-[var(--background-primary)]
                       `}
-                    >
-                      <strong className="truncate text-[var(--text)]">{task.title}</strong>
-                      <span className={`ml-2 ${isTaskOverdue(task) ? 'text-red-500' : 'text-[var(--text-muted)]'}`}>
-                        {new Date(task.dueDate).toLocaleDateString('en-GB')}
-                      </span>
-                    </li>
-                  ))}
+                      >
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleToggleTask(task)}
+                            className={`
+                                        w-4 h-4 rounded-full border-2
+                                        ${task.status ? 'bg-green-500 border-green-500' : 'border-gray-400'}
+                                        flex items-center justify-center focus:outline-none cursor-pointer
+                                    `}
+                          >
+                            {<LuCheck className="w-3 h-3 text-white" />}
+                          </button>
+                          <strong className="truncate text-[var(--text)]">{task.title}</strong>
+                        </div>
+                        <span className={`ml-2 ${isTaskOverdue(task) ? 'text-red-500' : 'text-[var(--text-muted)]'}`}>
+                          {new Date(task.dueDate).toLocaleDateString('en-GB')}
+                        </span>
+                      </li>
+                    ))}
                 </ul>
               </StatBox>
             </div>
@@ -153,7 +195,7 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between mb-2 px-2">
                   {isProjectOwner(currentUser.user.id, projectData?.owner) && (
                     <button
-                      className="w-30 h-6 bg-gray-400 hover:bg-gray-300 text-gray-800 items-center justify-center text-sm rounded"
+                      className="w-30 h-6 bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white items-center justify-center text-sm rounded"
                       onClick={() => setProjectUsersModalOpen(true)}
                       title="Members"
                     >
@@ -173,10 +215,8 @@ const Dashboard = () => {
                         <span className="capitalize">
                           {user.firstName} {user.lastName}
                         </span>
-                        {user.role && (
-                          <p className="text-[var(--text-muted)] ml-auto">
-                            {user.role}
-                          </p>
+                        {projectData?.owner === user._id && (
+                          <p className="text-gray-500 ml-auto">(Owner)</p>
                         )}
                       </li>
                     ))}

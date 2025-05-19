@@ -54,7 +54,7 @@ const ProjectCard = ({ project, users, onProjectClick, onRequestDelete }) => {
           </div>
           <div className="w-full bg-[var(--background-primary)] h-2 rounded-full overflow-hidden">
             <div
-              className="bg-[#5b5fc7] h-2 rounded-full"
+              className="bg-[var(--color-primary)] h-2 rounded-full"
               style={{ width: tasksLoading ? "0%" : `${progress}%` }}
             ></div>
           </div>

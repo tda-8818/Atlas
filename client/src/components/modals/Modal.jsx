@@ -45,7 +45,7 @@ const Modal = ({
             <DialogPanel className="mx-auto max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-md">
               <DialogTitle
                 as="h3"
-                className="text-lg font-medium leading-6 text-gray-900"
+                className="text-lg font-medium leading-6 text-[var(--color-primary)]"
               >
                 {title}
               </DialogTitle>
@@ -66,7 +66,7 @@ const Modal = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm"
+                  className="px-4 py-2 border border-[var(--color-primary)] text-[var(--color-primary)] rounded hover:bg-blue-50 text-sm"
                 >
                   {cancelLabel}
                 </button>
@@ -74,7 +74,7 @@ const Modal = ({
                   <button
                     type="button"
                     onClick={onSave}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded hover:bg-[var(--color-)] text-sm disabled:opacity-50"
                   >
                     {saveLabel}
                   </button>
