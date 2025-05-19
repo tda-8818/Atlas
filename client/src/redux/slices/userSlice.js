@@ -20,7 +20,7 @@ export const userApiSlice = createApi({
         // User endpoints
         signup: builder.mutation({ // Add the signup mutation
             query: (credentials) => ({
-              url: '/api/users/signup',
+              url: '/users/signup',
               method: 'POST',
               body: credentials,
             }),

@@ -84,7 +84,7 @@ a {
 }
 
 a:hover {
-  color: var(--accent-color);
+  color: var(--accent-color-hover);
 }
 
 /* Buttons & Links */

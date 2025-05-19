@@ -13,7 +13,7 @@ const Presignup = () => {
           <img src={LogoImage} alt="Uniflow" className="h-20 w-auto block max-w-none" />
         </div>
         <div className="flex gap-4">
-          <Button onClick={() => navigate('/signup')} className="bg-blue-600 text-white py-3 px-6 rounded-md font-semibold border-none cursor-pointer font-sans transition-colors duration-300 text-base hover:bg-blue-500">
+          <Button onClick={() => navigate('/signup')} className="bg-[var(--color-primary)] text-white py-3 px-6 rounded-md font-semibold border-none cursor-pointer font-sans transition-colors duration-300 text-base hover:bg-blue-500">
             Sign Up
           </Button>
           <Button onClick={() => navigate('/login')} className="bg-gray-600 text-white py-3 px-6 rounded-md font-semibold border-none cursor-pointer font-sans transition-colors duration-300 text-base hover:bg-gray-500">
@@ -23,7 +23,7 @@ const Presignup = () => {
       </header>
 
       <section className="text-center mt-24 mb-16">
-        <h1 className="text-4xl font-extrabold text-blue-900 mb-5 tracking-tight">
+        <h1 className="text-4xl font-extrabold text-[var(--color-primary)] mb-5 tracking-tight">
           Task Management That Flows With You
         </h1>
         <p className="text-xl text-gray-600">Organise. Prioritise. Flow.</p>
@@ -41,7 +41,7 @@ const Presignup = () => {
             </div>
           </div>
           <div className="mt-auto">
-            <h3 className="text-xl font-semibold text-blue-900 mb-2">Plan Smarter</h3>
+            <h3 className="text-xl font-semibold text-[var(--color-primary)] mb-2">Plan Smarter</h3>
             <p className="text-sm text-gray-600 mb-0">Stay ahead with intuitive planning.</p>
           </div>
         </div>
@@ -54,7 +54,7 @@ const Presignup = () => {
           </div>
 
           <div className="mt-auto">
-            <h3 className="text-xl font-semibold text-blue-900 mb-2">Track Better</h3>
+            <h3 className="text-xl font-semibold text-[var(--color-primary)] mb-2">Track Better</h3>
             <p className="text-sm text-gray-600 mb-0">Visualise and optimise your progress.</p>
           </div>
         </div>
@@ -72,7 +72,7 @@ const Presignup = () => {
 
           <div className="hover:translate-y-[-5px] hover:shadow-xl transition-transform duration-300">
             <div className="mt-auto">
-              <h3 className="text-xl font-semibold text-blue-900 mb-2">Collaborate Easily</h3>
+              <h3 className="text-xl font-semibold text-[var(--color-primary)] mb-2">Collaborate Easily</h3>
               <p className="text-sm text-gray-600 mb-0">Work together without friction.</p>
             </div>
           </div>
@@ -84,7 +84,7 @@ const Presignup = () => {
           </div>
           <div className="hover:translate-y-[-5px] hover:shadow-xl transition-transform duration-300">
             <div className="mt-auto">
-              <h3 className="text-xl font-semibold text-blue-900 mb-2">Optimise Workflow</h3>
+              <h3 className="text-xl font-semibold text-[var(--color-primary)] mb-2">Optimise Workflow</h3>
               <p className="text-sm text-gray-600 mb-0">Simplify complex projects</p>
             </div>
           </div>

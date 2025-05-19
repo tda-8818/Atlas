@@ -7,7 +7,6 @@ import { useForm } from 'react-hook-form';
 import { Transition, Button } from '@headlessui/react';
 import Textbox from '../components/Textbox';
 import logo from '../assets/logo.png';
-import { showErrorToast } from '../components/errorToast.jsx'; // Import the toast utility
 import toast from 'react-hot-toast'; // Import toast for success messages
 import { useSignupMutation } from '../redux/slices/userSlice.js';
 
@@ -58,24 +57,25 @@ const Signup = () => {
                 switch (error.data.status) {
                     case 400:
                         if (error.data?.message?.includes('already exists')) {
-                            showErrorToast("An account with this email already exists", "400");
+                            toast.error("An account with this email already exists", "400");
                         } else {
-                            showErrorToast("Invalid registration data. Please check your inputs.", "400");
+                            toast.error("Invalid registration data. Please check your inputs.", "400");
                         }
                         break;
                     case 409:
-                        showErrorToast("An account with this email already exists.", "409");
+                        toast.error("An account with this email already exists.", "409");
                         break;
                     case 500:
-                        showErrorToast("Server error. Please try again later.", "500");
+                        toast.error("Server error. Please try again later.", "500");
                         break;
                     default:
-                        showErrorToast(`Registration failed: ${error.data.message}`, error.data.status.toString());
+                        toast.error(`Registration failed: ${error.data.message}`, "error");
+                        break;
                 }
             } else if (error?.error) {
-                showErrorToast(`Network error: ${error.error}`, "network");
+                toast.error(`Network error: ${error.error}`, "network");
             } else {
-                showErrorToast("An unexpected error occurred.", "error");
+                toast.error("An unexpected error occurred.", "error");
             }
         }
     };
@@ -180,7 +180,7 @@ const Signup = () => {
 
                             <Button
                                 type='submit'
-                                className='w-full h-9 bg-blue-700 text-white rounded-full text-sm mt-1'
+                                className='w-full h-9 bg-[var(--color-primary)] text-white rounded-full text-sm mt-1'
                                 disabled={isLoading} // Disable button while signing up
                             >
                                 {isLoading ? 'Signing Up...' : 'Sign Up'}
@@ -196,7 +196,7 @@ const Signup = () => {
                                 Already have an account?{' '}
                                 <Link
                                     to="/login"
-                                    className="text-blue-600 hover:underline font-medium"
+                                    className="text-[var(--color-primary)] hover:underline font-medium"
                                 >
                                     Login
                                 </Link>

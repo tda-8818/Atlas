@@ -1,6 +1,6 @@
 // AddTaskPopup-1.jsx
 import React, { useState, useEffect, useRef, use } from 'react';
-import { useGetSubTasksQuery,useCreateSubTaskMutation,useDeleteSubTaskMutation,useUpdateSubTaskMutation } from '../redux/slices/taskSlice';
+import { useGetSubTasksQuery,useCreateSubTaskMutation,useDeleteSubTaskMutation,useUpdateSubTaskMutation } from '../../redux/slices/taskSlice';
 
 // Define priority levels
 const priorityLevels = ['', '!', '!!', '!!!'];
