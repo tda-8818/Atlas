@@ -93,7 +93,7 @@ const Projects = () => {
       title: project.title,
       description: project.description,
       startDate: project.startDate,
-      endDate: project.endDate,
+      dueDate: project.dueDate,
       owner: project.owner,
       users: projectUsers[project._id] || [],
     }))
@@ -132,7 +132,7 @@ const Projects = () => {
   const handleAddProjectClick = () => setShowModal(true);
 
   const handleCreateProject = async (formData) => {
-    if (!formData.title || !formData.endDate) {
+    if (!formData.title || !formData.dueDate) {
       toast.error("Please fill all fields!", { duration: 3000 });
       return;
     }
@@ -142,7 +142,7 @@ const Projects = () => {
         title: formData.title,
         description: formData.description,
         startDate: new Date(formData.startDate),
-        endDate: new Date(formData.endDate),
+        dueDate: new Date(formData.dueDate),
         owner: userId,
       };
 
