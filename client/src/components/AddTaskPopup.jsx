@@ -87,7 +87,7 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
   const memberSearchRef = useRef(null); // Ref for member search dropdown
   const titleInputRef = useRef(null); // Ref for the title input
 
-  const { data: subtasksData, isLoading: isSubtasksLoading } = useGetSubTasksQuery(initialValues?.id);
+  const { data: subtasksData, isLoading: isSubtasksLoading } = useGetSubTasksQuery(initialValues?.id,{skip: !show || !initialValues?.id});
   // Handler to populate form with initialValues when editing an existing task
   useEffect(() => {
     if (show) {
@@ -141,12 +141,12 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
   //fetch and display current subtasks 
   useEffect(() => {
     if (!subtasksData) return; // Ensure data is available
-    console.log("Subtasks: ", subtaskIds);
+    console.log("Subtasks: ", subtasksData);
 
     const fetchedSubtasks = subtasksData.map((subtask) => ({
       id: subtask._id,
       title: subtask.title,
-      completed: subtask.status,
+      status: subtask.status,
       priority: subtask.priority,
     }));
     setSubtasks(fetchedSubtasks);
@@ -267,16 +267,40 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
 
   // COMPLETE THIS TO UPDATE THE SUBTASKS
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  const toggleSubtask = (subtaskId) => {
-    setSubtasks(subtasks.map(st =>
-      st.id === subtaskId ? { ...st, completed: !st.completed } : st
-    ));
+  const toggleSubtask = async(subtaskId) => {
+    try {
+      const subtaskToUpdate = subtasks.find(st => st.id === subtaskId);
+      if (!subtaskToUpdate) return;
+      const updatedSubtask = {
+        ...subtaskToUpdate,
+        status: !subtaskToUpdate.status // Toggle the status
+      };
+      await updateSubTask({ taskId: initialValues.id, subtaskId, subtask: updatedSubtask }).unwrap();
+    setSubtasks(prev =>
+  prev.map(st =>
+    st.id === subtaskId ? { ...st, status: !st.status } : st
+  )
+);
+  } catch (error) {
+    console.error("Error updating subtask:", error);
+  }
   };
 
-  const handleUpdateSubtaskPriority = (subtaskId, newPriority) => {
+  const handleUpdateSubtaskPriority = async(subtaskId, newPriority) => {
+    try {
+      const subtaskToUpdate = subtasks.find(st => st.id === subtaskId);
+      if (!subtaskToUpdate) return;
+      const updatedSubtask = {
+        ...subtaskToUpdate,
+        priority: newPriority // Update the priority
+      };
+      await updateSubTask({ taskId: initialValues.id, subtaskId, subtask: updatedSubtask }).unwrap();
     setSubtasks(subtasks.map(st =>
       st.id === subtaskId ? { ...st, priority: newPriority } : st
     ));
+  } catch (error) {
+    console.error("Error updating subtask priority:", error);
+  }
   };
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -365,7 +389,7 @@ const toggleUserAssignment = (member) => {
                  id="taskPriority"
                  value={priority}
                  onChange={(e) => setPriority(e.target.value)}
-                 className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                 className="w-full border rounded px-2 py-1 text-sm text-[var(--text)] focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                >
                  {priorityLevels.map(level => (
                    <option key={level} value={level}>
@@ -388,7 +412,7 @@ const toggleUserAssignment = (member) => {
                          id="taskStartDate"
                          value={startDate || ''}
                          onChange={(e) => setStartDate(e.target.value)}
-                         className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                         className="w-full border rounded px-2 py-1 text-sm text-[var(--text)] focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                      />
                  </div>
                   {/* Due Date */}
@@ -399,7 +423,7 @@ const toggleUserAssignment = (member) => {
                          id="taskDueDate"
                          value={dueDate || ''}
                          onChange={(e) => setDueDate(e.target.value)}
-                         className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                         className="w-full border rounded px-2 py-1 text-sm text-[var(--text)] focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                      />
                  </div>
                  {/* Assigned To */}
@@ -527,19 +551,19 @@ const toggleUserAssignment = (member) => {
                 {(subtasks || []).length > 0 && (
                    <div className="space-y-2 mb-3">
                      {(subtasks || []).map((subtask) => (
-                       <div key={subtask.id} className="flex items-center bg-gray-50 p-2 rounded">
+                       <div key={subtask.id} className="flex items-center bg-[var(--background-primary)] p-2 rounded">
                          <button
                            onClick={() => toggleSubtask(subtask.id)}
                            className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
-                           style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
+                           style={{ backgroundColor: subtask.status ? '#3B82F6' : 'white' }}
                          >
-                           {subtask.completed && (
+                           {subtask.status && (
                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                              </svg>
                            )}
                          </button>
-                         <span className={`text-sm flex-1 mr-2 ${subtask.completed ? "line-through text-gray-400" : ""}`}>
+                         <span className={`text-sm flex-1 mr-2 ${subtask.status ? "line-through text-[var(--text)]" : "text-[var(--text)]"}`}>
                            {subtask.title}
                          </span>
                          <select
@@ -578,7 +602,7 @@ const toggleUserAssignment = (member) => {
                    />
                    <button
                      onClick={addSubtask}
-                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                     className="px-4 py-2 bg-[#187cb4] text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                      disabled={!newSubtaskTitle.trim()}
                    >
                      Add
@@ -638,7 +662,7 @@ const toggleUserAssignment = (member) => {
     >
       {isEditing ? 'Save Changes' : 'Add Task'}
     </button>
-  </div>
+  </div>  
   )}
   
 </div>

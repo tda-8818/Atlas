@@ -253,6 +253,23 @@ export const assignUsersToTask = async (req, res) => {
  * @param {*} res 
  * @returns 
  */
+  export const getSubTasks = async (req, res) => {
+    try {
+        const { taskId } = req.params
+        console.log('getSubTasks has been executed received taskId', taskId);
+        const task = await Task.findById(taskId).populate('subtasks');
+        if (!task) {
+            return res.status(404).json({ message: "Task not found"});
+        }
+        const subtasks = await Subtask.find({ parentTaskId: taskId });
+        console.log("subtasks: ", subtasks);
+        res.status(200).json(subtasks);
+    } catch (error) {
+        console.error("Error in getSubTasks", error);
+        res.status(500).json({message: "Error fetching subtasks", error});
+    }
+};
+
   export const createSubTask = async(req, res) => {
     try {
         const { taskId } = req.params
@@ -260,6 +277,7 @@ export const assignUsersToTask = async (req, res) => {
         console.log('createSubTask has been executed received taskId', taskId);
         console.log('createSubTask has been executed received title', title);
         console.log('createSubTask has been executed received priority', priority);
+        console.log('createSubTask has been executed received body', req.body);
 
         if (!taskId){
             return res.status(400).json({message: "Error in createSubTask. TaskID undefined!"})
@@ -336,13 +354,14 @@ export const assignUsersToTask = async (req, res) => {
     try { 
 
         console.log("EDIT SUBTASK EXECUTED");
-        const { subtaskId } = req.params;
+        const { taskId, subtaskId } = req.params;
         const {
             title,
             status,
             priority,
         } = req.body;
-
+        console.log("subtaskId: ", subtaskId);
+        console.log("body: ", req.body);
         if (title === undefined && status === undefined && priority === undefined) {
             return res.status(400).json({message: "Nothing to update"});
         }

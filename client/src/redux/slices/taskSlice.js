@@ -82,25 +82,25 @@ export const taskApiSlice = createApi({
 
     /** SUBTASK RELATED QUERIES */
     getSubTasks: builder.query({
-      query: (taskId) => `/tasks/${taskId}`,
+      query: (taskId) => `/tasks/${taskId}/subtasks`,
       providesTags: (result, error, taskId) => [
         { type: 'Task', id: taskId }
       ]
     }),
 
     createSubTask: builder.mutation({
-      query: ({ taskId, subTask }) => ({
+      query: ({ taskId, subtask }) => ({
         url: `/tasks/${taskId}/subtasks`,
         method: 'POST',
-        body: subTask,
+        body: subtask,
       }),
       invalidatesTags: (result, error, { taskId }) => [
         { type: 'Task', id: taskId }
       ],
     }),
     deleteSubTask: builder.mutation({
-      query: ({ taskId, subTaskId }) => ({
-        url: `/tasks/${taskId}`,
+      query: ({ taskId, subtaskId }) => ({
+        url: `/tasks/${taskId}/subtasks/${subtaskId}`,
         method: 'DELETE',
       }),
       invalidatesTags: (result, error, { taskId }) => [
@@ -108,10 +108,10 @@ export const taskApiSlice = createApi({
       ],
     }),
     updateSubTask: builder.mutation({
-      query: ({ taskId, subTaskId, subTask }) => ({
-        url: `/tasks/${taskId}`,
+      query: ({ taskId, subtaskId, subtask }) => ({
+        url: `/tasks/${taskId}/subtasks/${subtaskId}`,
         method: 'PUT',
-        body: { subTaskId, subTask },
+        body: subtask ,
       }),
       invalidatesTags: (result, error, { taskId }) => [
         { type: 'Task', id: taskId }
