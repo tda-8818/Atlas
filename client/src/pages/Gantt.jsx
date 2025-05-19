@@ -85,7 +85,7 @@ const Gantt = () => {
         start_date: formatDateForGantt(task.startDate), // make sure this is in Gantt-compatible format
         duration: (new Date(task.dueDate)-new Date(task.startDate))/(1000*60*60*24),
         dueDate: task.dueDate,
-        progress: task.progress || 0,
+        progress: task.status? 100 : 0,
         projectId: task._id,
         description: task.description,
         assignedTo: task.assignedTo,

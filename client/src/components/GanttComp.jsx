@@ -248,9 +248,16 @@ if (!this.taskClickEventAttached) {
     };
 
     // --- Enable Dragging and Resizing ---
-    gantt.config.drag_move = true; // Enable dragging tasks on timeline
-    gantt.config.drag_resize = true; // Enable resizing tasks on timeline
-    gantt.config.drag_links = true; // Enable creating links between tasks
+    ////////////////ENABLE DRAGGING AND RESIZING (UNCOMMENT OUT TO ENABLE DRAGGING)/////////////////////
+    // gantt.config.drag_move = true; // Enable dragging tasks on timeline
+    // gantt.config.drag_resize = true; // Enable resizing tasks on timeline
+    // gantt.config.drag_links = true; // Enable creating links between tasks
+
+    //////////////DISABLE DRAGGING AND RESIZING (COMMENT OUT TO ENABLE DRAGGING)/////////////////////
+    gantt.config.drag_move = false;      // Disable moving tasks
+    gantt.config.drag_resize = false;    // Disable resizing tasks
+    gantt.config.drag_progress = false;  // Disable dragging the progress bar
+    gantt.config.drag_links = false;     // Disable creating/editing links
 
      // Configure Gantt to calculate duration based on start_date and end_date
      // This is the default behavior, but good to be aware of.
