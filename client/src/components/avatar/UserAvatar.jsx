@@ -9,7 +9,7 @@ import { getInitials } from '../../utils/userUtils';
  * - size: number (e.g., 6, 8, 10 for Tailwind)
  * - className: optional extra classes
  */
-const UserAvatar = ({ user }) => {
+const UserAvatar = ({ user, size=8 }) => {
   const [imageError, setImageError] = useState(false);
   const profileImage = user?.profilePic;
   const initials = getInitials(user?.firstName, user?.lastName);
@@ -18,10 +18,11 @@ const UserAvatar = ({ user }) => {
   return (
     <div
       className={`
-        w-8 h-8 rounded-full border border-gray-300
+        w-${size} h-${size} rounded-full border border-gray-300
         bg-[var(--background-secondary)] text-[var(--text)]
         flex items-center justify-center overflow-hidden
       `}
+
     >
       {profileImage && !imageError ? (
         <img

@@ -10,10 +10,10 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import AddProjectModal from "../components/modals/AddProjectModal.jsx";
 import DeleteProjectModal from "../components/modals/DeleteProjectModal.jsx";
-import { calculateDaysLeft } from "../utils/projectUtils";
 import PageLayout from "../layouts/PageLayout.jsx";
 import { useGetCurrentUserQuery } from "../redux/slices/userSlice.js";
 import ProjectCard from "../components/ProjectCard.jsx";
+import { isProjectOwner } from "../utils/projectUtils.jsx";
 
 const Projects = () => {
   const navigate = useNavigate();
@@ -65,24 +65,21 @@ const Projects = () => {
   useEffect(() => {
     if (projectsError && projectsErrorData) {
       toast.error(
-        `Failed to load projects: ${
-          projectsErrorData.data?.message || "Unknown error"
+        `Failed to load projects: ${projectsErrorData.data?.message || "Unknown error"
         }`,
         { duration: 5000 }
       );
     }
     if (createProjectError) {
       toast.error(
-        `Failed to create project: ${
-          createProjectError.data?.message || "Unknown error"
+        `Failed to create project: ${createProjectError.data?.message || "Unknown error"
         }`,
         { duration: 5000 }
       );
     }
     if (deleteProjectError) {
       toast.error(
-        `Failed to delete project: ${
-          deleteProjectError.data?.message || "Unknown error"
+        `Failed to delete project: ${deleteProjectError.data?.message || "Unknown error"
         }`,
         { duration: 5000 }
       );
@@ -92,14 +89,14 @@ const Projects = () => {
   // Transform the projects data if needed.
   const projects = Array.isArray(projectsData)
     ? projectsData.map((project) => ({
-        id: project._id,
-        title: project.title,
-        description: project.description,
-        startDate: project.startDate,
-        endDate: project.endDate,
-        // Pass the loaded users (or an empty array if not loaded yet)
-        users: projectUsers[project._id] || [],
-      }))
+      id: project._id,
+      title: project.title,
+      description: project.description,
+      startDate: project.startDate,
+      endDate: project.endDate,
+      owner: project.owner,
+      users: projectUsers[project._id] || [],
+    }))
     : [];
 
   const handleProjectClick = (project) => {
@@ -123,8 +120,7 @@ const Projects = () => {
     } catch (error) {
       console.error("Error deleting project", error);
       toast.error(
-        `Failed to delete project: ${
-          error.data?.message || "Unknown error"
+        `Failed to delete project: ${error.data?.message || "Unknown error"
         }`,
         error.status || "400"
       );
@@ -158,8 +154,7 @@ const Projects = () => {
     } catch (error) {
       console.error("Error creating project", error);
       toast.error(
-        `Failed to create project: ${
-          error.data?.message || "Unknown error"
+        `Failed to create project: ${error.data?.message || "Unknown error"
         }`,
         error.status || "400"
       );
@@ -170,13 +165,13 @@ const Projects = () => {
     <PageLayout title="Projects">
       <button
         onClick={handleAddProjectClick}
-        className="bg-[#187cb4] text-white px-4 py-2 rounded-md hover:bg-[#0f5b8c] transition-colors duration-200 mb-4"
+        className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[#0f5b8c] transition-colors duration-200 mb-4"
       >
         + Add Project
       </button>
 
       <div className="flex flex-wrap gap-5">
-        {projects.map((project, index) => (
+        {projects.map((project) => (
           <ProjectCard
             key={project.id}
             project={project}

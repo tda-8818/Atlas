@@ -53,7 +53,7 @@ const AddProjectModal = ({ show, onAddProject, onCancel, initialValues = null })
       onClose={onCancel}
       onSave={handleSave}
       title="Add Project"
-      saveLabel={initialValues ? "Save Changes" : "Create Project"}
+      saveLabel="Create Project"
     >
         {/* Title */}
         <div className="mb-4">

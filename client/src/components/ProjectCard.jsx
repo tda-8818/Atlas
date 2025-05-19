@@ -1,14 +1,18 @@
 // components/ProjectCard.jsx
 import React from "react";
 import { useGetProjectTasksQuery } from "../redux/slices/projectSlice";
-import { calculateProgress, calculateDaysLeft } from "../utils/projectUtils";
+import { calculateProgress, calculateDaysLeft, isProjectOwner } from "../utils/projectUtils";
 import UserAvatar from "./avatar/UserAvatar";
 import { LuClock } from "react-icons/lu";
+import { useGetCurrentUserQuery } from "../redux/slices/userSlice";
+
 
 const ProjectCard = ({ project, users, onProjectClick, onRequestDelete }) => {
   // Assume your getProjectTasks query takes a project ID as its argument.
   const { data: tasks = [], isLoading: tasksLoading, isError: tasksError } =
     useGetProjectTasksQuery(project.id);
+
+  const {data: currentUser} = useGetCurrentUserQuery();
 
   // Calculate progress if tasks are available.
   const progress = tasks && tasks.length > 0 ? calculateProgress(tasks) : 0;
@@ -19,7 +23,7 @@ const ProjectCard = ({ project, users, onProjectClick, onRequestDelete }) => {
       onClick={() => onProjectClick(project)}
     >
       {/* Delete Button */}
-      <button
+      {isProjectOwner(currentUser?.user.id, project.owner) && <button
         onClick={(e) => {
           e.stopPropagation();
           onRequestDelete(project);
@@ -39,7 +43,7 @@ const ProjectCard = ({ project, users, onProjectClick, onRequestDelete }) => {
             clipRule="evenodd"
           />
         </svg>
-      </button>
+      </button>}
 
       <div className="flex flex-col gap-3">
         <div>
@@ -71,7 +75,7 @@ const ProjectCard = ({ project, users, onProjectClick, onRequestDelete }) => {
           </div>
           <div className="flex -space-x-2">
             {users && users.length > 0 ? (
-              users.map((user, i) => <UserAvatar key={i} user={user} />)
+              users.map((user, i) => <UserAvatar key={i} user={user} size={6} />)
             ) : (
               <span className="text-xs text-gray-400">Loading...</span>
             )}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import StatBox from '../components/StatBox';
 import Navbar from '../components/Navbar';
+import UserAvatar from '../components/avatar/UserAvatar';
 import ProjectUsersModal from '../components/modals/ProjectUsersModal.jsx';
 import { useOutletContext } from 'react-router-dom';
 import {
@@ -17,6 +18,7 @@ import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';
 import { LuCheck } from 'react-icons/lu';
 import { useUpdateTaskMutation } from '../redux/slices/taskSlice.js';
+
 
 const Dashboard = () => {
   const { currentProject } = useOutletContext();
@@ -167,14 +169,13 @@ const Dashboard = () => {
                       >
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handleToggleTask(task)}
+                            onClick={() => handleToggleTask(task) && <LuCheck className="w-3 h-3 text-[var(--color-text-muted-dark)]" />}
                             className={`
                                         w-4 h-4 rounded-full border-2
                                         ${task.status ? 'bg-green-500 border-green-500' : 'border-gray-400'}
                                         flex items-center justify-center focus:outline-none cursor-pointer
                                     `}
                           >
-                            {<LuCheck className="w-3 h-3 text-white" />}
                           </button>
                           <strong className="truncate text-[var(--text)]">{task.title}</strong>
                         </div>
@@ -195,7 +196,7 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between mb-2 px-2">
                   {isProjectOwner(currentUser.user.id, projectData?.owner) && (
                     <button
-                      className="w-30 h-6 bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white items-center justify-center text-sm rounded"
+                      className="w-30 h-6 bg-[var(--color-primary)] hover:bg-[var(--color-accent-hover)] text-white items-center justify-center text-sm rounded"
                       onClick={() => setProjectUsersModalOpen(true)}
                       title="Members"
                     >
@@ -207,11 +208,13 @@ const Dashboard = () => {
                 <div className="px-2">
                   {/* Users List */}
                   <ul className="space-y-1 text-sm">
-                    {users.map((user) => (
+                    {users
+                    .map((user) => (
                       <li
                         key={user._id || user.id}
                         className="p-2 rounded-md bg-[var(--background-primary)] flex items-center gap-2 text-[var(--text)]"
                       >
+                        <UserAvatar user={user} size={6}/>
                         <span className="capitalize">
                           {user.firstName} {user.lastName}
                         </span>
