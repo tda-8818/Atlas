@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { useGetCurrentUserProjectsQuery, useCreateProjectMutation, useDeleteProjectMutation } from '../redux/slices/projectSlice';
@@ -8,7 +8,8 @@ import { LuClock } from "react-icons/lu";
 import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';
 import AddProjectModal from "../components/AddProjectModal.jsx";
-import DeleteProjectModal from "../components/DeleteProjectModal.jsx"
+import DeleteProjectModal from "../components/DeleteProjectModal.jsx";
+import NotificationComponent from "../components/NotificationComponent";
 
 const Projects = () => {
     const navigate = useNavigate();
@@ -27,8 +28,43 @@ const Projects = () => {
 
     // Local UI state to handle modal visibility and new project form inputs.
     const [showModal, setShowModal] = useState(false);
-    const [showDeleteConfirmModal,setShowDeleteConfirmModal] = useState(false);
-    const [selectedProject,setSelectedProject] = useState({title:''});
+    const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+    const [selectedProject, setSelectedProject] = useState({title:''});
+    
+    // Sample notifications with invitation types
+    const [notifications, setNotifications] = useState([
+        {
+            id: 1,
+            type: 'invitation',
+            title: 'Project Invitation',
+            message: 'John Doe invited you to be a member of Project Alpha',
+            projectId: 'project-alpha-id',
+            createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
+            read: false,
+            responded: false,
+            accepted: null
+        },
+        {
+            id: 2,
+            type: 'invitation',
+            title: 'Project Invitation',
+            message: 'Jane Smith invited you to be a member of Design Revamp',
+            projectId: 'design-revamp-id',
+            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+            read: false,
+            responded: false,
+            accepted: null
+        },
+        {
+            id: 3,
+            type: 'general',
+            title: 'Due date approaching',
+            message: 'Task "Create wireframes" is due tomorrow',
+            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+            read: true
+        }
+    ]);
+    
     // Show error toasts when API errors occur
     useEffect(() => {
         if (projectsError && projectsErrorData) {
@@ -56,6 +92,58 @@ const Projects = () => {
             );
         }
     }, [deleteError]);
+
+    // Notification handling functions
+    const handleMarkAsRead = (id) => {
+        setNotifications(prevNotifications => 
+            prevNotifications.map(notification => 
+                notification.id === id ? { ...notification, read: true } : notification
+            )
+        );
+    };
+    
+    const handleMarkAllAsRead = () => {
+        setNotifications(prevNotifications => 
+            prevNotifications.map(notification => ({ ...notification, read: true }))
+        );
+    };
+    
+    const handleAcceptInvitation = (notificationId, projectId) => {
+        // Here you would typically make an API call to accept the invitation
+        console.log(`Accepting invitation for project ${projectId}`);
+        
+        // Update the notification to show it's been accepted
+        setNotifications(prevNotifications => 
+            prevNotifications.map(notification => 
+                notification.id === notificationId 
+                    ? { ...notification, responded: true, accepted: true, read: true } 
+                    : notification
+            )
+        );
+        
+        // Show success message
+        toast.success("Project invitation accepted");
+        
+        // Optionally refresh projects list to show the newly joined project
+        refetch();
+    };
+    
+    const handleDeclineInvitation = (notificationId, projectId) => {
+        // Here you would typically make an API call to decline the invitation
+        console.log(`Declining invitation for project ${projectId}`);
+        
+        // Update the notification to show it's been declined
+        setNotifications(prevNotifications => 
+            prevNotifications.map(notification => 
+                notification.id === notificationId 
+                    ? { ...notification, responded: true, accepted: false, read: true } 
+                    : notification
+            )
+        );
+        
+        // Show info message
+        toast.error("Project invitation declined");
+    };
 
     // Optional: Transform projectsData if needed. For example, if your API returns data with _id etc.
     const projects = Array.isArray(projectsData)
@@ -156,7 +244,17 @@ const Projects = () => {
             <div className="flex-grow p-10 ml-[240px] overflow-y-auto">
                 <div className="flex justify-between items-center mb-8 pr-5">
                     <h1 className="text-3xl font-bold text-[var(--text)]">Projects</h1>
-                    <UserAvatar />
+                    <div className="flex items-center gap-4">
+                        {/* Notification Component with Accept/Decline functionality */}
+                        <NotificationComponent 
+                            notifications={notifications}
+                            onMarkAsRead={handleMarkAsRead}
+                            onMarkAllAsRead={handleMarkAllAsRead}
+                            onAcceptInvitation={handleAcceptInvitation}
+                            onDeclineInvitation={handleDeclineInvitation}
+                        />
+                        <UserAvatar />
+                    </div>
                 </div>
 
                 <div className="flex flex-wrap gap-5">
@@ -230,41 +328,6 @@ const Projects = () => {
             </div>
             <AddProjectModal show = {showModal} onAddProject = {handleCreateProject} onCancel={()=>{setShowModal(false);}} />
             <DeleteProjectModal show={showDeleteConfirmModal} projectName={selectedProject.title} onDeleteConfirm={handleDeleteProject} onCancel={()=>{setShowDeleteConfirmModal(false);}} />
-            {/* Modal */}
-            {/* {showModal && (
-                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex justify-center items-center z-50">
-                    <div className="bg-white p-8 rounded-xl w-[400px] text-center animate-fadeIn">
-                        <h2 className="text-xl font-bold mb-4">Create New Project</h2>
-                        <input
-                            type="text"
-                            name="title"
-                            value={newProject.title}
-                            onChange={handleInputChange}
-                            placeholder="Project Name"
-                            className="w-full p-2 mb-3 border border-gray-300 rounded"
-                        />
-                        <input
-                            type="text"
-                            name="description"
-                            value={newProject.description}
-                            onChange={handleInputChange}
-                            placeholder="Description"
-                            className="w-full p-2 mb-3 border border-gray-300 rounded"
-                        />
-                        <input
-                            type="date"
-                            name="deadline"
-                            value={newProject.deadline}
-                            onChange={handleInputChange}
-                            className="w-full p-2 mb-3 border border-gray-300 rounded"
-                        />
-                        <div className="flex justify-between mt-5">
-                            <button onClick={handleCreateProject} className="px-4 py-2 bg-[#5b5fc7] text-white rounded">Create</button>
-                            <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-300 text-white rounded">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            )} */}
         </div>
     );
 };

@@ -106,12 +106,12 @@ const Dashboard = () => {
           {/* Top Stats */}
           <div className="col-span-12 xl:col-span-4 flex ">
             <div className="h-full w-full flex items-center justify-center">
-              <StatBox title="Tasks Completed" value={completed} />
+              <StatBox title="Tasks In Progress" value={inProgress} />
             </div>
           </div>
           <div className="col-span-12 xl:col-span-4 flex items-center justify-center">
             <div className="h-full w-full flex items-center justify-center">
-              <StatBox title="Tasks In Progress" value={inProgress} />
+              <StatBox title="Tasks Completed" value={completed} />
             </div>
           </div>
           <div className="col-span-12 xl:col-span-4 flex items-center justify-center">
