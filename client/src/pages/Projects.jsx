@@ -13,8 +13,6 @@ import DeleteProjectModal from "../components/modals/DeleteProjectModal.jsx";
 import PageLayout from "../layouts/PageLayout.jsx";
 import { useGetCurrentUserQuery } from "../redux/slices/userSlice.js";
 import ProjectCard from "../components/ProjectCard.jsx";
-import { isProjectOwner } from "../utils/projectUtils.jsx";;
-import NotificationComponent from "../components/NotificationComponent";
 
 const Projects = () => {
   const navigate = useNavigate();
@@ -63,39 +61,7 @@ const Projects = () => {
   }, [projectsData, fetchProjectUsers]);
 
     
-    // Sample notifications with invitation types
-    const [notifications, setNotifications] = useState([
-        {
-            id: 1,
-            type: 'invitation',
-            title: 'Project Invitation',
-            message: 'John Doe invited you to be a member of Project Alpha',
-            projectId: 'project-alpha-id',
-            createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-            read: false,
-            responded: false,
-            accepted: null
-        },
-        {
-            id: 2,
-            type: 'invitation',
-            title: 'Project Invitation',
-            message: 'Jane Smith invited you to be a member of Design Revamp',
-            projectId: 'design-revamp-id',
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-            read: false,
-            responded: false,
-            accepted: null
-        },
-        {
-            id: 3,
-            type: 'general',
-            title: 'Due date approaching',
-            message: 'Task "Create wireframes" is due tomorrow',
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-            read: true
-        }
-    ]);
+    
     
   // Show error toasts when API errors occur
   useEffect(() => {
@@ -122,57 +88,7 @@ const Projects = () => {
     }
   }, [projectsError, projectsErrorData, createProjectError, deleteProjectError]);
 
-    // Notification handling functions
-    const handleMarkAsRead = (id) => {
-        setNotifications(prevNotifications => 
-            prevNotifications.map(notification => 
-                notification.id === id ? { ...notification, read: true } : notification
-            )
-        );
-    };
-    
-    const handleMarkAllAsRead = () => {
-        setNotifications(prevNotifications => 
-            prevNotifications.map(notification => ({ ...notification, read: true }))
-        );
-    };
-    
-    const handleAcceptInvitation = (notificationId, projectId) => {
-        // Here you would typically make an API call to accept the invitation
-        console.log(`Accepting invitation for project ${projectId}`);
-        
-        // Update the notification to show it's been accepted
-        setNotifications(prevNotifications => 
-            prevNotifications.map(notification => 
-                notification.id === notificationId 
-                    ? { ...notification, responded: true, accepted: true, read: true } 
-                    : notification
-            )
-        );
-        
-        // Show success message
-        toast.success("Project invitation accepted");
-        
-        // Optionally refresh projects list to show the newly joined project
-        refetch();
-    };
-    
-    const handleDeclineInvitation = (notificationId, projectId) => {
-        // Here you would typically make an API call to decline the invitation
-        console.log(`Declining invitation for project ${projectId}`);
-        
-        // Update the notification to show it's been declined
-        setNotifications(prevNotifications => 
-            prevNotifications.map(notification => 
-                notification.id === notificationId 
-                    ? { ...notification, responded: true, accepted: false, read: true } 
-                    : notification
-            )
-        );
-        
-        // Show info message
-        toast.error("Project invitation declined");
-    };
+
 
   // Transform the projects data if needed.
   const projects = Array.isArray(projectsData)
@@ -249,42 +165,7 @@ const Projects = () => {
     }
   };
 
-    return (
-        <div className="flex h-screen bg-[var(--background-primary)]">
-            <Sidebar />
-            <div className="flex-grow p-10 ml-[240px] overflow-y-auto">
-                <div className="flex justify-between items-center mb-8 pr-5">
-                    <h1 className="text-3xl font-bold text-[var(--text)]">Projects</h1>
-                    <div className="flex items-center gap-4">
-                        {/* Notification Component with Accept/Decline functionality */}
-                        <NotificationComponent 
-                            notifications={notifications}
-                            onMarkAsRead={handleMarkAsRead}
-                            onMarkAllAsRead={handleMarkAllAsRead}
-                            onAcceptInvitation={handleAcceptInvitation}
-                            onDeclineInvitation={handleDeclineInvitation}
-                        />
-                        <UserAvatar />
-                    </div>
-                </div>
-
-                <div className="flex flex-wrap gap-5">
-                    {projects.map((project, index) => (
-                        <div
-                            key={index}
-                            className="relative bg-[var(--background)] rounded-2xl shadow-md p-5 w-[300px] cursor-pointer hover:shadow-lg transition-shadow duration-200"
-                            onClick={() => handleProjectClick(project)}
-                        >
-                            {/* Delete Button */}
-                            <button
-                                onClick={(e) =>{ e.stopPropagation(); setSelectedProject(project); setShowDeleteConfirmModal(true)}}
-                                className="absolute p-1 top-2 right-2 text-gray-400 hover:text-red-500 z-5 cursor-pointer"
-                                title="Delete Project"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                </svg>
-                            </button>
+    
   return (
     <PageLayout title="Projects">
       <button
