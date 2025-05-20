@@ -1,5 +1,16 @@
 import express from 'express';
-import { createProject, getUserProjects, deleteProject, getProjectById, getProjectUsers, updateProjectUsers} from "../controllers/projectController.js";
+import { 
+  createProject, 
+  getUserProjects, 
+  deleteProject, 
+  getProjectById, 
+  getProjectUsers, 
+  updateProjectUsers, 
+  getUserNotifications, 
+  inviteUserToProject, 
+  userAcceptInvite, 
+  deleteNotification, 
+  markNotificationAsRead} from "../controllers/projectController.js";
 import {
   createColumn,
   getProjectColumns,
@@ -49,4 +60,22 @@ router.delete('/:projectId/kanban/:columnId', authMiddleware, deleteColumn);
 
 // UPDATE positions of multiple columns (drag-and-drop logic)
 router.put('/:projectId/kanban/reorder', authMiddleware, updateColumnPositions);
+
+// NOTIFICATION ROUTES FOR PROJECT INVITAIONS
+
+// CREATE an invite to a user to join a project  
+router.post('/:projectId/invite', authMiddleware, inviteUserToProject);
+
+// DELETE an invite if a user declines  
+router.delete('/notifications/:notificationId', authMiddleware, deleteNotification);
+
+// Mark a notification as read   
+router.patch('/notifications/:notificationId/read', authMiddleware, markNotificationAsRead);
+
+// ADDS the user into the project if they accept the invitation
+router.post('/:projectId/accept/:userId', authMiddleware, userAcceptInvite);
+
+// GETS the current user's notifications
+router.get('/notifications', authMiddleware, getUserNotifications);
+
 export default router;

@@ -15,13 +15,17 @@ router.put('/:id', authMiddleware, updateTask);
 
 //router.put('/:id', authMiddleware, updateTask);
 
-// Subtask functions
 
+
+// Subtask functions
+//*********************** */
 router.post('/:taskId', authMiddleware, createSubTask);
 
 router.delete('/:subtaskId', authMiddleware, deleteSubtask);
 
 router.put('/:subtaskId', updateSubtask);
+//*********************** */
+// End of Subtask Functions
 
 export default router;
 
