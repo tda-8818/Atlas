@@ -5,15 +5,10 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AddTaskPopup from '../components/modals/AddTaskPopup';
 import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
-import { useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation } from "../redux/slices/projectSlice";
-// Sample team members data
-const teamMembers = [
-  { id: "user-1", name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", initials: "AJ" },
-  { id: "user-2", name: "Sarah Wilson", avatar: "https://i.pravatar.cc/150?img=2", initials: "SW" },
-  { id: "user-3", name: "David Chen", avatar: "https://i.pravatar.cc/150?img=3", initials: "DC" },
-  { id: "user-4", name: "Emma Rodriguez", avatar: "https://i.pravatar.cc/150?img=4", initials: "ER" },
-  { id: "user-5", name: "Michael Brown", avatar: "https://i.pravatar.cc/150?img=5", initials: "MB" },
-];
+import { useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation, useGetProjectUsersQuery } from "../redux/slices/projectSlice";
+import { set } from "mongoose";
+import { assignUsersToTask } from "../../../server/src/controllers/taskController";
+
 
 // Define priority levels
 const priorityLevels = ['none', '!', '!!', '!!!'];
@@ -124,11 +119,14 @@ const Kanban = () => {
 
   const { data: projectTasks, isLoading, isError, refetch} = useGetProjectTasksQuery(currentProject._id);
   const { data: columnData} = useGetProjectColumnsQuery(currentProject._id);
+
+  const { data: teamMembers } = useGetProjectUsersQuery(currentProject._id);
   
 
   // 
   const mapTasksToColumns = () => {
     if (!columnData || !projectTasks) return [];
+    console.log("project tasks: ", projectTasks);
 
     return columnData.map(column => ({
       id: column._id,
@@ -305,29 +303,6 @@ const Kanban = () => {
     setNewColumnName("");
   };
 
-  const handleTaskEdit = async (cardData) => {
-    try {
-      console.log("Attempting to edit with new cardData:", cardData);
-
-      const response = await editTask(cardData).unwrap();
-
-      // Find the column and update the card's id to map to the updated Task
-      const updatedColumns = columns.map((column) => {
-        return {
-          ...column,
-          cards: column.cards.map((card) => {
-            card._id === response._id ? response : card //If response is not null, use the response, otherwise use card
-          })
-        }
-      })
-      setColumns(updatedColumns);
-      setSelectedCard(null);
-    } catch (error) {
-      console.error("Failed to edit task", error)
-    }
-
-  }
-
 
   const handleAddTaskFromPopup = async (cardData) => {
 
@@ -380,6 +355,7 @@ const Kanban = () => {
 
   const openAddTaskPopup = (columnIndex) => {
     setAddTaskColumnIndex(columnIndex);
+    setSelectedCard(null); // Reset selected card when opening the add task popup
     setShowAddTaskPopup(true);
   };
 
@@ -446,116 +422,13 @@ const Kanban = () => {
     }
   };
 
-  // Handlers to update the temporary 'selectedCard' state (within the modal)
-  const handleUpdateSelectedCardTitle = (title) => {
-    if (selectedCard) setSelectedCard({ ...selectedCard, title });
-  };
-
-  const handleUpdateSelectedCardPriority = (priority) => {
-    if (selectedCard) setSelectedCard({ ...selectedCard, priority });
-  };
-
-  const handleUpdateSelectedCardTag = (tag) => {
-    if (selectedCard) setSelectedCard({ ...selectedCard, tag: tag.trim() === '' ? null : tag.trim() });
-  };
-
-  const handleUpdateSelectedCardDescription = (description) => {
-    if (selectedCard) setSelectedCard({ ...selectedCard, description });
-  };
-
-  const handleUpdateSelectedCardDueDate = (dueDate) => {
-    if (selectedCard) setSelectedCard({ ...selectedCard, dueDate });
-  };
-
-  // Updated to handle multiple user assignments (within Card Modal)
-  const toggleUserAssignmentInCard = (userId) => {
-    if (!selectedCard) return;
-
-    const currentAssignees = selectedCard.assignedTo || [];
-
-    const newAssignees = currentAssignees.includes(userId)
-      ? currentAssignees.filter(id => id !== userId)
-      : [...currentAssignees, userId];
-
-    setSelectedCard({
-      ...selectedCard,
-      assignedTo: newAssignees
-    });
-  };
-
-
-  // --- Subtask Management within Card Modal (update selectedCard state) ---
-
-  const addSubtaskToCard = () => {
-    if (!newSubtaskTitle.trim() || !selectedCard) return;
-
-    const newSubtask = {
-      id: generateId("subtask"), // Ensure draggableId exists
-      title: newSubtaskTitle.trim(),
-      completed: false,
-      priority: "none",
-    };
-
-    setSelectedCard({
-      ...selectedCard,
-      subtasks: [...(selectedCard.subtasks || []), newSubtask],
-    });
-
-    setNewSubtaskTitle("");
-  };
-  const toggleSubtaskCompletionInCard = (subtaskId) => {
-    if (!selectedCard) return;
-
-    const subtasks = selectedCard.subtasks || [];
-
-    const updatedSubtasks = subtasks.map(st =>
-      st.id === subtaskId ? { ...st, completed: !st.completed } : st
-    );
-
-    setSelectedCard({
-      ...selectedCard,
-      subtasks: updatedSubtasks
-    });
-  };
-
-  const handleUpdateSubtaskPriorityInCard = (subtaskId, newPriority) => {
-    if (!selectedCard) return;
-
-    const subtasks = selectedCard.subtasks || [];
-
-    const updatedSubtasks = subtasks.map(st =>
-      st.id === subtaskId ? { ...st, priority: newPriority } : st
-    );
-
-    setSelectedCard({
-      ...selectedCard,
-      subtasks: updatedSubtasks
-    });
-  };
-
-
-  const deleteSubtaskFromCard = (subtaskId) => {
-    if (!selectedCard) return;
-
-    const subtasks = selectedCard.subtasks || [];
-
-    const updatedSubtasks = subtasks.filter(st => st.id !== subtaskId);
-
-    setSelectedCard({
-      ...selectedCard,
-      subtasks: updatedSubtasks
-    });
-  };
-  // --- End of Subtask Management within Card Modal ---
-
-
   // Function to save changes from the selectedCard state to the main columns state
-  const handleSaveChanges = async () => {
-    if (!selectedCard) {
+  const handleSaveChanges = async (cardData) => {
+    if (!cardData) {
       console.error("No card selected to save.");
       return;
     }
-
+    
     // We allow saving even if the title is empty when triggered by Enter,
     // but the Save button itself remains disabled.
     // If triggered by the button and title is empty, the disabled state prevents this.
@@ -566,7 +439,10 @@ const Kanban = () => {
 
 
     const { columnIndex, cardIndex, ...cardDataToSave } = selectedCard;
-
+    const newCardData = {
+      ...cardData,
+      _id: cardData.id
+    };
     // Check if the card still exists at the original index before saving
     if (columnIndex === undefined ||
       cardIndex === undefined ||
@@ -585,7 +461,7 @@ const Kanban = () => {
 
     try {
       // Send data to backend to edit task
-      const response = await editTask(cardDataToSave).unwrap();
+      const response = await editTask(newCardData).unwrap();
       console.log("Task successfully updated:", response);
 
 
@@ -601,9 +477,11 @@ const Kanban = () => {
       // Set selectedCard to null AFTER the state update to close the modal
       setColumns(updatedColumns);
       setSelectedCard(null);
+       setShowAddTaskPopup(false);
     } catch (error) {
       console.error("Failed to update task in Kanban.jsx", error);
     }
+   
   };
 
   // Function to close the modal WITHOUT saving changes
@@ -732,18 +610,21 @@ const Kanban = () => {
   const openCardDetails = (columnIndex, cardIndex) => {
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-
+    console.log("team members: ", teamMembers);
     const card = columns[columnIndex].cards[cardIndex];
     setSelectedCard({
       ...card,
       columnIndex,
       cardIndex,
       colTitle: columns[columnIndex].title,
-      subtasks: card.subtasks || []
+      startDate: card.startDate ? new Date(card.startDate) : null,
+      dueDate: card.dueDate ? new Date(card.dueDate) : null,
+      subtasks: card.subtasks || [],
     });
 
-    setShowDescription(false);
-    setShowSubtasks(false);
+    console.log("Selected card for details:", card);
+
+    setShowAddTaskPopup(true);
   };
 
   // Toggle section visibility functions
@@ -755,29 +636,29 @@ const Kanban = () => {
     setShowSubtasks(!showSubtasks);
   };
 
-  // Multi-avatar component
-  const MultiAvatar = ({ assignedUsers }) => {
-    if (!assignedUsers || assignedUsers.length === 0) return null;
+  // // Multi-avatar component
+  // const MultiAvatar = ({ assignedUsers }) => {
+  //   if (!assignedUsers || assignedUsers.length === 0) return null;
 
-    const users = assignedUsers.map(id => getTeamMember(id)).filter(Boolean);
-    const displayUsers = users.slice(0, 3);
-    const extraCount = users.length - displayUsers.length;
+  //   const users = assignedUsers.map(id => getTeamMember(id)).filter(Boolean);
+  //   const displayUsers = users.slice(0, 3);
+  //   const extraCount = users.length - displayUsers.length;
 
-    return (
-      <div className="flex -space-x-2 items-center">
-        {displayUsers.map((user, index) => (
-          <div key={user.id} className="z-10" style={{ zIndex: 10 - index }}>
-            <Avatar user={user} />
-          </div>
-        ))}
-        {extraCount > 0 && (
-          <div className="z-0 flex items-center justify-center w-6 h-6 text-xs bg-gray-200 rounded-full border-2 border-white">
-            +{extraCount}
-          </div>
-        )}
-      </div>
-    );
-  };
+  //   return (
+  //     <div className="flex -space-x-2 items-center">
+  //       {displayUsers.map((user, index) => (
+  //         <div key={user.id} className="z-10" style={{ zIndex: 10 - index }}>
+  //           <Avatar user={user} />
+  //         </div>
+  //       ))}
+  //       {extraCount > 0 && (
+  //         <div className="z-0 flex items-center justify-center w-6 h-6 text-xs bg-gray-200 rounded-full border-2 border-white">
+  //           +{extraCount}
+  //         </div>
+  //       )}
+  //     </div>
+  //   );
+  // };
 
 
   return (
@@ -940,7 +821,7 @@ const Kanban = () => {
                                           )}
                                           
                                           {/* Assigned User Avatars */}
-                                          <MultiAvatar assignedUsers={card.assignedTo} />
+                                          {/* <MultiAvatar assignedUsers={card.assignedTo} /> */}
                                         </div>
                                       </div>
 
@@ -1005,331 +886,11 @@ const Kanban = () => {
             setShowAddTaskPopup(false);
             setAddTaskColumnIndex(null);
           }}
+          onEdit={handleSaveChanges}
+          onDelete={deleteCard}
+          teamMembers={teamMembers}
+          initialValues={selectedCard}
         />
-
-
-        {/* Card Detail Modal */}
-        {selectedCard && (
-          <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
-            {/* Add ref to the modal content div */}
-            {/* Removed onKeyDown from this div */}
-
-            <div ref={cardModalRef} className="rounded shadow-lg bg-[var(--background)] p-6 w-[500px] max-h-[80vh] overflow-y-auto kanban-card-modal-content">
-              {/* Title and Tag/Priority */}
-              <div className="mb-4">
-                <div className="flex items-center mb-1">
-                  <input
-                    type="text"
-                    id="cardTitle"
-                    value={selectedCard.title}
-                    onChange={(e) => handleUpdateSelectedCardTitle(e.target.value)}
-                    placeholder="Task Title"
-                    className="text-xl font-bold flex-grow border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none p-1 mr-2"
-                  />
-                  {/* Tag and Priority on the same line */}
-                  <div className="flex items-center gap-2">
-                    {/* Tag Input (Editable) */}
-                    <input
-                      type="text"
-                      id="cardTag"
-                      value={selectedCard.tag || ''}
-                      onChange={(e) => handleUpdateSelectedCardTag(e.target.value)}
-                      placeholder="Add tag"
-                      className="text-xs border rounded px-1 py-0.5 w-20 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-
-                    {/* Priority dropdown for the main card */}
-                    <select
-                      id="cardPriority"
-                      value={selectedCard.priority || 'none'}
-                      onChange={(e) => handleUpdateSelectedCardPriority(e.target.value)}
-                      className="text-xs border rounded px-1 py-0.5 text-gray-700"
-                    >
-                      {priorityLevels.map(level => (
-                        <option key={level} value={level}>
-                          {level === 'none' ? 'Priority' : level}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-500">in list {selectedCard.colTitle}</p>
-              </div>
-
-
-              {/* Due Date and Assignment */}
-              <div className="mb-4 flex items-start justify-between">
-                <div className="w-1/2">
-                  <h3 className="text-sm font-semibold mb-2">Due Date</h3>
-                  <div className="flex items-center">
-                    <input
-                      type="date"
-                      id="cardDueDate"
-                      value={selectedCard.dueDate ? selectedCard.dueDate.split('T')[0] : ""}
-                      onChange={(e) => handleUpdateSelectedCardDueDate(e.target.value)}
-                      className="border rounded px-2 py-1 text-sm"
-                    />
-                    {selectedCard.dueDate && getEmergencyLevel(selectedCard.dueDate) === 'overdue' && (
-                      <div className="ml-2 text-xs px-2 py-0.5 rounded bg-red-500 text-white">
-                        overdue
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Assignment Section - Multiple with search */}
-                {/* Added class for click-outside handler exclusion */}
-                <div className="w-1/2 member-assignment-area">
-                  <h3 className="text-sm font-semibold mb-2">Assigned To</h3>
-                  <div className="flex items-center flex-wrap gap-2 relative">
-                    {/* Display assigned members */}
-                    {(selectedCard.assignedTo || []).map(userId => (
-                      <div key={userId} className="flex items-center bg-gray-50 rounded-full border border-gray-200 p-1">
-                        <Avatar user={getTeamMember(userId)} />
-                        <button
-                          onClick={() => toggleUserAssignmentInCard(userId)}
-                          className="ml-1 text-gray-400 hover:text-red-500 text-xs"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                      </div>
-                    ))}
-
-                    {/* Add member button */}
-                    <div
-                      className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300"
-                      onClick={() => setShowMemberSearch(!showMemberSearch)}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-
-                    {/* Member search panel */}
-                    {showMemberSearch && (
-                      <div className="absolute top-full mt-2 shadow-lg rounded p-2 border w-full max-w-xs z-10">
-                        <div className="mb-2">
-                          <input
-                            type="text"
-                            id="memberSearchInput" // Added ID for keydown check
-                            value={searchMember}
-                            onChange={(e) => setSearchMember(e.target.value)}
-                            placeholder="Search members..."
-                            className="border rounded px-2 py-1 text-sm w-full"
-                            autoFocus
-                          />
-                        </div>
-                        <div className="max-h-40 overflow-y-auto">
-                          {teamMembers
-                            .filter(member =>
-                              member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
-                              !(selectedCard.assignedTo || []).includes(member.id)
-                            )
-                            .map(member => (
-                              <div
-                                key={member.id}
-                                className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded cursor-pointer"
-                                onClick={() => {
-                                  toggleUserAssignmentInCard(member.id);
-                                  setSearchMember(""); // Clear search after selection
-                                  setShowMemberSearch(false); // Close search after selection
-                                }}
-                              >
-                                <Avatar user={member} size="small" />
-                                <span className="text-sm">{member.name}</span>
-                              </div>
-                            ))}
-                          {teamMembers.filter(member =>
-                            member.name.toLowerCase().includes(searchMember.toLowerCase()) &&
-                            !(selectedCard.assignedTo || []).includes(member.id)
-                          ).length === 0 && (
-                              <div className="text-center text-sm text-gray-500">No members found</div>
-                            )}
-                        </div>
-                        <div className="mt-2 text-right">
-                          <button
-                            onClick={() => { setShowMemberSearch(false); setSearchMember(''); }}
-                            className="text-xs text-blue-600 hover:underline"
-                          >
-                            Close
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Description Section */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold">Description</h3>
-                  <button
-                    onClick={toggleDescriptionSection}
-                    className="text-gray-500 hover:text-gray-700 text-xs"
-                  >
-                    {showDescription ? 'Collapse' : 'Expand'}
-                  </button>
-                </div>
-                {showDescription && (
-                  <textarea
-                    value={selectedCard.description || ""}
-                    onChange={(e) => handleUpdateSelectedCardDescription(e.target.value)}
-                    placeholder="Add a more detailed description..."
-                    className="w-full border rounded p-2 text-sm min-h-[80px]"
-                    id="cardDescription"
-                  />
-                )}
-              </div>
-
-              {/* Subtasks Section (within Card Modal) */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold">Subtasks ({selectedCard.subtasks?.filter(st => st.completed).length || 0}/{selectedCard.subtasks?.length || 0})</h3>
-                  <button
-                    onClick={toggleSubtasksSection}
-                    className="text-gray-500 hover:text-gray-700 text-xs"
-                  >
-                    {showSubtasks ? 'Collapse' : 'Expand'}
-                  </button>
-                </div>
-
-                {/* Conditional rendering for subtasks */}
-                {showSubtasks && (
-                  <DragDropContext onDragEnd={onDragEnd}>
-                    <Droppable droppableId={`subtasks-${selectedCard.id}`} type="subtask">
-                      {(provided) => (
-                        <div
-                          {...provided.droppableProps}
-                          ref={provided.innerRef}
-                          className="space-y-2 mb-3"
-                        >
-                          {(selectedCard.subtasks || []).map((subtask, index) => (
-                            <Draggable key={subtask.id} draggableId={subtask.id} index={index}>
-                              {(provided, snapshot) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  className={`flex items-center bg-gray-50 p-2 rounded group cursor-grab ${snapshot.isDragging ? 'shadow-md bg-gray-100' : ''}`}
-                                >
-                                  <button
-                                    onClick={() => toggleSubtaskCompletionInCard(subtask.id)}
-                                    className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
-                                    style={{ backgroundColor: subtask.completed ? '#3B82F6' : 'white' }}
-                                  >
-                                    {subtask.completed && (
-                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                      </svg>
-                                    )}
-                                  </button>
-
-                                  <span
-                                    onClick={() => toggleSubtaskCompletionInCard(subtask.id)}
-                                    className={`text-sm flex-1 cursor-pointer mr-1 ${subtask.completed ? "line-through text-gray-400" : ""}`}
-                                  >
-                                    {subtask.title}
-                                  </span>
-
-                                  <select
-                                    value={subtask.priority || 'none'}
-                                    onChange={(e) => handleUpdateSubtaskPriorityInCard(subtask.id, e.target.value)}
-                                    className="text-xs border rounded px-1 py-0.5 text-gray-700"
-                                  >
-                                    {priorityLevels.map(level => (
-                                      <option key={level} value={level}>
-                                        {level === 'none' ? 'Prio' : level}
-                                      </option>
-                                    ))}
-                                  </select>
-
-
-                                  <button
-                                    onClick={() => deleteSubtaskFromCard(subtask.id)}
-                                    className="ml-2 text-gray-400 hover:text-red-500 text-xs"
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                    </svg>
-                                  </button>
-                                </div>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-                        </div>
-                      )}
-                    </Droppable>
-                  </DragDropContext>
-                )}
-                {/* Input for adding new subtask */}
-                {showSubtasks && (
-                  <div className="flex items-center mt-3">
-                    <input
-                      type="text"
-                      id="newSubtaskInput"
-                      value={newSubtaskTitle}
-                      onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                      placeholder="Add a subtask..."
-                      className="flex-1 border rounded px-2 py-1 text-sm mr-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSubtaskToCard(); } }}
-                    />
-                    <button
-                      onClick={addSubtaskToCard}
-                      className="px-3 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed bg-blue-500 text-white hover:bg-blue-600" // Added blue background and white text
-                      disabled={!newSubtaskTitle.trim()}
-                    >
-                      Add
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer Buttons */}
-              <div className="flex justify-between items-center">
-                {/* Delete Button (Left) */}
-                <button
-                  onClick={() => {
-                    const { columnIndex, cardIndex } = selectedCard;
-                    setConfirmDelete({
-                      type: 'card',
-                      columnIndex: columnIndex,
-                      cardIndex: cardIndex
-                    });
-                    setSelectedCard(null);
-                  }}
-                  className="px-4 py-2 text-red-500 hover:text-red-700 rounded text-sm"
-                >
-                  Delete
-                </button>
-
-                {/* Right Buttons (Close and Save) */}
-                <div className="flex">
-                  {/* Close Button (Left of Save) */}
-                  <button
-                    onClick={handleCloseCardDetails}
-                    className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm mr-2"
-                  >
-                    Close
-                  </button>
-                  {/* Save Button (Right) */}
-                  <button
-                    onClick={handleSaveChanges}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={!selectedCard.title.trim()} // Still disable button if title is empty
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Integration with DeleteTaskPopup for card deletion */}
 
       </div>
     </div>

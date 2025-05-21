@@ -74,8 +74,8 @@ const CalendarComp = ({ project }) => {
     const newEvent = {
       projectId: project._id,
       title: formData.title, // from modal input
-      startDate: new Date(selectedDateInfo.startStr) || new Date(formData.startDate),
-      dueDate: new Date(selectedDateInfo.end),
+      startDate: new Date(formData.startDate) || new Date(selectedDateInfo.startStr),
+      dueDate: new Date(formData.dueDate) || new Date(selectedDateInfo.end),
       allDay: selectedDateInfo.allDay,
       description: formData.description, // extra info from your modal
       assignedTo: formData.assignedTo,
@@ -158,6 +158,7 @@ const CalendarComp = ({ project }) => {
       });
       
       // Open the popup
+      console.log("team members: ",projectUsers)
       setShowAddTaskPopup(true);
     } catch (error) {
       console.error("Error handling event click:", error);
