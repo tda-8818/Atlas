@@ -12,7 +12,7 @@ import {
 const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead, onDelete }) => {
   // Determine if this notification is an invitation type that needs accept/decline buttons
   const isInvitation = notification.type === 'invitation';
-  console.log("NOTIFICATION ITEM:", notification);
+  //console.log("NOTIFICATION ITEM:", notification);
   const {
   _id,
   projectId,
@@ -141,7 +141,7 @@ const NotificationComponent = ({ notificationData, refetchProjects, refetchNotif
       console.log("notifId before accept", notificationId);
       await updateNotificaton({
         notificationId,
-        updatedFields: {
+        updateFields: {
           responded: true,
           accepted: true
         }
@@ -155,9 +155,10 @@ const NotificationComponent = ({ notificationData, refetchProjects, refetchNotif
 
   const handleDecline = async (notificationId) => {
     try {
+      console.log("notificationId:", notificationId);
       await updateNotificaton({
-        id: notificationId,
-        body: {
+        notificationId: notificationId,
+        updateFields: {
           responded: true,
           accepted: false
         }

@@ -471,9 +471,11 @@ export const markAllNotificationsAsRead = async (req, res) => {
  */
 export const updateNotification = async (req, res) => {
   try {
+    console.log("UPDATE NOTIFS EXECUTED");
     const { notificationId } = req.params;
     const updateFields = req.body; // Expected to be an object like { responded: true, accepted: false, ... }
 
+    console.log("GOT UPDATE FIELDS -> :", updateFields);
     const notification = await NotificationModel.findById(notificationId);
     if (!notification) {
       return res.status(404).json({ message: 'Notification not found' });
@@ -491,7 +493,7 @@ export const updateNotification = async (req, res) => {
     //notification.updatedAt = new Date();
 
     await notification.save();
-
+    console.log("Updated notification", notification);
     res.status(200).json({ message: 'Notification updated', notification });
   } catch (error) {
     console.error('Error updating notification:', error);

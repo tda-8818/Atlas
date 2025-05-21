@@ -33,9 +33,9 @@ router.delete('/notifications/:notificationId', authMiddleware, deleteNotificati
 // Mark a notification as read   
 router.patch('/notifications/:notificationId/read', authMiddleware, markNotificationAsRead);
 
-router.patch('notifications/mark-all-read', authMiddleware, markAllNotificationsAsRead);
+router.patch('/notifications/mark-all-read', authMiddleware, markAllNotificationsAsRead);
 
-router.patch('notifications/:notificationId', authMiddleware, updateNotification);
+router.patch('/notifications/:notificationId', authMiddleware, updateNotification);
 
 
 // ADDS the user into the project if they accept the invitation
