@@ -2,7 +2,7 @@ import Project from "../models/ProjectModel.js";
 import UserModel from "../models/UserModel.js";
 import Column from  "../models/ColumnModel.js"
 import Task from "../models/TaskModel.js";
-import notificationModel from "../models/notificationModel.js";
+import NotificationModel from "../models/notificationModel.js";
 const cookieOptions = {
     httpOnly: true,
     secure: false, // false for localhost development
@@ -285,7 +285,7 @@ export const inviteUserToProject = async (req, res) => {
     }
 
     const timeSentToUse = timeSent || Date.now();
-    const inviteNotification = await notificationModel.create({
+    const inviteNotification = await NotificationModel.create({
       senderId,
       recipientId,
       timeSent: timeSentToUse,
@@ -313,7 +313,7 @@ export const deleteNotification = async (req, res) => {
   try {
     const { notificationId } = req.params;
 
-    const notification = await notificationModel.findByIdAndDelete(notificationId);
+    const notification = await NotificationModel.findByIdAndDelete(notificationId);
 
     await UserModel.findByIdAndUpdate(
       notification.recipientId,
@@ -337,7 +337,7 @@ export const markNotificationAsRead = async (req, res) => {
   try {
     const { notificationId } = req.params;
 
-    const notification = await notificationModel.findById(notificationId);
+    const notification = await NotificationModel.findById(notificationId);
     if (!notification) {
       return res.status(404).json({ message: 'Notification not found' });
     }
@@ -421,9 +421,17 @@ export const getUserNotifications = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    console.log("GOT USER => Check notifs: ", user);
+    //console.log("GOT USER => Check notifs: ", user);
 
-    res.status(200).json(user.notifications);
+    // instead of just sending id data, populate to get the name and title
+    const populatedNotifications = await NotificationModel.find({ recipientId: userId})
+      .populate("senderId", "firstName lastName")
+      .populate('projectId', 'title')
+      .sort({createdAt: -1})
+
+    console.log("SENDING NOTIFICATIONS:", populatedNotifications);
+
+    res.status(200).json(populatedNotifications);
   } catch (error) {
     console.error('Error getting user notifications:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -435,7 +443,7 @@ export const markAllNotificationsAsRead = async (req, res) => {
     const userId = req.user.id;
 
     // Update all unread notifications for this user
-    const result = await Notification.updateMany(
+    const result = await NotificationModel.updateMany(
       { recipient: userId, read: false },
       { $set: { read: true } }
     );

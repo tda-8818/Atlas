@@ -12,13 +12,28 @@ import {
 const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead }) => {
   // Determine if this notification is an invitation type that needs accept/decline buttons
   const isInvitation = notification.type === 'invitation';
-
+  console.log("NOTIFICATION ITEM:", notification);
+  const {
+  _id,
+  projectId,
+  senderId,
+  recipientId,
+  createdAt,
+  isUnread,
+  responded,
+  accepted,
+  } = notification;
+  
+  // console.log("SenderId", senderId);
+  // console.log("SenderId first name: ", senderId.firstName, "LastName:", senderId.lastName);
+ 
+  const notificationMessage = `${senderId.firstName} ${senderId.lastName} invited you to be a member of ${projectId.title}`;
   return (
     <div className="px-4 py-3 border-b border-gray-200 hover:bg-gray-50">
       <div className="flex items-start">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900">{notification.title}</p>
-          <p className="text-xs text-gray-500 mt-1">{notification.message}</p>
+          <p className="text-sm font-medium text-gray-900">{"Project Invitation"}</p>
+          <p className="text-xs text-gray-500 mt-1">{notificationMessage}</p>
           <p className="text-xs text-gray-400 mt-1">
             {typeof notification.createdAt === 'string' 
               ? new Date(notification.createdAt).toLocaleString() 
@@ -26,7 +41,7 @@ const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead }) =
           </p>
           
           {/* Accept/Decline buttons for invitations */}
-          {isInvitation && !notification.responded && (
+          {!notification.responded && (
             <div className="mt-2 flex space-x-2">
               <button
                 onClick={(e) => {
@@ -50,7 +65,7 @@ const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead }) =
           )}
           
           {/* Show response status if already responded */}
-          {isInvitation && notification.responded && (
+          {notification.responded && (
             <div className="mt-2">
               <span className={`text-xs px-2 py-1 rounded ${
                 notification.accepted 
@@ -62,7 +77,7 @@ const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead }) =
             </div>
           )}
         </div>
-        {!notification.read && (
+        {!notification.isUnread && (
           <div className="ml-3 flex-shrink-0">
             <span className="inline-block h-2 w-2 rounded-full bg-blue-500"></span>
           </div>
@@ -72,20 +87,12 @@ const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead }) =
   );
 };
 
-const NotificationComponent = (
-  // { 
-  // notifications = [], 
-  // onMarkAsRead, 
-  // onMarkAllAsRead,
-  // onAcceptInvitation,
-  // onDeclineInvitation
-  // }
-) => {
+const NotificationComponent = ({ notificationData }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   // Fetch notifications
-  const { data: notifications = [], refetch } = useGetCurrentUserNotificationsQuery();
+  const notifications = notificationData || [];
 
   // Define RTK functions
   const [acceptInvitation] = useAcceptProjectInviteMutation();
