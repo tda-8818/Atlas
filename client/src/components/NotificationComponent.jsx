@@ -1,15 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import {
-  useGetCurrentUserNotificationsQuery,
   useAcceptProjectInviteMutation,
   useDeleteNotificationMutation,
   useMarkNotificationAsReadMutation,
-  useMarkAllNotificationsAsReadMutation
+  useMarkAllNotificationsAsReadMutation,
+  useUpdateNotificationMutation,
 } from "../redux/slices/projectSlice.js";
 
 
-const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead }) => {
+const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead, onDelete }) => {
   // Determine if this notification is an invitation type that needs accept/decline buttons
   const isInvitation = notification.type === 'invitation';
   console.log("NOTIFICATION ITEM:", notification);
@@ -18,12 +18,13 @@ const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead }) =
   projectId,
   senderId,
   recipientId,
-  createdAt,
-  isUnread,
   responded,
   accepted,
+  isUnread,
+  timeSent,
   } = notification;
-  
+
+  const notificationId = _id;
   // console.log("SenderId", senderId);
   // console.log("SenderId first name: ", senderId.firstName, "LastName:", senderId.lastName);
  
@@ -41,12 +42,12 @@ const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead }) =
           </p>
           
           {/* Accept/Decline buttons for invitations */}
-          {!notification.responded && (
+          {!responded && (
             <div className="mt-2 flex space-x-2">
               <button
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent triggering the parent onClick
-                  onAccept(notification.id, notification.projectId);
+                  onAccept(notificationId, recipientId, projectId);
                 }}
                 className="px-3 py-1 text-xs text-green-600 bg-white border border-green-500 rounded hover:bg-green-50 transition-colors"
               >
@@ -55,7 +56,7 @@ const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead }) =
               <button
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent triggering the parent onClick
-                  onDecline(notification.id, notification.projectId);
+                  onDecline(notificationId);
                 }}
                 className="px-3 py-1 text-xs text-red-600 bg-white border border-red-500 rounded hover:bg-red-50 transition-colors"
               >
@@ -65,19 +66,19 @@ const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead }) =
           )}
           
           {/* Show response status if already responded */}
-          {notification.responded && (
+          {responded && (
             <div className="mt-2">
               <span className={`text-xs px-2 py-1 rounded ${
-                notification.accepted 
+                accepted 
                   ? 'bg-white text-green-600 border border-green-500' 
                   : 'bg-white text-red-600 border border-red-500'
               }`}>
-                {notification.accepted ? 'Accepted' : 'Declined'}
+                {accepted ? 'Accepted' : 'Declined'}
               </span>
             </div>
           )}
         </div>
-        {!notification.isUnread && (
+        {!isUnread && (
           <div className="ml-3 flex-shrink-0">
             <span className="inline-block h-2 w-2 rounded-full bg-blue-500"></span>
           </div>
@@ -87,7 +88,7 @@ const NotificationItem = ({ notification, onAccept, onDecline, onMarkAsRead }) =
   );
 };
 
-const NotificationComponent = ({ notificationData }) => {
+const NotificationComponent = ({ notificationData, refetchProjects, refetchNotifications }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -96,9 +97,10 @@ const NotificationComponent = ({ notificationData }) => {
 
   // Define RTK functions
   const [acceptInvitation] = useAcceptProjectInviteMutation();
-  const [declineInvitation] = useDeleteNotificationMutation();
+  const [deleteInvitation] = useDeleteNotificationMutation();
   const [markAsRead] = useMarkNotificationAsReadMutation();
   const [markAllAsRead] = useMarkAllNotificationsAsReadMutation();
+  const [updateNotificaton] = useUpdateNotificationMutation();
   
   // Count unread notifications
   const unreadCount = notifications.filter(notification => !notification.read).length;
@@ -132,23 +134,51 @@ const NotificationComponent = ({ notificationData }) => {
   };
 
   // Handle when a user accepts an invitation
-   const handleAccept = async (userId, projectId) => {
+   const handleAccept = async (notificationId, userId, projectId) => {
     try {
       await acceptInvitation({ userId, projectId });
-      refetch();
+
+      console.log("notifId before accept", notificationId);
+      await updateNotificaton({
+        notificationId,
+        updatedFields: {
+          responded: true,
+          accepted: true
+        }
+      })
+      refetchProjects?.()
+      refetchNotifications?.();
     } catch (err) {
       console.error("Failed to accept invitation", err);
     }
   };
 
-  const handleDecline = async (userId, projectId) => {
+  const handleDecline = async (notificationId) => {
     try {
-      await declineInvitation({ userId, projectId });
-      refetch();
+      await updateNotificaton({
+        id: notificationId,
+        body: {
+          responded: true,
+          accepted: false
+        }
+      });
+
+      refetchNotifications?.();
     } catch (err) {
       console.error("Failed to decline invitation", err);
     }
   };
+
+  const handleDelete = async (notificationId) => {
+    try {
+      await deleteInvitation(notificationId);
+      
+      refetchNotifications?.();
+
+    } catch (error) {
+      console.error("Failed to delete notification", error);
+    }
+  }
 
   const handleMarkAllAsRead = async () => {
     try {
@@ -188,6 +218,7 @@ const NotificationComponent = ({ notificationData }) => {
                     notification={notification} 
                     onAccept={handleAccept}
                     onDecline={handleDecline}
+                    onDelete = {handleDelete}
                   />
                 </div>
               ))

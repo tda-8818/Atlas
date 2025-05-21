@@ -91,6 +91,7 @@ export const deleteProject = async (req, res) => {
 
         await Column.deleteMany({projectId});
         await Task.deleteMany({ projectId });
+        await NotificationModel.deleteMany({ projectId });
         const columnDeleteOperation = await Column.deleteMany({projectId:projectId});
         console.log(`Deleted ${columnDeleteOperation.deletedCount} columns related to project`);
 
@@ -320,6 +321,11 @@ export const deleteNotification = async (req, res) => {
       {$pull: {notifications: notification._id}}
     );
 
+    await UserModel.findByIdAndUpdate(
+      notification.senderId,
+      {$pull: {notifications: notification._id}}
+    );
+
     res.status(200).json({ message: 'Notification deleted' });
   } catch (error) {
     console.error('Error deleting notification:', error);
@@ -457,3 +463,38 @@ export const markAllNotificationsAsRead = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 }
+/**
+ * Dynamic update notification function 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+export const updateNotification = async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    const updateFields = req.body; // Expected to be an object like { responded: true, accepted: false, ... }
+
+    const notification = await NotificationModel.findById(notificationId);
+    if (!notification) {
+      return res.status(404).json({ message: 'Notification not found' });
+    }
+
+    // Update only allowed fields to avoid unwanted changes
+    const allowedUpdates = ['responded', 'accepted', 'isUnread'];
+    for (const key of Object.keys(updateFields)) {
+      if (allowedUpdates.includes(key)) {
+        notification[key] = updateFields[key];
+      }
+    }
+
+    // Optionally update updatedAt timestamp
+    //notification.updatedAt = new Date();
+
+    await notification.save();
+
+    res.status(200).json({ message: 'Notification updated', notification });
+  } catch (error) {
+    console.error('Error updating notification:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

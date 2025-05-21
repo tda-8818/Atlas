@@ -20,10 +20,10 @@ const Projects = () => {
         isLoading: projectsLoading,
         isError: projectsError,
         error: projectsErrorData,
-        refetch,
+        refetch: refetchProjects,
     } = useGetCurrentUserProjectsQuery();
     
-    const { data: notificationData = [] } = useGetCurrentUserNotificationsQuery();
+    const { data: notificationData = [], refetch: refetchNotifications } = useGetCurrentUserNotificationsQuery();
     const [createProject, { error: createError }] = useCreateProjectMutation();
     const [deleteProject, { error: deleteError }] = useDeleteProjectMutation();
 
@@ -168,7 +168,11 @@ const Projects = () => {
                     <h1 className="text-3xl font-bold text-[var(--text)]">Projects</h1>
                     <div className="flex items-center gap-4">
                         {/* Notification Component with Accept/Decline functionality */}
-                        <NotificationComponent notificationData={notificationData} />
+                        <NotificationComponent 
+                            notificationData={notificationData}
+                            refetchProjects={refetchProjects}
+                            refetchNotifications={refetchNotifications}
+                         />
                         <UserAvatar />
                     </div>
                 </div>

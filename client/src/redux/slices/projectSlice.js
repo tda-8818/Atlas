@@ -195,6 +195,24 @@ export const projectApiSlice = createApi({
           ? [...result.map((notif) => ({ type: 'Notification', id: notif._id })), { type: 'Notification', id: 'LIST' }]
           : [{ type: 'Notification', id: 'LIST' }],
     }),
+
+    /*
+
+    EXAMPLE USAGE
+      updateNotification({ 
+        notificationId: '123456',
+        updateFields: { responded: true, accepted: true, isUnread: false }
+      });
+
+    */
+    updateNotification: builder.mutation({
+    query: ({ notificationId, updateFields }) => ({
+      url: `/projects/notifications/${notificationId}`,
+      method: 'PATCH',
+      body: updateFields // updateFields is an object like { responded: true, accepted: false, isUnread: false }
+    }),
+      
+    }),
   }),
 });
 
@@ -219,6 +237,7 @@ export const {
   useAcceptProjectInviteMutation,
   useGetCurrentUserNotificationsQuery,
   useMarkAllNotificationsAsReadMutation,
+  useUpdateNotificationMutation,
 } = projectApiSlice;
 
 export default projectApiSlice;
