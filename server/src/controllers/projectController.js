@@ -120,7 +120,7 @@ export const getUserProjects = async (req, res) => {
     
         // Return the user's projects as JSON
         const projects = user.projects;
-        console.log("User projects called by getUserProjects:", projects);
+        //console.log("User projects called by getUserProjects:", projects);
         res.status(200).json(projects);
       } catch (error) {
         console.error("Error in getUserProjects:", error);
@@ -259,9 +259,14 @@ export const updateProjectUsers = async (req, res) => {
  */
 export const inviteUserToProject = async (req, res) => {
   try {
+    console.log("INVITE USER TO PROJECT EXECUTED");
+    console.log("PARAMS:", req.params);
+    console.log("BODY:", req.body);
     const { projectId } = req.params;
     const { senderId, recipientId, timeSent } = req.body;
 
+    console.log("req.param when invite user:", req.params);
+    console.log("req.param when invite user:", projectId);
     // 
     const userInviteProject = await Project.findById(projectId);
 
@@ -405,11 +410,11 @@ export const userAcceptInvite = async (req, res) => {
  */
 export const getUserNotifications = async (req, res) => {
   try {
-    const { userObject } = req.user;
+    //const { userObject } = req.user;
 
-    console.log("Got userObject from cookie: ", userObject);
+    console.log("Got userObject from cookie: ", req.user);
 
-    const userId = userObject._id;
+    const userId = req.user._id;
 
     const user = await UserModel.findById(userId).populate('notifications');
     if (!user) {
@@ -424,3 +429,23 @@ export const getUserNotifications = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+export const markAllNotificationsAsRead = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Update all unread notifications for this user
+    const result = await Notification.updateMany(
+      { recipient: userId, read: false },
+      { $set: { read: true } }
+    );
+
+    res.status(200).json({
+      message: 'All notifications marked as read',
+      modifiedCount: result.modifiedCount
+    });
+  } catch (error) {
+    console.error('Error marking notifications as read:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}

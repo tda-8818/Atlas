@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, Transition, DialogTitle, TransitionChild } from '@headlessui/react';
 import { Combobox } from '@headlessui/react';
 import { UserMinusIcon } from '@heroicons/react/24/solid';
+import { useInviteUserToProjectMutation } from '../redux/slices/projectSlice';
+import { useSelector } from 'react-redux';
 
 const ProjectUsersModal = ({
   show,
@@ -14,6 +16,8 @@ const ProjectUsersModal = ({
   const [query, setQuery] = useState('');
   const [selectedUsersToAdd, setSelectedUsersToAdd] = useState([]);
   const [currentMembers, setCurrentMembers] = useState([]);
+
+  const [inviteUserToProject] = useInviteUserToProjectMutation();
 
   useEffect(() => {
     if (show) {
@@ -53,7 +57,7 @@ const ProjectUsersModal = ({
       .includes(query)
   );
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const finalUserIds = [
       currentProjectOwnerId,
       ...currentMembers
@@ -104,7 +108,7 @@ const ProjectUsersModal = ({
                     className="w-full border border-gray-300 rounded-md shadow-sm py-2 pl-3 pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     onChange={(e) => setQuery(e.target.value)}
                     displayValue={() => ''}
-                    placeholder="Search users to add..."
+                    placeholder="Search users to invite..."
                   />
                   <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2" />
 
@@ -141,7 +145,7 @@ const ProjectUsersModal = ({
             </div>
 
             <div>
-              <h3 className="mt-4 font-semibold text-gray-700">Add Users</h3>
+              <h3 className="mt-4 font-semibold text-gray-700">Invite Users</h3>
               <ul className="mt-2 divide-y divide-gray-200">
                 {selectedUsersToAdd.length > 0 ? (
                   selectedUsersToAdd.map((user) => (
@@ -204,7 +208,7 @@ const ProjectUsersModal = ({
                 className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none"
                 onClick={handleSave}
               >
-                Save
+                Send Invitations
               </button>
             </div>
           </TransitionChild>

@@ -246,13 +246,7 @@ const Projects = () => {
                     <h1 className="text-3xl font-bold text-[var(--text)]">Projects</h1>
                     <div className="flex items-center gap-4">
                         {/* Notification Component with Accept/Decline functionality */}
-                        <NotificationComponent 
-                            notifications={notifications}
-                            onMarkAsRead={handleMarkAsRead}
-                            onMarkAllAsRead={handleMarkAllAsRead}
-                            onAcceptInvitation={handleAcceptInvitation}
-                            onDeclineInvitation={handleDeclineInvitation}
-                        />
+                        <NotificationComponent />
                         <UserAvatar />
                     </div>
                 </div>

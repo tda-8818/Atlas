@@ -170,7 +170,15 @@ export const projectApiSlice = createApi({
       invalidatesTags: ['Notification'],
     }),
 
-    // 4. Accept Invite (Add user to project and vice versa)
+    // 4. Mark Notification as Read
+    markAllNotificationsAsRead: builder.mutation({
+      query: () => ({
+        url: `/notifications/mark-all-read`,
+        method: 'PATCH'
+      }),
+    }),
+
+    // 5. Accept Invite (Add user to project and vice versa)
     acceptProjectInvite: builder.mutation({
       query: ({ userId, projectId }) => ({
         url: `projects/${projectId}/accept/${userId}`,
@@ -181,10 +189,12 @@ export const projectApiSlice = createApi({
     }),
 
     getCurrentUserNotifications: builder.query({
-      query: () => `projects/notifications`, // Adjust base path if needed
-      providesTags: (result, error) => [{ type: 'Notification' }],
+      query: () => `projects/notifications`,
+      providesTags: (result) =>
+        result
+          ? [...result.map((notif) => ({ type: 'Notification', id: notif._id })), { type: 'Notification', id: 'LIST' }]
+          : [{ type: 'Notification', id: 'LIST' }],
     }),
-
   }),
 });
 
@@ -208,6 +218,7 @@ export const {
   useMarkNotificationAsReadMutation,
   useAcceptProjectInviteMutation,
   useGetCurrentUserNotificationsQuery,
+  useMarkAllNotificationsAsReadMutation,
 } = projectApiSlice;
 
 export default projectApiSlice;
