@@ -460,16 +460,16 @@ const toggleUserAssignment = (member) => {
                onClick={() => setIsSubtasksCollapsed(!isSubtasksCollapsed)}
            >
                Subtasks (Optional)
-               <svg
+              {isEditing? <svg
                    className={`w-4 h-4 transform transition-transform duration-200 ${isSubtasksCollapsed ? '' : 'rotate-180'}`}
                    xmlns="http://www.w3.org/2000/svg"
                    viewBox="0 0 20 20"
                    fill="currentColor"
                >
                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-               </svg>
+               </svg>: ""}
            </button>
-           <div className={`pb-3 ${isSubtasksCollapsed ? 'hidden' : ''}`}>
+           {isEditing? <div className={`pb-3 ${isSubtasksCollapsed ? 'hidden' : ''}`}>
                 {(subtasks || []).length > 0 && (
                    <div className="space-y-2 mb-3">
                      {(subtasks || []).map((subtask) => (
@@ -530,7 +530,7 @@ const toggleUserAssignment = (member) => {
                      Add
                    </button>
                  </div>
-           </div>
+           </div>: <p className="text-red-500 text-xs mt-1">Please create a task to add subtasks</p>}
         </div>
 
 
