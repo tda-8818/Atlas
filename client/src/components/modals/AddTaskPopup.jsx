@@ -60,8 +60,8 @@ const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers 
         // We're creating a new task
         setTitle('');
         setIsCompleted(false);
-        setStartDate('');
-        setDueDate('');
+        setStartDate(null);
+        setDueDate(null);
         setAssignedTo([]);
         setDescription('');
         setSubtaskIds([]);

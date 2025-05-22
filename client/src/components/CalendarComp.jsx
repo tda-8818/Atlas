@@ -71,11 +71,13 @@ const CalendarComp = ({ project }) => {
     console.log("form data gotten: ",formData)
     // Create a new event using the form data from the modal
     // and the date info from the calendar.
+    const startDate = formData.startDate? new Date(formData.startDate) : new Date(selectedDateInfo.startStr);
+    const dueDate = formData.dueDate? new Date(formData.dueDate) : new Date(selectedDateInfo.end);
     const newEvent = {
       projectId: project._id,
       title: formData.title, // from modal input
-      startDate: new Date(formData.startDate) || new Date(selectedDateInfo.startStr),
-      dueDate: new Date(formData.dueDate) || new Date(selectedDateInfo.end),
+      startDate: startDate,
+      dueDate: dueDate,
       allDay: selectedDateInfo.allDay,
       description: formData.description, // extra info from your modal
       assignedTo: formData.assignedTo,
