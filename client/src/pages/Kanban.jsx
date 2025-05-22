@@ -91,17 +91,16 @@ const Kanban = () => {
 
   const [newColumnName, setNewColumnName] = useState("");
   const [selectedCard, setSelectedCard] = useState(null); // Temporary state for editing
-  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   const [editingColumnIndex, setEditingColumnIndex] = useState(null);
   const [editColumnName, setEditColumnName] = useState("");
 
-  const [showMemberSearch, setShowMemberSearch] = useState(false);
-  const [searchMember, setSearchMember] = useState("");
-
   const [showDescription, setShowDescription] = useState(false);
   const [showSubtasks, setShowSubtasks] = useState(false);
+
+  const [currentCardIndex, setCurrentCardIndex] = useState(null);
+  const [currentColumnIndex, setCurrentColumnIndex] = useState(null);
 
   // Ref for the card detail modal content
   const cardModalRef = useRef(null);
@@ -153,6 +152,8 @@ const Kanban = () => {
 
     //console.log("FORMATTED COLUMN OBJECTS:", formatted);
     setColumns(formatted);
+
+    console.log("formatted columns", formatted);
 
     if (selectedCard) {
       const handleClickOutside = (event) => {
@@ -392,7 +393,9 @@ const Kanban = () => {
     }
 
   };
-
+  const handleDeleteCard = () => {
+    deleteCard(currentCardIndex, currentColumnIndex);
+  };
   const deleteCard = async (columnIndex, cardIndex, e) => {
     if (e && e.stopPropagation) {
       e.stopPropagation();
@@ -416,6 +419,9 @@ const Kanban = () => {
 
       setSelectedCard(null);
       setConfirmDelete(null);
+      setCurrentCardIndex(null);
+      setCurrentColumnIndex(null);
+      setShowAddTaskPopup(false);
     } catch (error) {
       console.error("Failed to delete task:", error);
       // Optionally show a toast or user message here
@@ -436,7 +442,7 @@ const Kanban = () => {
     // which might lead to unexpected behavior, but fulfills the "save even if no changes"
     // and "save on enter" requirements, including when only assignment changed.
     // Consider adding a more robust check here if saving an empty title is problematic.
-
+    console.log("Saving changes for card:", cardData);
 
     const { columnIndex, cardIndex, ...cardDataToSave } = selectedCard;
     const newCardData = {
@@ -489,9 +495,11 @@ const Kanban = () => {
     // This function should strictly close the modal and discard changes.
     setSelectedCard(null);
     setShowMemberSearch(false);
+    setCurrentCardIndex(null);
+    setCurrentColumnIndex(null);
     setSearchMember('');
   };
-
+ 
   // Find a team member by ID
   const getTeamMember = (userId) => {
     if (!userId) return null;
@@ -504,6 +512,8 @@ const Kanban = () => {
 
     const { source, destination, type } = result;
     const columnsCopy = [...columns];
+
+    console.log("drag detected");
 
     // If we're dragging columns
     if (type === "column") {
@@ -611,6 +621,7 @@ const Kanban = () => {
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
     console.log("team members: ", teamMembers);
+ 
     const card = columns[columnIndex].cards[cardIndex];
     setSelectedCard({
       ...card,
@@ -624,6 +635,8 @@ const Kanban = () => {
 
     console.log("Selected card for details:", card);
 
+    setCurrentCardIndex(cardIndex);
+    setCurrentColumnIndex(columnIndex);
     setShowAddTaskPopup(true);
   };
 
@@ -887,7 +900,7 @@ const Kanban = () => {
             setAddTaskColumnIndex(null);
           }}
           onEdit={handleSaveChanges}
-          onDelete={deleteCard}
+          onDelete={handleDeleteCard}
           teamMembers={teamMembers}
           initialValues={selectedCard}
         />
