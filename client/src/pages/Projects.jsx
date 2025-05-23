@@ -1,9 +1,9 @@
 // Projects.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   useGetCurrentUserProjectsQuery,
   useCreateProjectMutation,
-  useDeleteProjectMutation,
+  useDeleteProjectMutation, useGetCurrentUserNotificationsQuery,
   useLazyGetProjectUsersQuery,
 } from "../redux/slices/projectSlice";
 import { useNavigate } from "react-router-dom";
@@ -15,78 +15,78 @@ import { useGetCurrentUserQuery } from "../redux/slices/userSlice.js";
 import ProjectCard from "../components/ProjectCard.jsx";
 
 const Projects = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+    
+    // Use RTK Query hook to fetch projects
+    const {
+        data: projectsData = [],
+        isLoading: projectsLoading,
+        isError: projectsError,
+        error: projectsErrorData,
+        refetch: refetchProjects,
+    } = useGetCurrentUserProjectsQuery();
+    
+    //const { data: notificationData = [], refetch: refetchNotifications } = useGetCurrentUserNotificationsQuery();
+    const [createProject, { error: createProjectError }] =
+      useCreateProjectMutation();
+    const [deleteProject, { error: deleteProjectError }] =
+      useDeleteProjectMutation();
+      const { data: userId } = useGetCurrentUserQuery();
 
-  // Use RTK Query hook to fetch projects
-  const {
-    data: projectsData = [],
-    isLoading: projectsLoading,
-    isError: projectsError,
-    error: projectsErrorData,
-    refetch,
-  } = useGetCurrentUserProjectsQuery();
+    // Local UI state to handle modal visibility and new project form inputs.
+    const [showModal, setShowModal] = useState(false);
+    const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+    const [selectedProject, setSelectedProject] = useState({title:""});
+    // Show error toasts when API errors occur
 
-  const [createProject, { error: createProjectError }] =
-    useCreateProjectMutation();
-  const [deleteProject, { error: deleteProjectError }] =
-    useDeleteProjectMutation();
-  const { data: userId } = useGetCurrentUserQuery();
 
-  // Local UI state for modals
-  const [showModal, setShowModal] = useState(false);
-  const [showDeleteConfirmModal,  setShowDeleteConfirmModal] = useState(false);
-  const [selectedProject,  setSelectedProject] = useState({ title: "" });
+    // State to hold project users.
+    const [projectUsers, setProjectUsers] = useState({}); // { [projectId]: [user objects] }
+    const [fetchProjectUsers] = useLazyGetProjectUsersQuery();
 
-  // State to hold project users.
-  const [projectUsers, setProjectUsers] = useState({}); // { [projectId]: [user objects] }
-  const [fetchProjectUsers] = useLazyGetProjectUsersQuery();
+    useEffect(() => {
+      const loadUsersForProjects = async () => {
+        if (!projectsData || !Array.isArray(projectsData)) return;
 
-  useEffect(() => {
-    const loadUsersForProjects = async () => {
-      if (!projectsData || !Array.isArray(projectsData)) return;
-
-      const userMap = {};
-      for (const project of projectsData) {
-        try {
-          const result = await fetchProjectUsers(project._id).unwrap();
-          userMap[project._id] = result;
-        } catch (err) {
-          console.error(`Failed to load users for project ${project._id}`, err);
+        const userMap = {};
+        for (const project of projectsData) {
+          try {
+            const result = await fetchProjectUsers(project._id).unwrap();
+            userMap[project._id] = result;
+          } catch (err) {
+            console.error(`Failed to load users for project ${project._id}`, err);
+          }
         }
+        setProjectUsers(userMap);
+      };
+
+      loadUsersForProjects();
+    }, [projectsData, fetchProjectUsers]);
+
+    // Show error toasts when API errors occur
+    useEffect(() => {
+      if (projectsError && projectsErrorData) {
+        toast.error(
+          `Failed to load projects: ${projectsErrorData.data?.message || "Unknown error"
+          }`,
+          { duration: 5000 }
+        );
       }
-      setProjectUsers(userMap);
-    };
-
-    loadUsersForProjects();
-  }, [projectsData, fetchProjectUsers]);
-
-    
-    
-    
-  // Show error toasts when API errors occur
-  useEffect(() => {
-    if (projectsError && projectsErrorData) {
-      toast.error(
-        `Failed to load projects: ${projectsErrorData.data?.message || "Unknown error"
-        }`,
-        { duration: 5000 }
-      );
-    }
-    if (createProjectError) {
-      toast.error(
-        `Failed to create project: ${createProjectError.data?.message || "Unknown error"
-        }`,
-        { duration: 5000 }
-      );
-    }
-    if (deleteProjectError) {
-      toast.error(
-        `Failed to delete project: ${deleteProjectError.data?.message || "Unknown error"
-        }`,
-        { duration: 5000 }
-      );
-    }
-  }, [projectsError, projectsErrorData, createProjectError, deleteProjectError]);
+      if (createProjectError) {
+        toast.error(
+          `Failed to create project: ${createProjectError.data?.message || "Unknown error"
+          }`,
+          { duration: 5000 }
+        );
+      }
+      if (deleteProjectError) {
+        toast.error(
+          `Failed to delete project: ${deleteProjectError.data?.message || "Unknown error"
+          }`,
+          { duration: 5000 }
+        );
+      }
+    }, [projectsError, projectsErrorData, createProjectError, deleteProjectError]);
 
 
 
@@ -154,7 +154,7 @@ const Projects = () => {
 
       toast.success("Project created successfully");
       setShowModal(false);
-      refetch();
+      refetchProjects();
     } catch (error) {
       console.error("Error creating project", error);
       toast.error(

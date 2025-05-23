@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, Transition, DialogTitle, TransitionChild } from '@headlessui/react';
 import { Combobox } from '@headlessui/react';
 import { UserMinusIcon } from '@heroicons/react/24/solid';
+import { useInviteUserToProjectMutation } from '../../redux/slices/projectSlice';
 import Modal from './Modal.jsx';
 
 const ProjectUsersModal = ({
@@ -15,6 +16,8 @@ const ProjectUsersModal = ({
   const [query, setQuery] = useState('');
   const [selectedUsersToAdd, setSelectedUsersToAdd] = useState([]);
   const [currentMembers, setCurrentMembers] = useState([]);
+
+  const [inviteUserToProject] = useInviteUserToProjectMutation();
 
   useEffect(() => {
     if (show) {
@@ -54,7 +57,7 @@ const ProjectUsersModal = ({
       .includes(query)
   );
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const finalUserIds = [
       currentProjectOwnerId,
       ...currentMembers
