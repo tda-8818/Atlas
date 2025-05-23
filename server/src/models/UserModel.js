@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
     projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}],
     favourite_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}],
     recent_projects: [{type: mongoose.Schema.Types.ObjectId, ref:'project',  default: []}],
-    notifications: [{type: mongoose.Schema.Types.ObjectId, ref: 'notifications', default: []}]
+    notifications: [{type: mongoose.Schema.Types.ObjectId, ref: 'notification', default: []}]
 }, {timestamps: true});
 
 /*

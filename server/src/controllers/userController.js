@@ -146,7 +146,7 @@ export const logout = (req, res) => {
 export const getMe = async (req, res) => {
   try {
     // Return minimal needed user data
-    res.status(200).json({
+    res.status(201).json({
       user: {
         id: req.user._id,
         email: req.user.email,

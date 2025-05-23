@@ -141,7 +141,77 @@ export const projectApiSlice = createApi({
      * END OF COLUMN OPERATIONS FOR KANBAN
      * END OF COLUMN OPERATIONS FOR KANBAN
      */
+      // 1. Send Invite (Creates Notification)
+    inviteUserToProject: builder.mutation({
+      query: ({ projectId, senderId, recipientId, timeSent }) => ({
+        url: `projects/${projectId}/invite`,
+        method: 'POST',
+        body: { senderId, recipientId, timeSent },
+      }),
+      invalidatesTags: ['Notification', 'User'],
+    }),
 
+    // 2. Delete Notification
+    deleteNotification: builder.mutation({
+      query: (notificationId) => ({
+        url: `projects/notifications/${notificationId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Notification'],
+    }),
+
+    // 3. Mark Notification as Read
+    markNotificationAsRead: builder.mutation({
+      query: (notificationId) => ({
+        url: `projects/notifications/${notificationId}/read`,
+        method: 'PATCH', // PATCH is more semantically appropriate for partial updates
+      }),
+      invalidatesTags: ['Notification'],
+    }),
+
+    // 4. Mark Notification as Read
+    markAllNotificationsAsRead: builder.mutation({
+      query: () => ({
+        url: `/notifications/mark-all-read`,
+        method: 'PATCH'
+      }),
+    }),
+
+    // 5. Accept Invite (Add user to project and vice versa)
+    acceptProjectInvite: builder.mutation({
+      query: ({ userId, projectId }) => ({
+        url: `projects/${projectId}/accept/${userId}`,
+        method: 'POST',
+        body: { projectId },
+      }),
+      invalidatesTags: ['User', 'Project'],
+    }),
+
+    getCurrentUserNotifications: builder.query({
+      query: () => `projects/notifications`,
+      providesTags: (result) =>
+        result
+          ? [...result.map((notif) => ({ type: 'Notification', id: notif._id })), { type: 'Notification', id: 'LIST' }]
+          : [{ type: 'Notification', id: 'LIST' }],
+    }),
+
+    /*
+
+    EXAMPLE USAGE
+      updateNotification({ 
+        notificationId: '123456',
+        updateFields: { responded: true, accepted: true, isUnread: false }
+      });
+
+    */
+    updateNotification: builder.mutation({
+    query: ({ notificationId, updateFields }) => ({
+      url: `/projects/notifications/${notificationId}`,
+      method: 'PATCH',
+      body: updateFields // updateFields is an object like { responded: true, accepted: false, isUnread: false }
+    }),
+      
+    }),
   }),
 });
 
@@ -160,6 +230,13 @@ export const {
   useUpdateColumnMutation,
   useDeleteColumnMutation,
   useReorderColumnsMutation,
+  useInviteUserToProjectMutation,
+  useDeleteNotificationMutation,
+  useMarkNotificationAsReadMutation,
+  useAcceptProjectInviteMutation,
+  useGetCurrentUserNotificationsQuery,
+  useMarkAllNotificationsAsReadMutation,
+  useUpdateNotificationMutation,
   useLazyGetProjectUsersQuery
 } = projectApiSlice;
 

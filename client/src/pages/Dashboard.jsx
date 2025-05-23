@@ -9,7 +9,8 @@ import {
   useGetProjectByIdQuery,
   useGetProjectUsersQuery,
   useUpdateProjectUsersMutation,
-  useGetProjectTasksQuery
+  useGetProjectTasksQuery,
+  useInviteUserToProjectMutation
 } from '../redux/slices/projectSlice';
 import { isProjectOwner } from '../utils/projectUtils';
 import { getTaskStats, calculateProjectProgress, isTaskOverdue } from '../utils/taskUtils';
@@ -29,6 +30,7 @@ const Dashboard = () => {
 
   const [updateTask] = useUpdateTaskMutation(); 
 
+  const [inviteUserToProject] = useInviteUserToProjectMutation()
   // RTK Query hooks to fetch tasks, project details, and project users
   const { data: tasks = [], isLoading: loadingTasks, error: tasksError, refetch: refetchTasks } = useGetProjectTasksQuery(id, { skip: !id, });
 
@@ -49,31 +51,77 @@ const Dashboard = () => {
 
 
   useEffect(() => {
-    refetchTasks();
-    refetchUsers();
+      refetchTasks();
+      refetchUsers();
   }, []);
 
 
   // Handler to update team members
   const handleUpdateProjectUsers = async (updatedMemberIds, newOwnerId) => {
 
-    if (!id) {
+    console.log(`GOT ${updatedMemberIds} from ProjectUsersModal`);
+
+    if (!currentProject._id) {
       console.error("Cannot save team members: No project selected");
       setProjectUsersModalOpen(false);
       return;
     }
 
-    try {
-      await updateProjectUsers({ id: id, users: updatedMemberIds, owner: newOwnerId, }).unwrap();
-      refetchUsers();
-      toast("Team updated successfully!");
+    const now = new Date();
+    const errors = [];
+    const newInvites = [];
+    // Send an invitation to other users if they are not in the project
+    for (const userId of updatedMemberIds) {
+      const alreadyInProject = currentProject.users.includes(userId);
+      const isOwner = userId === newOwnerId;
 
-    } catch (error) {
-      showErrorToast("Error saving team: ", error);
-    } finally {
-      setProjectUsersModalOpen(false);
+      if (!isOwner && !alreadyInProject) {
+        try {
+          console.log({
+            projectId: currentProject._id,
+            senderId: currentUser.user.id,
+            recipientId: userId,
+            timeSent: now.toISOString()});
+
+          await inviteUserToProject({
+            projectId: currentProject._id,
+            senderId: currentUser.user.id,
+            recipientId: userId,
+            timeSent: now.toISOString(),
+          }).unwrap();
+          newInvites.push(userId);
+        } catch (err) {
+          console.error(`Failed to invite user ${userId}`, err);
+          errors.push(userId);
+        }
+      }
     }
-  };
+
+    const confirmedMembers = updatedMemberIds.filter(userId => !newInvites.includes(userId));
+    console.log(`removed ${newInvites} from updatedMemberIds ${updatedMemberIds} to obtain ${confirmedMembers}`);
+    try {
+      await updateProjectUsers({
+        id: currentProject._id,
+        users: confirmedMembers, // NOTE: This should only include confirmed members
+        owner: newOwnerId,
+      }).unwrap();
+      
+      toast("Team updated successfully!");
+    } catch (err) {
+      showErrorToast("Failed to update project team", err);
+    }
+
+    refetchUsers();
+
+    if (errors.length === 0) {
+      toast("Team updated successfully!");
+    } else if (errors.length < updatedMemberIds.length) {
+      showErrorToast(`${errors.length} user(s) failed to receive invites, but others were invited.`);
+    } else {
+      showErrorToast("Failed to invite all users.");
+    }
+    setProjectUsersModalOpen(false);
+};
 
 
   // Handler to toggle task status

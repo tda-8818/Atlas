@@ -12,7 +12,9 @@ const notificationSchema = new mongoose.Schema({
     recipientId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true},
     projectId: {type: mongoose.Schema.Types.ObjectId, ref: 'project', required: true},
     timeSent: {type: Date},
-    isUnread: {type: Boolean, default: false}
+    isUnread: {type: Boolean, default: true},
+    responded: {type: Boolean, default: false}, //NEW
+    accepted: {type: Boolean, default: false}, //NEW
 }, {timestamps: true});
 
 

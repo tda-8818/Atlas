@@ -1,5 +1,18 @@
 import express from 'express';
-import { createProject, getUserProjects, deleteProject, getProjectById, getProjectUsers, updateProjectUsers} from "../controllers/projectController.js";
+import { 
+  createProject, 
+  getUserProjects, 
+  deleteProject, 
+  getProjectById, 
+  getProjectUsers, 
+  updateProjectUsers, 
+  getUserNotifications, 
+  inviteUserToProject, 
+  userAcceptInvite, 
+  deleteNotification, 
+  markNotificationAsRead,
+  updateNotification,
+  markAllNotificationsAsRead} from "../controllers/projectController.js";
 import {
   createColumn,
   getProjectColumns,
@@ -13,6 +26,25 @@ import authMiddleware from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 console.log('project routes loaded');  // Should appear when server starts
+
+// DELETE an invite if a user declines  
+router.delete('/notifications/:notificationId', authMiddleware, deleteNotification);
+
+// Mark a notification as read   
+router.patch('/notifications/:notificationId/read', authMiddleware, markNotificationAsRead);
+
+router.patch('/notifications/mark-all-read', authMiddleware, markAllNotificationsAsRead);
+
+router.patch('/notifications/:notificationId', authMiddleware, updateNotification);
+
+
+// ADDS the user into the project if they accept the invitation
+router.post('/:projectId/accept/:userId', authMiddleware, userAcceptInvite);
+
+// GETS the current user's notifications
+router.get('/notifications', authMiddleware, getUserNotifications);
+// CREATE an invite to a user to join a project  
+router.post('/:projectId/invite', authMiddleware, inviteUserToProject);
 
 // pass authMiddleware as an argument if you are wanting to deal with cookie data
 router.post('/', authMiddleware, createProject);
@@ -49,4 +81,10 @@ router.delete('/:projectId/kanban/:columnId', authMiddleware, deleteColumn);
 
 // UPDATE positions of multiple columns (drag-and-drop logic)
 router.put('/:projectId/kanban/reorder', authMiddleware, updateColumnPositions);
+
+// NOTIFICATION ROUTES FOR PROJECT INVITAIONS
+
+
+
+
 export default router;

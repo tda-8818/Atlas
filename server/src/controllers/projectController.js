@@ -2,6 +2,7 @@ import Project from "../models/ProjectModel.js";
 import UserModel from "../models/UserModel.js";
 import Column from  "../models/ColumnModel.js"
 import Task from "../models/TaskModel.js";
+import NotificationModel from "../models/notificationModel.js";
 const cookieOptions = {
     httpOnly: true,
     secure: false, // false for localhost development
@@ -77,8 +78,6 @@ export const createProject = async (req, res) => {
     }
 }
 
-
-
 // Deletes a project; RTK Query will later use the response to invalidate its cache.
 export const deleteProject = async (req, res) => {
     try {
@@ -92,6 +91,7 @@ export const deleteProject = async (req, res) => {
 
         await Column.deleteMany({projectId});
         await Task.deleteMany({ projectId });
+        await NotificationModel.deleteMany({ projectId });
         const columnDeleteOperation = await Column.deleteMany({projectId:projectId});
         console.log(`Deleted ${columnDeleteOperation.deletedCount} columns related to project`);
 
@@ -121,7 +121,7 @@ export const getUserProjects = async (req, res) => {
     
         // Return the user's projects as JSON
         const projects = user.projects;
-        console.log("User projects called by getUserProjects:", projects);
+        //console.log("User projects called by getUserProjects:", projects);
         res.status(200).json(projects);
       } catch (error) {
         console.error("Error in getUserProjects:", error);
@@ -247,5 +247,256 @@ export const updateProjectUsers = async (req, res) => {
   } catch (error) {
     console.error('Error updating project users:', error);
     res.status(500).json({ error: 'Server error updating project users' });
+  }
+};
+
+  ////////// PROJECT-USER RELATED QUERIES
+  
+/**
+ * Send invite notification to another user (creates notification)
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+export const inviteUserToProject = async (req, res) => {
+  try {
+    console.log("INVITE USER TO PROJECT EXECUTED");
+    console.log("PARAMS:", req.params);
+    console.log("BODY:", req.body);
+    const { projectId } = req.params;
+    const { senderId, recipientId, timeSent } = req.body;
+
+    console.log("req.param when invite user:", req.params);
+    console.log("req.param when invite user:", projectId);
+    // 
+    const userInviteProject = await Project.findById(projectId);
+
+    if (!userInviteProject) {
+      return res.status(404).json({message: "Project not found in inviteUserToProject"});
+    }
+
+
+    if (!recipientId) {
+      return res.status(404).json({message: "UserId not provided in inviteUserToProject"});
+    }
+
+    const recipientUser = await UserModel.findById(recipientId);
+    if (!recipientUser) {
+      return res.status(404).json({message: "User not found in inviteUserToProject"});
+    }
+
+    const timeSentToUse = timeSent || Date.now();
+    const inviteNotification = await NotificationModel.create({
+      senderId,
+      recipientId,
+      timeSent: timeSentToUse,
+      projectId,
+    });
+
+    recipientUser.notifications.push(inviteNotification._id);
+    await recipientUser.save();
+
+    return res.status(200).json({message: "Invite sent successfully."});
+
+  } catch (error) {
+    console.error("Error in inviteUserToProject", error);
+    res.status(500).json({message: "Error sending invite!"});
+  }
+};
+
+/**
+ * Deletes notification 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+export const deleteNotification = async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+
+    const notification = await NotificationModel.findByIdAndDelete(notificationId);
+
+    await UserModel.findByIdAndUpdate(
+      notification.recipientId,
+      {$pull: {notifications: notification._id}}
+    );
+
+    await UserModel.findByIdAndUpdate(
+      notification.senderId,
+      {$pull: {notifications: notification._id}}
+    );
+
+    res.status(200).json({ message: 'Notification deleted' });
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * Sets notification to be read (edit notification)
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+export const markNotificationAsRead = async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+
+    const notification = await NotificationModel.findById(notificationId);
+    if (!notification) {
+      return res.status(404).json({ message: 'Notification not found' });
+    }
+
+    notification.isUnread = false;
+    await notification.save();
+
+    res.status(200).json({ message: 'Notification marked as read' });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * User accepts invitation to join a project
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+export const userAcceptInvite = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { projectId } = req.body;
+
+    if (!userId || !projectId) {
+      return res.status(400).json({ message: 'Missing userId or projectId' });
+    }
+
+    // 1. Find user and project
+    const user = await UserModel.findById(userId);
+    const project = await Project.findById(projectId);
+
+    if (!user || !project) {
+      return res.status(404).json({ message: 'User or project not found' });
+    }
+
+    // 2. Check if user is already in the project
+    const alreadyInProject = project.users.includes(userId);
+    const alreadyHasProject = user.projects.includes(projectId);
+
+    if (alreadyInProject && alreadyHasProject) {
+      return res.status(200).json({ message: 'User already part of the project' });
+    }
+
+    // 3. Add user to project members if not already added
+    if (!alreadyInProject) {
+      project.users.push(userId);
+      await project.save();
+    }
+
+    // 4. Add project to user's list if not already added
+    if (!alreadyHasProject) {
+      user.projects.push(projectId);
+      await user.save();
+    }
+
+    return res.status(200).json({ message: 'User successfully added to project' });
+
+  } catch (error) {
+    console.error('Error accepting invite:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+/**
+ * Retrieves all notifications in a user's inbox
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+export const getUserNotifications = async (req, res) => {
+  try {
+    //const { userObject } = req.user;
+
+    console.log("Got userObject from cookie: ", req.user);
+
+    const userId = req.user._id;
+
+    const user = await UserModel.findById(userId).populate('notifications');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    //console.log("GOT USER => Check notifs: ", user);
+
+    // instead of just sending id data, populate to get the name and title
+    const populatedNotifications = await NotificationModel.find({ recipientId: userId})
+      .populate("senderId", "firstName lastName")
+      .populate('projectId', 'title')
+      .sort({createdAt: -1})
+
+    console.log("SENDING NOTIFICATIONS:", populatedNotifications);
+
+    res.status(200).json(populatedNotifications);
+  } catch (error) {
+    console.error('Error getting user notifications:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const markAllNotificationsAsRead = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Update all unread notifications for this user
+    const result = await NotificationModel.updateMany(
+      { recipient: userId, read: false },
+      { $set: { read: true } }
+    );
+
+    res.status(200).json({
+      message: 'All notifications marked as read',
+      modifiedCount: result.modifiedCount
+    });
+  } catch (error) {
+    console.error('Error marking notifications as read:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+/**
+ * Dynamic update notification function 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+export const updateNotification = async (req, res) => {
+  try {
+    console.log("UPDATE NOTIFS EXECUTED");
+    const { notificationId } = req.params;
+    const updateFields = req.body; // Expected to be an object like { responded: true, accepted: false, ... }
+
+    console.log("GOT UPDATE FIELDS -> :", updateFields);
+    const notification = await NotificationModel.findById(notificationId);
+    if (!notification) {
+      return res.status(404).json({ message: 'Notification not found' });
+    }
+
+    // Update only allowed fields to avoid unwanted changes
+    const allowedUpdates = ['responded', 'accepted', 'isUnread'];
+    for (const key of Object.keys(updateFields)) {
+      if (allowedUpdates.includes(key)) {
+        notification[key] = updateFields[key];
+      }
+    }
+
+    // Optionally update updatedAt timestamp
+    //notification.updatedAt = new Date();
+
+    await notification.save();
+    console.log("Updated notification", notification);
+    res.status(200).json({ message: 'Notification updated', notification });
+  } catch (error) {
+    console.error('Error updating notification:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
