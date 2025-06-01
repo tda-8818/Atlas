@@ -23,7 +23,7 @@ const wss = new WebSocketService(server);
 app.locals.wss = wss;
 
 // Use environment variable for the client URL, fallback to localhost if not provided
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+const clientUrl =  process.env.CLIENT_URL || 'http://localhost:5173';
 
 // Express Middleware Setup
 app.use(express.json());

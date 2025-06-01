@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@headlessui/react';
-import LogoImage from '../assets/LogoName.png';
+import LogoImage from '../assets/logoName.png';
 
 const Presignup = () => {
   const navigate = useNavigate();
