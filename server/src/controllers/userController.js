@@ -7,7 +7,7 @@ const cookieOptions = {
   secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   // Set the domain only in production if needed (ensure it matches your actual production domain)
-  domain: process.env.NODE_ENV === 'production' ? 'your-production-domain.com' : 'localhost',
+  domain: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : 'localhost',
   path: '/',
   maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 };
