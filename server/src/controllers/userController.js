@@ -96,7 +96,7 @@ export const signup = async (req, res) => {
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' } // Match cookie maxAge
+      { expiresIn: '1d' } // Match cookie maxAge
     );
 
     // 5. set http-only cookie

@@ -6,9 +6,6 @@ import AddTaskPopup from '../components/modals/AddTaskPopup';
 import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 import { useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation, useGetProjectUsersQuery } from "../redux/slices/projectSlice";
-import { set } from "mongoose";
-import { assignUsersToTask } from "../../../server/src/controllers/taskController";
-
 
 // Define priority levels
 const priorityLevels = ['none', '!', '!!', '!!!'];

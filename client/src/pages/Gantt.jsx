@@ -7,9 +7,8 @@ import { gantt } from 'dhtmlx-gantt';
 import Sidebar from '../components/Sidebar';
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from '../redux/slices/taskSlice';
 import { useGetProjectTasksQuery, useGetProjectUsersQuery } from '../redux/slices/projectSlice';
-import { assignUsersToTask } from '../../../server/src/controllers/taskController';
 import ObjectId from 'bson-objectid'
-import { set } from 'mongoose';
+
 
 // Team members data for assignment (Ideally, this should be fetched or in a shared context)
 // Duplicated here and in AddTaskPopup-1.jsx - consider centralizing.

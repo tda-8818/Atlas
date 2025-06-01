@@ -1,82 +1,83 @@
-name: MERN Stack CI
+name: MERN Stack CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, project_restructure ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, project_restructure ]
+    branches: [ main ]
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
-  build-and-test:
+  build-and-test:            # This job has no "needs:" therefore it runs independently.
+    name: Build and Test
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        
-    # Server tests
-    - name: install server dependencies
-      working-directory: ./server
-      run: |
-        npm ci
-        npm install jsonwebtoken
-        npm install bcrypt
-        npm install express-rate-limit
-        npm install eslint
-        npm install cookie-parser
-      
-    # - name: Run server linting/tests
-    #   working-directory: ./server
-    #   run: |
-    #     # Add your server test commands here
-    #     # For example: npm test
-    #     npm run lint
-    #     npm test
-    #     echo "Running server tests"
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      # Add your server/client dependency installation and build steps here...
+      - name: Build client
+        working-directory: ./client
+        run: npm run build
+      - name: Upload client build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-build
+          path: client/dist
+      - name: Upload server artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-build
+          path: |
+            server/
+            !server/node_modules/
 
-    # Client tests and build
-    - name: Install client dependencies
-      working-directory: ./client
-      run: |
-        npm ci
-        npm install @tailwindcss/vite fullcalendar
-        npm install @fullcalendar/react @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction @fullcalendar/core
-        npm install @headlessui/react
-        npm install dhtmlx-gantt
-        npm install axios
-        npm install eslint
-        npm install bson-objectid
-
-
-    # - name: Run client tests
-    #   working-directory: ./client
-    #   run: |
-    #     # Add your client test commands here
-    #     # For example: npm test
-    #     npm run lint
-    #     npm test
-    #     echo "Running client tests"
-        
-    - name: Build client
-      working-directory: ./client
-      run: npm run build
-      
-    - name: Upload client build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: client-build
-        path: client/dist
-      
-    - name: Upload server artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: server-build
-        path: |
-          server/
-          !server/node_modules/
-    
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build-and-test   # This job depends on "build-and-test" and hence starts after it completes.
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Download client build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: client-build
+          path: client/dist
+      - name: Download server artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: server-build
+          path: server
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Generate deployment package
+        run: |
+          mkdir -p deploy
+          cp -r server/* deploy/
+          mkdir -p deploy/client
+          cp -r client/dist/* deploy/client/
+          cd deploy && zip -r ../deploy.zip .
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ secrets.EB_APP_NAME }}
+          environment_name: ${{ secrets.EB_ENV_NAME }}
+          version_label: ${{ github.sha }}
+          region: ${{ secrets.AWS_REGION }}
+          deployment_package: deploy.zip
+          wait_for_deployment: true

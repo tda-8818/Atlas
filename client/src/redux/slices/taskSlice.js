@@ -3,7 +3,6 @@
  * Manages all task-related API queries and mutations with RTK Query.
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { get } from 'mongoose';
 
 const TASK_API_URL = import.meta.env.VITE_API_URL;
 
