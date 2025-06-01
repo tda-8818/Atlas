@@ -4,10 +4,11 @@ import jwt from 'jsonwebtoken';
 
 const cookieOptions = {
   httpOnly: true,
-  secure: false, // false for localhost development
-  sameSite: 'strict', // or 'none' if cross-site
-  domain: 'localhost', // Explicitly set domain
-  path: '/', // Root path
+  secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  // Set the domain only in production if needed (ensure it matches your actual production domain)
+  domain: process.env.NODE_ENV === 'production' ? 'your-production-domain.com' : 'localhost',
+  path: '/',
   maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 };
 
@@ -40,15 +41,11 @@ export const login = async (req, res) => {
     const token = jwt.sign(
       { id: user._id.toString() }, // Ensure string conversion
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '1d' }
     );
 
     // 4. Set cookie
-    res.cookie('token', token, {
-      httpOnly: true,   // Helps prevent XSS
-      secure: true,     // Use in production with HTTPS
-      sameSite: 'none', // Often needed when front-end is on a different domain
-    });
+    res.cookie('token', token, cookieOptions);
 
     // 5. Send response (excluding password)
     res.json({ 
