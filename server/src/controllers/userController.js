@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-  sameSite: 'none',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Use secure cookies in production
   path: '/',
   maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 };
