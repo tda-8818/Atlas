@@ -6,8 +6,6 @@ const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
   sameSite: 'none',
-  // Set the domain only in production if needed (ensure it matches your actual production domain)
-  domain: process.env.CLIENT_URL,
   path: '/',
   maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 };

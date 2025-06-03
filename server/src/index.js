@@ -13,7 +13,7 @@ import cookieParser from 'cookie-parser';
 import WebSocketService from './middleware/websocketService.js'; // WebSocket service
 import http from 'http'; // HTTP module for creating a server
 
-// Load environment variables from .env (for local development) or use those provided in AWS EB
+// Load environment variables from .env (for local development) or use those provided by Render
 dotenv.config();
 
 // Create an Express server
@@ -21,6 +21,9 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketService(server);
 app.locals.wss = wss;
+
+// IMPORTANT: Add this line to trust proxy headers from Render (for express-rate-limit and accurate IP)
+app.set('trust proxy', 1);
 
 // Use environment variable for the client URL, fallback to localhost if not provided
 const clientUrl =  process.env.CLIENT_URL;
@@ -56,7 +59,7 @@ mongoose
 
 // Import and use routes
 app.use('/api/users', userRoutes);
-app.use('/settings', userRoutes);
+app.use('/settings', userRoutes); // Note: /settings path, ensure this is intended for user routes
 app.use('/api/tasks', taskRoutes);
 app.use('/api/projects', projectRoutes);
 
