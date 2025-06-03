@@ -172,7 +172,7 @@ export const projectApiSlice = createApi({
     // 4. Mark Notification as Read
     markAllNotificationsAsRead: builder.mutation({
       query: () => ({
-        url: `/api//notifications/mark-all-read`,
+        url: `/api/notifications/mark-all-read`,
         method: 'PATCH'
       }),
     }),
