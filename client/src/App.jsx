@@ -58,7 +58,7 @@ function App() {
       const isAuthError = error?.status === 401;
       const isLoginPage = location.pathname === '/login';
       const isSignupPage = location.pathname === '/signup';
-      const isPresignupPage = location.pathname === '/presignup';
+      const isPresignupPage = location.pathname === '/';
 
       if (!(isAuthError && (isLoginPage || isSignupPage || isPresignupPage || isLoggingOut.current))) {
         handleApiError(error);
@@ -74,11 +74,9 @@ function App() {
       <Toaster />
 
       {isLoading ? (
-        <div>Loading...</div>
-      ) : (<Routes>
+        <div>Loading...</div> ) : (<Routes>
         {/* Public Routes */}
-        <Route path="/" element={isLoading ? null : user ? <Navigate to="/projects" replace /> : <Navigate to="/presignup" replace />} />
-        <Route path="/presignup" element={!user ? <Presignup /> : <Navigate to="/projects" replace />} />
+        <Route path="/" element={ isLoading ? ( null) : user ? (<Navigate to="/projects" replace />) : (<Presignup />)}/>
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/projects" replace />} />
         <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/projects" replace />} />
 
@@ -96,7 +94,7 @@ function App() {
         </Route>
 
         {/* Catch-All Route (404 equivalent) */}
-        <Route path="*" element={<Navigate to={user ? "/projects" : "/presignup"} replace />} />
+        <Route path="*" element={<Navigate to={user ? "/projects" : "/"} replace />} />
       </Routes>)}
     </div>
   );
