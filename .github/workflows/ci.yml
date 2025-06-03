@@ -1,0 +1,45 @@
+name: CI Checks (Build & Test)
+
+on:
+  push:
+    branches:
+      - main # Run CI checks on pushes to the main branch
+  pull_request:
+    branches:
+      - main # Run CI checks on pull requests targeting the main branch
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # GitHub Actions runner environment
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # Checks out your repository code
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Specify your Node.js version (e.g., '18', '20')
+          cache: 'npm' # Caches npm dependencies for faster subsequent builds
+
+      # --- Backend CI Steps ---
+      - name: Install Backend Dependencies
+        working-directory: ./server # Specifies the directory for this step
+        run: npm ci # 'npm ci' is preferred in CI for clean installs based on package-lock.json
+
+      - name: Run Backend Tests
+        working-directory: ./server
+        run: npm test # Assumes you have a 'test' script in server/package.json
+
+      # --- Frontend CI Steps ---
+      - name: Install Frontend Dependencies
+        working-directory: ./client # Specifies the directory for this step
+        run: npm ci # 'npm ci' for clean installs
+
+      - name: Build Frontend
+        working-directory: ./client
+        run: npm run build # Ensures your frontend builds successfully (creates the 'dist' folder)
+
+      - name: Run Frontend Tests
+        working-directory: ./client
+        run: npm test # Assumes you have a 'test' script in client/package.json

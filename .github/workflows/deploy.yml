@@ -1,102 +1,73 @@
-name: MERN Stack CI/CD Pipeline
+name: Deploy to Render
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:  # Allows manual triggering
+    branches:
+      - main # This workflow triggers only when code is pushed to the 'main' branch
+  workflow_dispatch: # Allows manual triggering from GitHub Actions UI
 
 jobs:
-  build-and-test:
-    name: Build and Test
-    runs-on: ubuntu-latest
+  trigger-render-deploys:
+    runs-on: ubuntu-latest # GitHub Actions runner environment
+    needs: build-and-test # Ensures CI checks pass before attempting deployment
+    if: success() # Only run if the 'build-and-test' job was successful
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Checks out your repository code
 
-      - name: Setup Node.js 18
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
+      # Install 'jq' utility to parse JSON responses from Render API
+      # This is needed to dynamically get the deploy hook URL
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Install client dependencies
-        working-directory: ./client
-        run: npm ci # Use npm ci for clean installs in CI
-
-      - name: Build client
-        working-directory: ./client
-        run: npm run build
-
-      - name: Upload client build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: client-build
-          path: client/dist # This path specifies the content to be archived
-
-      - name: Upload server artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: server-build
-          path: |
-            server/
-            !server/node_modules/ # Exclude node_modules from the artifact
-
-  deploy-to-aws: # Renamed job for clarity, avoiding 'deploy' duplicate
-    name: Deploy to AWS Elastic Beanstalk
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    if: github.ref == 'refs/heads/main' # Only deploy when pushing to main branch
-    steps:
-      - name: Checkout code (optional, but often helpful for context)
-        uses: actions/checkout@v4
-
-      - name: Download client build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: client-build
-          # The path here is where the artifact's content will be placed.
-          # If 'client-build' artifact contains the content of 'dist',
-          # placing it in 'temp_client_dist' means temp_client_dist/index.html etc.
-          path: temp_client_dist
-
-      - name: Download server artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: server-build
-          # Placing server content into 'temp_server' folder
-          path: temp_server
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Generate deployment package for EB
+      # --- Trigger Backend Web Service Deploy on Render ---
+      - name: Trigger Render Backend Deploy
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SERVICE_ID: ${{ secrets.RENDER_BACKEND_SERVICE_ID }}
         run: |
-          mkdir -p deploy_bundle
-          # Copy server files to the root of the deploy_bundle
-          cp -r temp_server/* deploy_bundle/
-          
-          # Create 'client' directory inside the deploy_bundle
-          mkdir -p deploy_bundle/client
-          # Copy the *contents* of the client build (from temp_client_dist)
-          # into the 'client' directory within the deploy_bundle
-          cp -r temp_client_dist/* deploy_bundle/client/
-          
-          # Zip the contents of 'deploy_bundle'
-          cd deploy_bundle && zip -r ../deploy.zip .
+          if [ -z "$SERVICE_ID" ]; then
+            echo "Error: RENDER_BACKEND_SERVICE_ID secret not set. Skipping backend deploy."
+            exit 0 # Exit successfully if ID is not set to prevent workflow failure
+          fi
 
-      - name: Deploy to Elastic Beanstalk
-        uses: einaregilsson/beanstalk-deploy@v21
-        with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: ${{ secrets.EB_APP_NAME }}
-          environment_name: ${{ secrets.EB_ENV_NAME }}
-          version_label: ${{ github.sha }}
-          region: ${{ secrets.AWS_REGION }}
-          deployment_package: deploy.zip
-          wait_for_deployment: true
+          echo "Attempting to get deploy hook URL for backend service (ID: $SERVICE_ID)..."
+          # Use Render API to get the current deploy hook URL - more robust
+          DEPLOY_HOOK_URL=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
+            "https://api.render.com/v1/services/$SERVICE_ID/deploys" | \
+            jq -r '.webhookUrl')
+
+          if [ -z "$DEPLOY_HOOK_URL" ] || [ "$DEPLOY_HOOK_URL" == "null" ]; then
+            echo "Error: Could not retrieve deploy hook URL for backend. Check SERVICE_ID or API Key scope."
+            exit 1 # Fail if hook URL cannot be retrieved
+          fi
+
+          echo "Triggering deploy for backend service (ID: $SERVICE_ID) via hook..."
+          curl -X POST "$DEPLOY_HOOK_URL"
+          echo "Backend deploy triggered successfully."
+
+      # --- Trigger Frontend Static Site Deploy on Render ---
+      - name: Trigger Render Frontend Deploy
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SERVICE_ID: ${{ secrets.RENDER_FRONTEND_SERVICE_ID }}
+        run: |
+          if [ -z "$SERVICE_ID" ]; then
+            echo "Error: RENDER_FRONTEND_SERVICE_ID secret not set. Skipping frontend deploy."
+            exit 0 # Exit successfully if ID is not set to prevent workflow failure
+          fi
+
+          echo "Attempting to get deploy hook URL for frontend static site (ID: $SERVICE_ID)..."
+          DEPLOY_HOOK_URL=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" \
+            "https://api.render.com/v1/services/$SERVICE_ID/deploys" | \
+            jq -r '.webhookUrl')
+
+          if [ -z "$DEPLOY_HOOK_URL" ] || [ "$DEPLOY_HOOK_URL" == "null" ]; then
+            echo "Error: Could not retrieve deploy hook URL for frontend. Check SERVICE_ID or API Key scope."
+            exit 1 # Fail if hook URL cannot be retrieved
+          fi
+
+          echo "Triggering deploy for frontend static site (ID: $SERVICE_ID) via hook..."
+          curl -X POST "$DEPLOY_HOOK_URL"
+          echo "Frontend deploy triggered successfully."
