@@ -49,7 +49,7 @@ const Signup = () => {
             reset();
 
             // Redirect after 2 seconds
-            setTimeout(() => navigate('/home'), 2000);
+            setTimeout(() => navigate('/projects'), 2000);
 
         } catch (error) {
             // Enhanced error handling with toast notifications based on RTK Query error structure
