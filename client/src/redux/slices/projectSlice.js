@@ -16,13 +16,13 @@ export const projectApiSlice = createApi({
   endpoints: (builder) => ({
     // Fetch project details by project ID
     getProjectById: builder.query({
-      query: (projectId) => `/projects/${projectId}`,
+      query: (projectId) => `/api/projects/${projectId}`,
       providesTags: (result, error, projectId) => [{ type: 'Project', id: projectId }],
     }),
 
     // Fetch all projects (if needed, e.g., for listing user's projects)
     getCurrentUserProjects: builder.query({
-      query: () => '/projects',
+      query: () => '/api/projects',
       providesTags: (result = [], error, arg) =>
         result
           ? [
@@ -35,7 +35,7 @@ export const projectApiSlice = createApi({
     // Create a new project
     createProject: builder.mutation({
       query: (newProject) => ({
-        url: '/projects',
+        url: '/api/projects',
         method: 'POST',
         body: newProject,
       }),
@@ -45,7 +45,7 @@ export const projectApiSlice = createApi({
     // Update an existing project
     updateProject: builder.mutation({
       query: (updatedProject) => ({
-        url: `/projects/${updatedProject._id}`,
+        url: `/api/projects/${updatedProject._id}`,
         method: 'PUT',
         body: updatedProject,
       }),
@@ -57,7 +57,7 @@ export const projectApiSlice = createApi({
     // Delete a project
     deleteProject: builder.mutation({
       query: (projectId) => ({
-        url: `/projects/${projectId}`,
+        url: `/api/projects/${projectId}`,
         method: 'DELETE',
       }),
       invalidatesTags: (result, error, projectId) => [{ type: 'Project', id: projectId }],
@@ -65,7 +65,7 @@ export const projectApiSlice = createApi({
 
      // Fetch tasks by project ID
     getProjectTasks: builder.query({
-      query: (projectId) => `/tasks/${projectId}`,                      
+      query: (projectId) => `/api/tasks/${projectId}`,                      
       providesTags: (result, error, projectId) => [{ type: 'Task', id: projectId }],
     }),
     invalidatesTags: (result, error, projectId) => [{ type: 'Task', id: projectId }],
@@ -74,7 +74,7 @@ export const projectApiSlice = createApi({
 
     // Get all users in a project
     getProjectUsers: builder.query({
-      query: (id) => `/projects/${id}/users`,
+      query: (id) => `/api/projects/${id}/users`,
       providesTags: (result, error, id) => [
         { type: 'User', id },
         { type: 'Project', id }
@@ -83,7 +83,7 @@ export const projectApiSlice = createApi({
 
     updateProjectUsers: builder.mutation({
       query: ({ id, owner, users }) => ({
-        url: `/projects/${id}/users`,
+        url: `/api/projects/${id}/users`,
         method: 'PUT',
         body: { owner, users }
       }),
@@ -98,13 +98,13 @@ export const projectApiSlice = createApi({
      */
     // Get all columns in a project
     getProjectColumns: builder.query({
-      query: (projectId) => `/projects/${projectId}/kanban`,
+      query: (projectId) => `/api/projects/${projectId}/kanban`,
     }),
 
     // Create column
     createColumn: builder.mutation({
       query: ({ projectId, columnData }) => ({
-        url: `/projects/${projectId}/kanban`,
+        url: `/api/projects/${projectId}/kanban`,
         method: 'POST',
         body: columnData,
       }),
@@ -113,7 +113,7 @@ export const projectApiSlice = createApi({
     // Update a column
     updateColumn: builder.mutation({
       query: ({ projectId, columnId, updates }) => ({
-        url: `projects/${projectId}/kanban/${columnId}`,
+        url: `/api/projects/${projectId}/kanban/${columnId}`,
         method: 'PUT',
         body: updates,
       }),
@@ -122,7 +122,7 @@ export const projectApiSlice = createApi({
     // Delete a column
     deleteColumn: builder.mutation({
       query: ({ projectId, columnId }) => ({
-        url: `projects/${projectId}/kanban/${columnId}`,
+        url: `/api/projects/${projectId}/kanban/${columnId}`,
         method: 'DELETE',
       }),
     }),
@@ -130,7 +130,7 @@ export const projectApiSlice = createApi({
     // Reorder columns
     reorderColumns: builder.mutation({
       query: ({ projectId, reorderedColumns }) => ({
-        url: `projects/${projectId}/kanban/reorder`,
+        url: `/api/projects/${projectId}/kanban/reorder`,
         method: 'PUT',
         body: { columns: reorderedColumns },
       }),
@@ -144,7 +144,7 @@ export const projectApiSlice = createApi({
       // 1. Send Invite (Creates Notification)
     inviteUserToProject: builder.mutation({
       query: ({ projectId, senderId, recipientId, timeSent }) => ({
-        url: `projects/${projectId}/invite`,
+        url: `/api/projects/${projectId}/invite`,
         method: 'POST',
         body: { senderId, recipientId, timeSent },
       }),
@@ -154,7 +154,7 @@ export const projectApiSlice = createApi({
     // 2. Delete Notification
     deleteNotification: builder.mutation({
       query: (notificationId) => ({
-        url: `projects/notifications/${notificationId}`,
+        url: `/api/projects/notifications/${notificationId}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Notification'],
@@ -163,7 +163,7 @@ export const projectApiSlice = createApi({
     // 3. Mark Notification as Read
     markNotificationAsRead: builder.mutation({
       query: (notificationId) => ({
-        url: `projects/notifications/${notificationId}/read`,
+        url: `/api/projects/notifications/${notificationId}/read`,
         method: 'PATCH', // PATCH is more semantically appropriate for partial updates
       }),
       invalidatesTags: ['Notification'],
@@ -172,7 +172,7 @@ export const projectApiSlice = createApi({
     // 4. Mark Notification as Read
     markAllNotificationsAsRead: builder.mutation({
       query: () => ({
-        url: `/notifications/mark-all-read`,
+        url: `/api//notifications/mark-all-read`,
         method: 'PATCH'
       }),
     }),
@@ -180,7 +180,7 @@ export const projectApiSlice = createApi({
     // 5. Accept Invite (Add user to project and vice versa)
     acceptProjectInvite: builder.mutation({
       query: ({ userId, projectId }) => ({
-        url: `projects/${projectId}/accept/${userId}`,
+        url: `/api/projects/${projectId}/accept/${userId}`,
         method: 'POST',
         body: { projectId },
       }),
@@ -188,7 +188,7 @@ export const projectApiSlice = createApi({
     }),
 
     getCurrentUserNotifications: builder.query({
-      query: () => `projects/notifications`,
+      query: () => `/api/projects/notifications`,
       providesTags: (result) =>
         result
           ? [...result.map((notif) => ({ type: 'Notification', id: notif._id })), { type: 'Notification', id: 'LIST' }]
@@ -206,7 +206,7 @@ export const projectApiSlice = createApi({
     */
     updateNotification: builder.mutation({
     query: ({ notificationId, updateFields }) => ({
-      url: `/projects/notifications/${notificationId}`,
+      url: `/api/projects/notifications/${notificationId}`,
       method: 'PATCH',
       body: updateFields // updateFields is an object like { responded: true, accepted: false, isUnread: false }
     }),

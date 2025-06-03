@@ -20,7 +20,7 @@ export const userApiSlice = createApi({
         // User endpoints
         signup: builder.mutation({ // Add the signup mutation
             query: (credentials) => ({
-              url: '/users/signup',
+              url: 'api/users/signup',
               method: 'POST',
               body: credentials,
             }),
@@ -29,7 +29,7 @@ export const userApiSlice = createApi({
 
         login: builder.mutation({
             query: (credentials) => ({
-                url: '/users/login',
+                url: 'api/users/login',
                 method: 'POST',
                 body: credentials
             }),
@@ -40,7 +40,7 @@ export const userApiSlice = createApi({
 
         logout: builder.mutation({
             query: () => ({
-                url: '/users/logout',
+                url: 'api/users/logout',
                 method: 'POST',
 
             }),
@@ -51,13 +51,13 @@ export const userApiSlice = createApi({
 
         // Current user endpoint
         getCurrentUser: builder.query({
-            query: () => '/users/me',
+            query: () => 'api/users/me',
             providesTags: ['User']
         }),
 
         // Add to your userSlice.js if needed
         getAllUsers: builder.query({
-            query: () => '/users',
+            query: () => 'api/users',
             providesTags: ['User']
         }),
 
@@ -66,7 +66,7 @@ export const userApiSlice = createApi({
         // Add the updatePassword mutation
         updatePassword: builder.mutation({
             query: (credentials) => ({
-                url: 'settings',
+                url: 'api/settings',
                 method: 'PUT',
                 body: credentials,
             }),
@@ -75,7 +75,7 @@ export const userApiSlice = createApi({
 
         updateMe: builder.mutation({ // For name/email
             query: (userData) => ({
-              url: '/users/me',
+              url: 'api/users/me',
               method: 'PUT',
               body: userData,
             }),
@@ -85,7 +85,7 @@ export const userApiSlice = createApi({
 
         updateProfilePic: builder.mutation({
             query: (formData) => ({
-                url: '/users/profile-pic',
+                url: 'api/users/profile-pic',
                 method: 'PUT',
                 body: formData,
                 formData: true, 

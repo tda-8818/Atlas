@@ -18,7 +18,7 @@ export const taskApiSlice = createApi({
     // Create a new task
     addTask: builder.mutation({
       query: (newTask) => ({
-        url: '/tasks',
+        url: '/api/tasks',
         method: 'POST',
         body: newTask,
       }),
@@ -30,7 +30,7 @@ export const taskApiSlice = createApi({
     // Update an existing task
     updateTask: builder.mutation({
       query: (updatedTask) => ({
-        url: `/tasks/${updatedTask._id}`,
+        url: `/api/tasks/${updatedTask._id}`,
         method: 'PUT',
         body: updatedTask,
       }),
@@ -42,7 +42,7 @@ export const taskApiSlice = createApi({
     // Delete a task
     deleteTask: builder.mutation({
       query: (taskId) => ({
-        url: `/tasks/${taskId}`,
+        url: `/api/tasks/${taskId}`,
         method: 'DELETE',
       }),
       invalidatesTags: (result, error, id) => [{ type: 'Task', id }],
@@ -52,7 +52,7 @@ export const taskApiSlice = createApi({
     // Task assignment endpoints
     assignUserToTask: builder.mutation({
       query: ({ taskId, userId }) => ({
-        url: `/tasks/${taskId}/assign`,
+        url: `/api/tasks/${taskId}/assign`,
         method: 'POST',
         body: { userId }
       }),
@@ -63,7 +63,7 @@ export const taskApiSlice = createApi({
     
     unassignUserFromTask: builder.mutation({
       query: ({ taskId, userId }) => ({
-        url: `/tasks/${taskId}/assign/${userId}`,
+        url: `/api/tasks/${taskId}/assign/${userId}`,
         method: 'DELETE'
       }),
       invalidatesTags: (result, error, { taskId }) => [
@@ -73,7 +73,7 @@ export const taskApiSlice = createApi({
     
     // Get users assigned to a task
     getTaskAssignees: builder.query({
-      query: (taskId) => `/tasks/${taskId}/assignees`,
+      query: (taskId) => `/api/tasks/${taskId}/assignees`,
       providesTags: (result, error, taskId) => [
         { type: 'Task', id: taskId }
       ]
@@ -81,7 +81,7 @@ export const taskApiSlice = createApi({
 
     /** SUBTASK RELATED QUERIES */
     getSubTasks: builder.query({
-      query: (taskId) => `/tasks/${taskId}/subtasks`,
+      query: (taskId) => `/api/tasks/${taskId}/subtasks`,
       providesTags: (result, error, taskId) => [
         { type: 'Task', id: taskId }
       ]
@@ -89,7 +89,7 @@ export const taskApiSlice = createApi({
 
     createSubTask: builder.mutation({
       query: ({ taskId, subtask }) => ({
-        url: `/tasks/${taskId}/subtasks`,
+        url: `/api/tasks/${taskId}/subtasks`,
         method: 'POST',
         body: subtask,
       }),
@@ -99,7 +99,7 @@ export const taskApiSlice = createApi({
     }),
     deleteSubTask: builder.mutation({
       query: ({ taskId, subtaskId }) => ({
-        url: `/tasks/${taskId}/subtasks/${subtaskId}`,
+        url: `/api/tasks/${taskId}/subtasks/${subtaskId}`,
         method: 'DELETE',
       }),
       invalidatesTags: (result, error, { taskId }) => [
@@ -108,7 +108,7 @@ export const taskApiSlice = createApi({
     }),
     updateSubTask: builder.mutation({
       query: ({ taskId, subtaskId, subtask }) => ({
-        url: `/tasks/${taskId}/subtasks/${subtaskId}`,
+        url: `/api/tasks/${taskId}/subtasks/${subtaskId}`,
         method: 'PUT',
         body: subtask ,
       }),
