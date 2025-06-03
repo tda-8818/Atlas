@@ -16,9 +16,6 @@ import http from 'http'; // HTTP module for creating a server
 // Load environment variables from .env (for local development) or use those provided by Render
 dotenv.config();
 
-console.log('Backend CLIENT_URL (from env):', process.env.CLIENT_URL);
-console.log('Backend clientUrl variable:', clientUrl);
-
 // Create an Express server
 const app = express();
 const server = http.createServer(app);
