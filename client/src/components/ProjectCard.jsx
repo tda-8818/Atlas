@@ -73,13 +73,13 @@ const ProjectCard = ({ project, users, onProjectClick, onRequestDelete }) => {
                 : "N/A"}
             </span>
           </div>
-          <div className="flex -space-x-2">
+          {/* <div className="flex -space-x-2">
             {users && users.length > 0 ? (
               users.map((user, i) => <UserAvatar key={i} user={user} size={6} />)
             ) : (
               <span className="text-xs text-gray-400">Loading...</span>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
