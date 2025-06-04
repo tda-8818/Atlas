@@ -33,7 +33,7 @@ const Sidebar = () => {
       {/* Logo */}
       <div className="px-5 mb-6 flex items-center gap-2 justify-between">
         {!collapsed && (
-          <a href="/api/projects" className="flex items-center gap-2 w-full overflow-hidden">
+          <a href="/projects" className="flex items-center gap-2 w-full overflow-hidden">
             <img src={logo} alt="Logo" className="w-6 h-6 object-contain shrink-0" />
             <h1 className="text-base font-extrabold text-[var(--text)] truncate min-w-0">
               UniFlow
@@ -67,7 +67,7 @@ const Sidebar = () => {
         {projectsData.map((project) => (
           <li key={project._id} className="w-full">
             <button
-              onClick={() => navigate(`/api/projects/${project._id}/dashboard`)}
+              onClick={() => navigate(`/projects/${project._id}/dashboard`)}
               className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg
                 bg-[var(--background)] text-[var(--nav-text)]
                 hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)]
