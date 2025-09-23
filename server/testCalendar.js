@@ -20,7 +20,7 @@ app.use(cors());
 app.use(json()); // parse incoming JSON requests
 app.use(express.json());
 // Connect to the MongoDB database
-const MONGO_URI = "mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/users?retryWrites=true&w=majority&appName=CS02TaskManagementSystem";
+const MONGO_URI = "use env variable instead";
 connect(MONGO_URI);
 
 
