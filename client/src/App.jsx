@@ -14,6 +14,7 @@ import { useEffect, useState, useRef } from "react";
 import { useGetCurrentUserQuery } from './redux/slices/userSlice.js';
 import { handleApiError } from "./components/errorToast.jsx";
 import { useLocation } from "react-router-dom";
+import { ProjectsProvider } from "./contexts/ProjectsContext.jsx";
 
 // The main App component that defines the routes for the application
 function App() {
@@ -74,28 +75,33 @@ function App() {
       <Toaster />
 
       {isLoading ? (
-        <div>Loading...</div> ) : (<Routes>
-        {/* Public Routes */}
-        <Route path="/" element={ isLoading ? ( null) : user ? (<Navigate to="/projects" replace />) : (<Presignup />)}/>
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/projects" replace />} />
-        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/projects" replace />} />
+        <div>Loading...</div>
+      ) : (
+        <ProjectsProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={ isLoading ? ( null) : user ? (<Navigate to="/projects" replace />) : (<Presignup />)}/>
+            <Route path="/login" element={!user ? <Login /> : <Navigate to="/projects" replace />} />
+            <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/projects" replace />} />
 
-        {/* Protected Routes (Require Authentication) */}
-        <Route path="/projects" element={user ? <Projects /> : <Navigate to="/" replace />} />
-        <Route path="/settings" element={user ? <Settings setTheme={setTheme} /> : <Navigate to="/" replace />} />
+            {/* Protected Routes (Require Authentication) */}
+            <Route path="/projects" element={user ? <Projects /> : <Navigate to="/" replace />} />
+            <Route path="/settings" element={user ? <Settings setTheme={setTheme} /> : <Navigate to="/" replace />} />
 
-        {/* Project-Specific Routes (Nested) */}
-        <Route path="/projects/:id" element={user ? <ProjectLayout /> : <Navigate to="/" replace />}>
-          <Route index element={<Navigate to="dashboard" replace />} /> {/* Default project page */}
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="kanban" element={<Kanban />} />
-          <Route path="calendar" element={<Calendar />} />
-          <Route path="gantt" element={<Gantt />} />
-        </Route>
+            {/* Project-Specific Routes (Nested) */}
+            <Route path="/projects/:id" element={user ? <ProjectLayout /> : <Navigate to="/" replace />}>
+              <Route index element={<Navigate to="dashboard" replace />} /> {/* Default project page */}
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="kanban" element={<Kanban />} />
+              <Route path="calendar" element={<Calendar />} />
+              <Route path="gantt" element={<Gantt />} />
+            </Route>
 
-        {/* Catch-All Route (404 equivalent) */}
-        <Route path="*" element={<Navigate to={user ? "/projects" : "/"} replace />} />
-      </Routes>)}
+            {/* Catch-All Route (404 equivalent) */}
+            <Route path="*" element={<Navigate to={user ? "/projects" : "/"} replace />} />
+          </Routes>
+        </ProjectsProvider>
+      )}
     </div>
   );
 }

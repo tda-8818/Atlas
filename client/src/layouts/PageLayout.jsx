@@ -1,21 +1,17 @@
 // PageLayout.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import Sidebar from '../components/Sidebar'; // Assuming your Sidebar component is in the same directory
 import CurrentUserAvatar from '../components/avatar/CurrentUserAvatar';
 import NotificationComponent from '../components/NotificationComponent'; // Assuming your NotificationComponent is in the same directory
-import { useGetCurrentUserProjectsQuery, useCreateProjectMutation, useDeleteProjectMutation, useGetCurrentUserNotificationsQuery } from '../redux/slices/projectSlice';
+import { useProjects } from '../contexts/ProjectsContext';
 
 const PageLayout = ({ children, title }) => {
 
-    const { data: notificationData = [], refetch: refetchNotifications } = useGetCurrentUserNotificationsQuery();
-
     const {
-        data: projectsData = [],
-        isLoading: projectsLoading,
-        isError: projectsError,
-        error: projectsErrorData,
-        refetch: refetchProjects,
-    } = useGetCurrentUserProjectsQuery();
+        notificationData,
+        refetchNotifications,
+        refetchProjects
+    } = useProjects();
 
 
     return (

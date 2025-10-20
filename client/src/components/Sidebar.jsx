@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import logo from '../assets/logo.png';
 import { RxHome } from "react-icons/rx";
 import { useNavigate } from 'react-router-dom';
-import { useGetCurrentUserProjectsQuery } from '../redux/slices/projectSlice';
+import { useProjects } from '../contexts/ProjectsContext';
 
 const navItems = [
   { label: "Projects", icon: <RxHome />, href: "/projects" }
@@ -10,20 +10,10 @@ const navItems = [
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
-  //const [projects, setProjects] = useState([]);
   const navigate = useNavigate();
 
-  // Use RTK Query hook to fetch projects
-  const {
-      data: projectsData = [],
-      isLoading: projectsLoading,
-      isError: projectsError,
-      refetch,
-  } = useGetCurrentUserProjectsQuery();
-
-  useEffect(() => {
-    console.log("projectsData:", projectsData);
-  }, [projectsData]);
+  // Use context to get projects data (instead of making another API call)
+  const { projectsData = [] } = useProjects();
 
   return (
     <nav className={`fixed top-0 left-0 h-full z-40 transition-all duration-300

@@ -24,8 +24,5 @@ const store = configureStore({
       ),
     devTools: process.env.NODE_ENV !== 'production',
   });
-  
-  console.log('Store initialised:', store.getState());
-  
 
 export default store;

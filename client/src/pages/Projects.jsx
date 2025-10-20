@@ -1,9 +1,8 @@
 // Projects.jsx
 import React, { useState, useEffect, useRef } from "react";
 import {
-  useGetCurrentUserProjectsQuery,
   useCreateProjectMutation,
-  useDeleteProjectMutation, useGetCurrentUserNotificationsQuery,
+  useDeleteProjectMutation,
   useLazyGetProjectUsersQuery,
 } from "../redux/slices/projectSlice";
 import { useNavigate } from "react-router-dom";
@@ -13,20 +12,20 @@ import DeleteProjectModal from "../components/modals/DeleteProjectModal.jsx";
 import PageLayout from "../layouts/PageLayout.jsx";
 import { useGetCurrentUserQuery } from "../redux/slices/userSlice.js";
 import ProjectCard from "../components/ProjectCard.jsx";
+import { useProjects } from "../contexts/ProjectsContext.jsx";
 
 const Projects = () => {
     const navigate = useNavigate();
-    
-    // Use RTK Query hook to fetch projects
+
+    // Use context to get projects data (instead of making another API call)
     const {
-        data: projectsData = [],
-        isLoading: projectsLoading,
-        isError: projectsError,
-        error: projectsErrorData,
-        refetch: refetchProjects,
-    } = useGetCurrentUserProjectsQuery();
-    
-    //const { data: notificationData = [], refetch: refetchNotifications } = useGetCurrentUserNotificationsQuery();
+        projectsData = [],
+        projectsLoading,
+        projectsError,
+        projectsErrorData,
+        refetchProjects,
+    } = useProjects();
+
     const [createProject, { error: createProjectError }] =
       useCreateProjectMutation();
     const [deleteProject, { error: deleteProjectError }] =
@@ -48,15 +47,26 @@ const Projects = () => {
       const loadUsersForProjects = async () => {
         if (!projectsData || !Array.isArray(projectsData)) return;
 
-        const userMap = {};
-        for (const project of projectsData) {
+        // Fetch all project users in parallel instead of sequentially
+        const promises = projectsData.map(async (project) => {
           try {
             const result = await fetchProjectUsers(project._id).unwrap();
-            userMap[project._id] = result;
+            return { projectId: project._id, users: result };
           } catch (err) {
             console.error(`Failed to load users for project ${project._id}`, err);
+            return { projectId: project._id, users: [] };
           }
-        }
+        });
+
+        // Wait for all requests to complete in parallel
+        const results = await Promise.all(promises);
+
+        // Convert array of results into a map
+        const userMap = results.reduce((acc, { projectId, users }) => {
+          acc[projectId] = users;
+          return acc;
+        }, {});
+
         setProjectUsers(userMap);
       };
 
