@@ -1,9 +1,8 @@
-// AddTaskPopup-1.jsx
-import React, { useState, useEffect, useRef, use } from 'react';
-import { useGetSubTasksQuery,useCreateSubTaskMutation,useDeleteSubTaskMutation,useUpdateSubTaskMutation } from '../../redux/slices/taskSlice';
+import { useState, useEffect, useRef } from 'react';
+import { useGetSubTasksQuery, useCreateSubTaskMutation, useDeleteSubTaskMutation, useUpdateSubTaskMutation } from '../../redux/slices/taskSlice';
 
 // Define priority levels
-const priorityLevels = ['', '!', '!!', '!!!'];
+const priorityLevels = ['none', '!', '!!', '!!!'];
 
 const AddTaskPopup = ({ show, onAddTask, onCancel,onDelete, onEdit, teamMembers = [], initialValues = null }) => {
   const [title, setTitle] = useState('');
@@ -264,330 +263,338 @@ const toggleUserAssignment = (member) => {
   
 
   return (
-    <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center z-50">
-      {/* Add onKeyDown listener to the modal content div */}
-      <div ref={modalRef} className="bg-[var(--background)] rounded shadow-lg p-6 w-[500px] max-h-[80vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div ref={modalRef} className="bg-[var(--background)] border border-[var(--border-color)] rounded-lg shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
 
-        {/* Top row: Task Title, Tag, Priority */}
-        <div className="flex items-center gap-3 mb-4">
-           {/* Task Title Input (takes up available space) */}
-           <div className="flex-grow"> {/* Allow title to grow */}
-               <input
-                 type="text"
-                 ref={titleInputRef} // Attach the ref
-                 id="taskTitle"
-                 value={title}
-                 onChange={(e) => setTitle(e.target.value)}
-                 placeholder="Task Title"
-                 className="w-full text-[var(--text)] text-lg font-semibold focus:outline-none border-b border-gray-300 focus:border-blue-500 pb-1" // Styled as a line
-               />
-               {/* Optional: Add a subtle indicator if title is required when adding */}
-               {!isEditing && !title.trim() && (
-                   <p className="text-red-500 text-xs mt-1">Task title is required</p>
-               )}
-           </div>
+        {/* Header */}
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold text-[var(--text)]">
+            {isEditing ? 'Edit Task' : 'Create New Task'}
+          </h3>
+          <div className="w-12 h-1 bg-[var(--color-primary)] rounded-full mt-1"></div>
+        </div>
 
-           {/* Tag - Removed label */}
-           {/* Use flex-shrink-0 and a smaller basis to keep it compact */}
-          {/* Task Completion */}
-  <div className="flex flex-col items-center space-y-3">
-    <span className="text-sm font-medium text-gray-700">Completed</span>
-    <input
-      type="checkbox"
-      id="completed"
-      checked={isCompleted}
-      onChange={(e) => setIsCompleted(e.target.checked)}
-      className="w-6 h-6"
-    />
-  </div>
+        {/* Task Title */}
+        <div className="mb-6">
+          <label htmlFor="taskTitle" className="block text-sm font-medium text-[var(--text)] mb-2">
+            Task Title <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            ref={titleInputRef}
+            id="taskTitle"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter task title"
+            className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200 placeholder:text-[var(--text-muted)]"
+          />
+          {!isEditing && !title.trim() && (
+            <p className="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              Task title is required
+            </p>
+          )}
+        </div>
 
+        {/* Priority and Completion Row */}
+        <div className="mb-6 grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="taskPriority" className="block text-sm font-medium text-[var(--text)] mb-2">
+              Priority
+            </label>
+            <select
+              id="taskPriority"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
+            >
+              {priorityLevels.map(level => (
+                <option key={level} value={level}>
+                  {level === 'none' ? 'None' : level}
+                </option>
+              ))}
+            </select>
+          </div>
 
-           {/* Priority - Removed label */}
-           {/* Use flex-shrink-0 and a smaller basis to keep it compact */}
-           <div className="flex-shrink-0 basis-[60px]">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Priority</h3>
-
-               <select
-                 id="taskPriority"
-                 value={priority}
-                 onChange={(e) => setPriority(e.target.value)}
-                 className="w-full border rounded px-2 py-1 text-sm text-[var(--text)] focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-               >
-                 {priorityLevels.map(level => (
-                   <option key={level} value={level}>
-                     {level === 'none' ? 'None' : level}
-                   </option>
-                 ))}
-               </select>
-           </div>
+          <div>
+            <label htmlFor="completed" className="block text-sm font-medium text-[var(--text)] mb-2">
+              Status
+            </label>
+            <div className="flex items-center h-[42px] px-4 bg-[var(--background-primary)] border border-[var(--border-color-accent)] rounded-lg">
+              <input
+                type="checkbox"
+                id="completed"
+                checked={isCompleted}
+                onChange={(e) => setIsCompleted(e.target.checked)}
+                className="w-5 h-5 text-[var(--color-primary)] bg-[var(--background)] border-[var(--border-color-accent)] rounded focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer"
+              />
+              <label htmlFor="completed" className="ml-3 text-sm text-[var(--text)] cursor-pointer">
+                Mark as completed
+              </label>
+            </div>
+          </div>
         </div>
 
 
-        {/* Second row: Start Date, Due Date, Assigned To */}
-        <div className="mb-4">
-            <div className="flex flex-wrap items-center gap-3">
-                 {/* Start Date */}
-                 <div className="flex-grow flex-shrink-0 basis-[100px]">
-                     <label htmlFor="taskStartDate" className="block text-sm font-semibold mb-1 text-[var(--text)]">Start Date</label>
-                     <input
-                         type="date"
-                         id="taskStartDate"
-                         value={startDate || ''}
-                         onChange={(e) => setStartDate(e.target.value)}
-                         className="w-full border rounded px-2 py-1 text-sm text-[var(--text)] focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                     />
-                 </div>
-                  {/* Due Date */}
-                 <div className="flex-grow flex-shrink-0 basis-[100px]">
-                     <label htmlFor="taskDueDate" className="block text-sm font-semibold mb-1 text-[var(--text)]">Due Date</label>
-                     <input
-                         type="date"
-                         id="taskDueDate"
-                         value={dueDate || ''}
-                         onChange={(e) => setDueDate(e.target.value)}
-                         className="w-full border rounded px-2 py-1 text-sm text-[var(--text)] focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                     />
-                 </div>
-                 {/* Assigned To */}
-                 <div className="flex-grow basis-[120px] relative">
-                   <h3 className="text-sm font-semibold text-[var(--text)] mb-2">Assigned To</h3>
-                   <div className="flex items-center flex-wrap gap-1">
-                    {(assignedTo || []).map((user) => (
-  <div key={user._id} className="flex items-center bg-gray-100 rounded-full border border-gray-200 p-0.5 pr-1">
-    {/* <Avatar user={user} size="small" /> */}
-    <span className='text-sm m-auto'>{user.firstName}</span>
-    <button
-      onClick={() => toggleUserAssignment(user)}
-      className="ml-0.5 text-gray-400 hover:text-red-500 text-xs"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
-        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-      </svg>
-    </button>
-  </div>
-))}
+        {/* Dates */}
+        <div className="mb-6 grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="taskStartDate" className="block text-sm font-medium text-[var(--text)] mb-2">
+              Start Date
+            </label>
+            <input
+              type="date"
+              id="taskStartDate"
+              value={startDate || ''}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
+            />
+          </div>
+          <div>
+            <label htmlFor="taskDueDate" className="block text-sm font-medium text-[var(--text)] mb-2">
+              Due Date
+            </label>
+            <input
+              type="date"
+              id="taskDueDate"
+              value={dueDate || ''}
+              onChange={(e) => setDueDate(e.target.value)}
+              min={startDate || undefined}
+              className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
+            />
+          </div>
+        </div>
 
+        {/* Assigned To */}
+        <div className="mb-6 relative">
+          <label className="block text-sm font-medium text-[var(--text)] mb-2">
+            Assigned To
+          </label>
+          <div className="flex items-center flex-wrap gap-2 p-3 bg-[var(--background-primary)] border border-[var(--border-color-accent)] rounded-lg min-h-[48px]">
+            {(assignedTo || []).map((user) => (
+              <div key={user._id} className="flex items-center bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 rounded-full px-3 py-1.5 text-sm text-[var(--text)]">
+                <span>{user.firstName}</span>
+                <button
+                  onClick={() => toggleUserAssignment(user)}
+                  className="ml-2 text-[var(--text-muted)] hover:text-red-500 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            ))}
 
-                     <div
-                       className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 flex-shrink-0"
-                       onClick={() => setShowMemberSearch(!showMemberSearch)}
-                     >
-                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
-                         <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                       </svg>
-                     </div>
+            <button
+              className="flex items-center justify-center w-8 h-8 bg-[var(--color-primary)]/20 hover:bg-[var(--color-primary)]/30 rounded-full transition-colors"
+              onClick={() => setShowMemberSearch(!showMemberSearch)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--color-primary)]" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
 
-                     {showMemberSearch && (
-                       <div ref={memberSearchRef} className="absolute top-full mt-2 bg-white shadow-lg rounded p-2 border w-full max-w-xs z-10">
-                         <div className="mb-2">
-                           <input
-                             type="text"
-                             value={searchMember}
-                             onChange={(e) => setSearchMember(e.target.value)}
-                             placeholder="Search members..."
-                             className="border rounded px-2 py-1 text-sm w-full focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                             autoFocus
-                           />
-                         </div>
-                         <div className="max-h-40 overflow-y-auto">
-                           {teamMembers
-                             .filter(member =>
-                               member.firstName.toLowerCase().includes(searchMember.toLowerCase()) &&
-                               !assignedTo.some(m => m._id === member._id)
-
-                             )
-                             .map(member => (
-                               <div
-                                 key={member._id}
-                                 className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded cursor-pointer"
-                                 onClick={() => {
-                                   toggleUserAssignment(member);
-                                   setSearchMember("");
-                                   setShowMemberSearch(false);
-                                 }}
-                               >
-                                 <span className="text-sm">{member.firstName} {member.lastName}</span>
-                               </div>
-                             ))}
-                           {teamMembers.filter(member =>
-                             member.firstName.toLowerCase().includes(searchMember.toLowerCase()) &&
-                            !assignedTo.some(m => m._id === member._id)
-
-                           ).length === 0 && (
-                             <div className="text-center text-sm text-[var(--text)]">No members found</div>
-                           )}
-                         </div>
-                       </div>
-                     )}
-                   </div>
-                 </div>
+          {showMemberSearch && (
+            <div ref={memberSearchRef} className="absolute top-full mt-2 bg-[var(--background)] border border-[var(--border-color-accent)] shadow-lg rounded-lg p-3 w-full z-20">
+              <div className="mb-2">
+                <input
+                  type="text"
+                  value={searchMember}
+                  onChange={(e) => setSearchMember(e.target.value)}
+                  placeholder="Search members..."
+                  className="w-full px-3 py-2 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent placeholder:text-[var(--text-muted)]"
+                  autoFocus
+                />
+              </div>
+              <div className="max-h-40 overflow-y-auto">
+                {teamMembers
+                  .filter(member =>
+                    member.firstName.toLowerCase().includes(searchMember.toLowerCase()) &&
+                    !assignedTo.some(m => m._id === member._id)
+                  )
+                  .map(member => (
+                    <div
+                      key={member._id}
+                      className="flex items-center gap-2 p-2 hover:bg-[var(--background-primary)] rounded-lg cursor-pointer transition-colors"
+                      onClick={() => {
+                        toggleUserAssignment(member);
+                        setSearchMember("");
+                        setShowMemberSearch(false);
+                      }}
+                    >
+                      <span className="text-sm text-[var(--text)]">{member.firstName} {member.lastName}</span>
+                    </div>
+                  ))}
+                {teamMembers.filter(member =>
+                  member.firstName.toLowerCase().includes(searchMember.toLowerCase()) &&
+                  !assignedTo.some(m => m._id === member._id)
+                ).length === 0 && (
+                  <div className="text-center text-sm text-[var(--text-muted)] py-2">No members found</div>
+                )}
+              </div>
             </div>
+          )}
         </div>
 
 
         {/* Description Section (Collapsible) */}
-        <div className="mb-4">
-           <button
-               className="flex items-center justify-between w-full py-3 text-sm font-semibold text-left text-[var(--text)] hover:text-[var(--text-muted)] focus:outline-none" // Removed border-b
-               onClick={() => setIsDescriptionCollapsed(!isDescriptionCollapsed)}
-           >
-               Description (Optional)
-               <svg
-                   className={`w-4 h-4 transform transition-transform duration-200 ${isDescriptionCollapsed ? '' : 'rotate-180'}`}
-                   xmlns="http://www.w3.org/2000/svg"
-                   viewBox="0 0 20 20"
-                   fill="currentColor"
-               >
-                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-               </svg>
-           </button>
-           <div className={`pb-3 ${isDescriptionCollapsed ? 'hidden' : ''}`}>
-               <textarea
-                 id="taskDescription"
-                 value={description || ''}
-                 onChange={(e) => setDescription(e.target.value)}
-                 placeholder="Add a detailed description..."
-                 className="w-full border rounded px-3 py-2 text-[var(--text)] text-sm min-h-[80px] focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-               />
-           </div>
+        <div className="mb-6">
+          <button
+            className="flex items-center justify-between w-full py-2 text-sm font-medium text-left text-[var(--text)] hover:text-[var(--color-primary)] focus:outline-none transition-colors"
+            onClick={() => setIsDescriptionCollapsed(!isDescriptionCollapsed)}
+          >
+            <span>Description</span>
+            <svg
+              className={`w-5 h-5 transform transition-transform duration-200 ${isDescriptionCollapsed ? '' : 'rotate-180'}`}
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <div className={`mt-3 ${isDescriptionCollapsed ? 'hidden' : ''}`}>
+            <textarea
+              id="taskDescription"
+              value={description || ''}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add a detailed description..."
+              rows={3}
+              className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200 resize-none placeholder:text-[var(--text-muted)]"
+            />
+          </div>
         </div>
 
 
         {/* Subtasks Section (Collapsible) */}
-        <div className="mb-4">
-           <button
-               className="flex items-center justify-between w-full py-3 text-sm font-semibold text-left text-[var(--text)] hover:text-[var(--text-muted)] focus:outline-none" // Removed border-b
-               onClick={() => setIsSubtasksCollapsed(!isSubtasksCollapsed)}
-           >
-               Subtasks (Optional)
-              {isEditing? <svg
-                   className={`w-4 h-4 transform transition-transform duration-200 ${isSubtasksCollapsed ? '' : 'rotate-180'}`}
-                   xmlns="http://www.w3.org/2000/svg"
-                   viewBox="0 0 20 20"
-                   fill="currentColor"
-               >
-                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-               </svg>: ""}
-           </button>
-           {isEditing? <div className={`pb-3 ${isSubtasksCollapsed ? 'hidden' : ''}`}>
-                {(subtasks || []).length > 0 && (
-                   <div className="space-y-2 mb-3">
-                     {(subtasks || []).map((subtask) => (
-                       <div key={subtask.id} className="flex items-center bg-[var(--background-primary)] p-2 rounded">
-                         <button
-                           onClick={() => toggleSubtask(subtask.id)}
-                           className="flex items-center justify-center w-5 h-5 mr-2 rounded border border-gray-400 focus:outline-none relative"
-                           style={{ backgroundColor: subtask.status ? '#3B82F6' : 'white' }}
-                         >
-                           {subtask.status && (
-                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4 h-4 absolute top-0 left-0 right-0 bottom-0 m-auto pointer-events-none">
-                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                             </svg>
-                           )}
-                         </button>
-                         <span className={`text-sm flex-1 mr-2 ${subtask.status ? "line-through text-[var(--text)]" : "text-[var(--text)]"}`}>
-                           {subtask.title}
-                         </span>
-                         <select
-                           value={subtask.priority || 'none'}
-                           onChange={(e) => handleUpdateSubtaskPriority(subtask.id, e.target.value)}
-                           className="text-xs border rounded px-1 py-0.5 text-gray-700"
-                         >
-                           {priorityLevels.map(level => (
-                             <option key={level} value={level}>
-                               {level === 'none' ? 'Prio' : level}
-                             </option>
-                           ))}
-                         </select>
-                         <button
-                           onClick={() => deleteSubtask(subtask.id)}
-                           className="ml-2 text-gray-400 hover:text-red-500 text-xs"
-                         >
-                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                           </svg>
-                         </button>
-                       </div>
-                     ))}
-                   </div>
-                 )}
+        <div className="mb-6">
+          <button
+            className="flex items-center justify-between w-full py-2 text-sm font-medium text-left text-[var(--text)] hover:text-[var(--color-primary)] focus:outline-none transition-colors"
+            onClick={() => setIsSubtasksCollapsed(!isSubtasksCollapsed)}
+          >
+            <span>Subtasks {isEditing && `(${subtasks.length})`}</span>
+            {isEditing && (
+              <svg
+                className={`w-5 h-5 transform transition-transform duration-200 ${isSubtasksCollapsed ? '' : 'rotate-180'}`}
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
 
-                 <div className="flex items-center">
-                   <input
-                     type="text"
-                     id="newSubtaskInput"
-                     value={newSubtaskTitle}
-                     onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                     placeholder="Add a subtask..."
-                     className="flex-1 border rounded px-3 text-[var(--text)] py-2 text-sm mr-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            
-                   />
-                   <button
-                     onClick={addSubtask}
-                     className="px-4 py-2 bg-[#187cb4] text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                     disabled={!newSubtaskTitle.trim()}
-                   >
-                     Add
-                   </button>
-                 </div>
-           </div>: <p className="text-red-500 text-xs mt-1">Please create a task to add subtasks</p>}
+          {isEditing ? (
+            <div className={`mt-3 ${isSubtasksCollapsed ? 'hidden' : ''}`}>
+              {(subtasks || []).length > 0 && (
+                <div className="space-y-2 mb-3">
+                  {(subtasks || []).map((subtask) => (
+                    <div key={subtask.id} className="flex items-center gap-3 bg-[var(--background-primary)] border border-[var(--border-color-accent)] p-3 rounded-lg">
+                      <button
+                        onClick={() => toggleSubtask(subtask.id)}
+                        className="flex items-center justify-center w-5 h-5 rounded border-2 focus:outline-none transition-all"
+                        style={{
+                          borderColor: subtask.status ? 'var(--color-primary)' : 'var(--border-color-accent)',
+                          backgroundColor: subtask.status ? 'var(--color-primary)' : 'transparent'
+                        }}
+                      >
+                        {subtask.status && (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-3.5 h-3.5">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </button>
+                      <span className={`text-sm flex-1 text-[var(--text)] ${subtask.status ? "line-through opacity-60" : ""}`}>
+                        {subtask.title}
+                      </span>
+                      <select
+                        value={subtask.priority || 'none'}
+                        onChange={(e) => handleUpdateSubtaskPriority(subtask.id, e.target.value)}
+                        className="text-xs px-2 py-1 bg-[var(--background)] border border-[var(--border-color-accent)] text-[var(--text)] rounded focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                      >
+                        {priorityLevels.map(level => (
+                          <option key={level} value={level}>
+                            {level === 'none' ? 'Priority' : level}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => deleteSubtask(subtask.id)}
+                        className="text-[var(--text-muted)] hover:text-red-500 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  id="newSubtaskInput"
+                  value={newSubtaskTitle}
+                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                  placeholder="Add a new subtask..."
+                  className="flex-1 px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200 placeholder:text-[var(--text-muted)]"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && newSubtaskTitle.trim()) {
+                      addSubtask();
+                    }
+                  }}
+                />
+                <button
+                  onClick={addSubtask}
+                  disabled={!newSubtaskTitle.trim()}
+                  className="px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-accent-hover)] text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--color-primary)]"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="mt-2 text-xs text-[var(--text-muted)]">Save the task first to add subtasks</p>
+          )}
         </div>
 
 
         {/* Buttons */}
-        <div className="flex justify-between items-center gap-2 mt-6">
-  {/* Left side: Delete button (conditionally rendered) */}
-  {isEditing ? (
-    <button
-      className="text-red-500 hover:text-red-300 mt-1 cursor-pointer"
-      onClick={()=>{
-        onDelete();
-      }}
-    >
-      Delete
-    </button>
-  ) : (
-    <div /> // Empty div to keep spacing consistent when Delete is hidden
-  )}
+        <div className="flex justify-between items-center gap-3 mt-8 pt-4 border-t border-[var(--border-color)]">
+          {isEditing ? (
+            <button
+              className="px-4 py-2.5 border border-red-500/50 text-red-500 rounded-lg hover:bg-red-500/10 hover:border-red-500 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:ring-offset-2 focus:ring-offset-[var(--background)]"
+              onClick={() => {
+                onDelete();
+              }}
+            >
+              Delete Task
+            </button>
+          ) : (
+            <div />
+          )}
 
-  {/* Right side: Cancel and Save/Add buttons */}
-  {isEditing? (
-<div className="flex justify-end gap-2">
-    <button
-      onClick={onCancel}
-      className="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded hover:bg-blue-50 text-sm"
-    >
-      Cancel
-    </button>
-    <button
-      onClick={handleEdit}
-      className="px-4 py-2  text-white rounded bg-[#187cb4] hover:bg-[#12547a] text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-      disabled={!title.trim() && !isEditing}
-    >
-      {isEditing ? 'Save Changes' : 'Add Task'}
-    </button>
-  </div>
-
-
-  ):(
-<div className="flex justify-end gap-2">
-    <button
-      onClick={onCancel}
-      className="px-4 py-2 bg-white border border-[#187cb4] text-[#187cb4] rounded hover:bg-blue-50 text-sm"
-    >
-      Cancel
-    </button>
-    <button
-      onClick={handleSave}
-      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-      disabled={!title.trim() && !isEditing}
-    >
-      {isEditing ? 'Save Changes' : 'Add Task'}
-    </button>
-  </div>  
-  )}
-  
-</div>
+          <div className="flex gap-3">
+            <button
+              onClick={onCancel}
+              className="px-5 py-2.5 border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg hover:bg-[var(--background-primary)] hover:border-[var(--text-muted)] text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 focus:ring-offset-2 focus:ring-offset-[var(--background)]"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={isEditing ? handleEdit : handleSave}
+              disabled={!title.trim()}
+              className="px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-accent-hover)] text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--background)] shadow-sm"
+            >
+              {isEditing ? 'Save Changes' : 'Create Task'}
+            </button>
+          </div>
+        </div>
 
       </div>
     </div>
