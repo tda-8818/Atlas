@@ -1,5 +1,3 @@
-@import "../../index.css";
-
 /* Base body adjustments */
 .body {
   font-size: 1px;
@@ -25,15 +23,15 @@
 
 /* FullCalendar buttons */
 .fc .fc-button {
-  background-color: #187cb4 !important;
-  border-color: #187cb4 !important;
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
   color: white !important;
   text-transform: capitalize;
   font-size: 0.75rem;
 }
 .fc .fc-button:hover {
-  background-color: #12547a !important;
-  border-color: #12547a !important;
+  background-color: var(--color-secondary) !important;
+  border-color: var(--color-secondary) !important;
 }
 
 /* Header cell (Mon, Tue, etc.) */
@@ -77,7 +75,7 @@
 }
 .fc-event-title-container:hover {
   cursor: pointer;
-  background-color: #12547a;
+  background-color: var(--color-secondary);
 }
 
 /* Events */
