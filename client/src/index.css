@@ -2,112 +2,71 @@
 @import "tailwindcss";
 
 /* ============================================
-   CSS CUSTOM PROPERTIES (Design Tokens)
+   TAILWIND THEME EXTENSION
    ============================================ */
 
-:root {
-  /* Base Color Palette - Source of truth */
+@theme {
+  /* Extended Color Palette */
   --color-primary: #3F84D1;
-  --color-secondary: #2E86C1;
+  --color-primary-hover: #2E86C1;
   --color-accent: #F1A7C2;
   --color-accent-hover: #0f5b8c;
 
-  /* Dark Theme Base Colors */
-  --color-background-dark-primary: #080d17;
-  --color-background-dark: #0F172A;
-  --color-background-dark-elevated: #1A2332;
+  /* Dark Mode Colors */
+  --color-bg-dark: #0F172A;
+  --color-bg-dark-primary: #080d17;
+  --color-bg-dark-elevated: #1A2332;
+  --color-bg-dark-input: #0F1621;
   --color-border-dark: #1E293B;
   --color-text-dark: #CBD5E1;
   --color-text-dark-muted: #70757b;
-  --color-text-dark-hover: #FFFFFF;
 
-  /* Light Theme Base Colors */
-  --color-background-light: #FFFFFF;
-  --color-background-light-secondary: #F5F5F5;
-  --color-background-light-elevated: #FFFFFF;
-  --color-border-light: #f5f5f7;
+  /* Light Mode Colors */
+  --color-bg-light: #FFFFFF;
+  --color-bg-light-secondary: #F5F5F5;
+  --color-bg-light-input: #F9FAFB;
+  --color-border-light: #E5E7EB;
   --color-text-light: #1F2937;
   --color-text-light-muted: #6B7280;
-  --color-text-light-hover: #000000;
-
-  /* Neutral Colors */
-  --color-card-background-dark: #1A2238;
-  --color-input-background-dark: #0F1621;
-  --color-input-background-light: #F9FAFB;
 }
 
 /* ============================================
-   DARK THEME
+   SEMANTIC COLOR VARIABLES
+   Using Tailwind v4 light-dark() function
    ============================================ */
 
-[data-theme="dark"],
-.dark {
-  /* Backgrounds */
-  --background: var(--color-background-dark);
-  --background-primary: var(--color-background-dark-primary);
-  --background-modal: var(--color-background-dark-elevated);
-  --background-input: var(--color-input-background-dark);
-  --card-background: var(--color-card-background-dark);
+:root {
+  /* Backgrounds - Auto switches between light/dark */
+  --background: light-dark(var(--color-bg-light), var(--color-bg-dark));
+  --background-primary: light-dark(var(--color-bg-light-secondary), var(--color-bg-dark-primary));
+  --background-modal: light-dark(var(--color-bg-light), var(--color-bg-dark-elevated));
+  --background-input: light-dark(var(--color-bg-light-input), var(--color-bg-dark-input));
 
-  /* Text */
-  --text: var(--color-text-dark);
-  --text-muted: var(--color-text-dark-muted);
-  --text-hover: var(--color-text-dark-hover);
-  --text-active: var(--color-text-dark-hover);
+  /* Text Colors */
+  --text: light-dark(var(--color-text-light), var(--color-text-dark));
+  --text-muted: light-dark(var(--color-text-light-muted), var(--color-text-dark-muted));
+  --text-hover: light-dark(#000000, #FFFFFF);
+  --text-active: light-dark(#000000, #FFFFFF);
 
   /* Navigation */
-  --nav-text: var(--color-text-dark);
-  --nav-hover: var(--color-border-dark);
+  --nav-text: light-dark(#8E92BC, var(--color-text-dark));
+  --nav-hover: light-dark(#f5f5f7, var(--color-border-dark));
 
   /* Borders */
-  --border-color: var(--color-border-dark);
-  --border-color-accent: #7d7d7d;
+  --border-color: light-dark(var(--color-border-light), var(--color-border-dark));
+  --border-color-accent: light-dark(#DDDDDD, #7d7d7d);
 
-  /* Theme Colors */
+  /* Card Background */
+  --card-background: light-dark(var(--color-bg-light), #1A2238);
+
+  /* Theme Colors (same in both modes) */
   --primary-color: var(--color-primary);
-  --secondary-color: var(--color-secondary);
+  --secondary-color: var(--color-primary-hover);
   --accent-color: var(--color-accent);
   --accent-hover-color: var(--color-accent-hover);
 
   /* Specific Use Cases */
-  --today-active: #094d75;
-}
-
-/* ============================================
-   LIGHT THEME
-   ============================================ */
-
-[data-theme="light"],
-.light {
-  /* Backgrounds */
-  --background: var(--color-background-light);
-  --background-primary: var(--color-background-light-secondary);
-  --background-modal: var(--color-background-light-elevated);
-  --background-input: var(--color-input-background-light);
-  --card-background: var(--color-background-light);
-
-  /* Text */
-  --text: var(--color-text-light);
-  --text-muted: var(--color-text-light-muted);
-  --text-hover: var(--color-text-light-hover);
-  --text-active: var(--color-text-light-hover);
-
-  /* Navigation */
-  --nav-text: #8E92BC;
-  --nav-hover: #f5f5f7;
-
-  /* Borders */
-  --border-color: var(--color-border-light);
-  --border-color-accent: #DDDDDD;
-
-  /* Theme Colors */
-  --primary-color: var(--color-primary);
-  --secondary-color: var(--color-secondary);
-  --accent-color: var(--color-accent);
-  --accent-hover-color: var(--color-accent-hover);
-
-  /* Specific Use Cases */
-  --today-active: #F7F2D7;
+  --today-active: light-dark(#F7F2D7, #094d75);
 }
 
 /* ============================================
@@ -128,87 +87,3 @@
   }
 }
 
-/* ============================================
-   TAILWIND UTILITIES LAYER
-   ============================================ */
-
-@layer utilities {
-  /* Hide Scrollbars Utility */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-/* ============================================
-   LEGACY CLASSES (To be migrated to Tailwind)
-   TODO: Replace these with Tailwind classes in components
-   ============================================ */
-
-/* Button Classes - DEPRECATED: Use Tailwind button classes instead */
-.btn-primary {
-  background: var(--color-primary);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  transition: background-color 0.3s ease;
-  font-size: 16px;
-}
-
-.btn-primary:hover {
-  background-color: var(--color-secondary);
-}
-
-/* Navigation Classes - DEPRECATED: Use Tailwind classes instead */
-.nav-button {
-  background-color: var(--background);
-  color: var(--nav-text);
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.nav-button:hover {
-  background-color: var(--nav-hover);
-  color: var(--text-hover);
-}
-
-.nav-button-active {
-  background-color: var(--primary-color);
-  color: var(--text-active);
-}
-
-/* Card Classes - DEPRECATED: Use Tailwind classes instead */
-.card {
-  background-color: var(--card-background);
-  color: var(--text);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  padding: 20px;
-}
-
-/* Stat Box Classes - DEPRECATED: Use Tailwind classes instead */
-.stat-box {
-  background-color: var(--card-background);
-  color: var(--text);
-  padding: 20px;
-  border-radius: 12px;
-}
-
-.stat-box-header {
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.stat-box-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--primary-color);
-}

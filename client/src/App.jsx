@@ -42,7 +42,13 @@ function App() {
   }, [location.pathname]);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme); // apply theme to <html>
+    // Use Tailwind's class-based dark mode (adds/removes 'dark' class on <html>)
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
     localStorage.setItem("theme", theme); // persist
   }, [theme]);
 
