@@ -20,6 +20,15 @@ export default defineConfig(({ mode }) => {
           secure: false
         }
       }
+    },
+    preview: {
+      proxy: {
+        '/api': {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: false
+        }
+      }
     }
   }
 })

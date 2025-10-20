@@ -1,38 +1,37 @@
-version: "3.8"
 services:
+  # Backend Server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./server/src:/app/src
+      - /app/node_modules
+    env_file:
+      - ./server/.env
+    environment:
+      - NODE_ENV=development
+      - PORT=5001
+    restart: unless-stopped
+
+  # Frontend Client
   client:
     build:
-      context: .
-      dockerfile: client/Dockerfile
+      context: ./client
+      dockerfile: Dockerfile
     ports:
       - "4173:4173"
     volumes:
       - ./client/src:/app/src
       - ./client/vite.config.js:/app/vite.config.js
       - ./client/index.html:/app/index.html
+      - /app/node_modules
+    env_file:
+      - ./client/.env
+    environment:
+      - VITE_API_URL=http://server:5001
     depends_on:
       - server
-    environment:
-      - REACT_APP_API_URL=http://server:5001
-  server:
-    build:
-      context: .
-      dockerfile: server/Dockerfile
-    ports:
-      - "5001:5001"
-    volumes:
-      - ./server:/app
-      - /app/node_modules
-    environment:
-      - MONGO_URI=mongodb+srv://ngsweejie:CS2TMS@cs02taskmanagementsyste.ko3ct.mongodb.net/?retryWrites=true&w=majority&appName=CS02TaskManagementSystem
-    depends_on:
-      - mongo
-  mongo:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-
-volumes:
-  mongo-data:
+    restart: unless-stopped

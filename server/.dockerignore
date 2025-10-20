@@ -1,0 +1,43 @@
+# Dependencies (will be installed fresh in container)
+node_modules
+npm-debug.log
+
+# Environment files (mounted as volumes)
+.env
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Documentation
+*.md
+README*
+LICENSE
+
+# Test files
+tests
+__tests__
+*.test.js
+*.spec.js
+coverage
+
+# Build artifacts
+dist
+build
+.cache
+
+# Logs
+logs
+*.log
+
+# Development files
+.DS_Store
+Thumbs.db
