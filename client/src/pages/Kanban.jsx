@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import AddTaskPopup from '../components/modals/AddTaskPopup';
+import AddTaskModal from '../components/modals/AddTaskModal';
 import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 import { useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation, useGetProjectUsersQuery } from "../redux/slices/projectSlice";
@@ -83,7 +83,7 @@ const Avatar = ({ user, size = "small" }) => {
 
 const Kanban = () => {
   const [columns, setColumns] = useState(defaultColumns);
-  const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [addTaskColumnIndex, setAddTaskColumnIndex] = useState(null);
 
   const [newColumnName, setNewColumnName] = useState("");
@@ -315,7 +315,7 @@ const Kanban = () => {
       addTaskColumnIndex >= columns.length
     ) {
       console.error("Attempted to add task to invalid column index.");
-      setShowAddTaskPopup(false);
+      setShowAddTaskModal(false);
       setAddTaskColumnIndex(null);
       return;
     }
@@ -346,15 +346,15 @@ const Kanban = () => {
       console.error("Failed to create task:", err);
     }
 
-    setShowAddTaskPopup(false);
+    setShowAddTaskModal(false);
     setAddTaskColumnIndex(null);
   };
 
 
-  const openAddTaskPopup = (columnIndex) => {
+  const openAddTaskModal = (columnIndex) => {
     setAddTaskColumnIndex(columnIndex);
     setSelectedCard(null); // Reset selected card when opening the add task popup
-    setShowAddTaskPopup(true);
+    setShowAddTaskModal(true);
   };
 
 
@@ -418,7 +418,7 @@ const Kanban = () => {
       setConfirmDelete(null);
       setCurrentCardIndex(null);
       setCurrentColumnIndex(null);
-      setShowAddTaskPopup(false);
+      setShowAddTaskModal(false);
     } catch (error) {
       console.error("Failed to delete task:", error);
       // Optionally show a toast or user message here
@@ -480,7 +480,7 @@ const Kanban = () => {
       // Set selectedCard to null AFTER the state update to close the modal
       setColumns(updatedColumns);
       setSelectedCard(null);
-       setShowAddTaskPopup(false);
+       setShowAddTaskModal(false);
     } catch (error) {
       console.error("Failed to update task in Kanban.jsx", error);
     }
@@ -634,7 +634,7 @@ const Kanban = () => {
 
     setCurrentCardIndex(cardIndex);
     setCurrentColumnIndex(columnIndex);
-    setShowAddTaskPopup(true);
+    setShowAddTaskModal(true);
   };
 
   // Toggle section visibility functions
@@ -852,9 +852,9 @@ const Kanban = () => {
                           )}
                         </Droppable>
 
-                        {/* Button to open the AddTaskPopup */}
+                        {/* Button to open the AddTaskModal */}
                         <button
-                          onClick={() => openAddTaskPopup(columnIndex)}
+                          onClick={() => openAddTaskModal(columnIndex)}
                           className="mt-2 text-sm text-gray-500 hover:text-blue-600 w-full py-1 bg-[var(--background-secondary)] rounded"
                         >
                           + Add Task
@@ -888,12 +888,12 @@ const Kanban = () => {
           </Droppable>
         </DragDropContext>
 
-        {/* Render the reusable AddTaskPopup */}
-        <AddTaskPopup
-          show={showAddTaskPopup}
+        {/* Render the reusable AddTaskModal */}
+        <AddTaskModal
+          show={showAddTaskModal}
           onAddTask={handleAddTaskFromPopup}
           onCancel={() => {
-            setShowAddTaskPopup(false);
+            setShowAddTaskModal(false);
             setAddTaskColumnIndex(null);
           }}
           onEdit={handleSaveChanges}

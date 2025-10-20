@@ -53,10 +53,10 @@ const Modal = ({
             leaveTo="opacity-0 scale-95 translate-y-4"
           >
             <DialogPanel
-              className={`mx-auto ${sizeClasses[size]} w-full p-6 my-8 overflow-hidden text-left align-middle transition-all transform border border-[var(--border-color)] shadow-2xl rounded-lg`}
+              className={`mx-auto ${sizeClasses[size]} w-full p-6 my-8 overflow-hidden text-left align-middle transition-all transform border-2 border-[var(--border-color)] shadow-2xl rounded-lg ring-4 ring-black/5`}
               style={{
-                backgroundColor: 'var(--card-background, var(--background))',
-                backdropFilter: 'blur(8px)'
+                backgroundColor: 'var(--background-modal)',
+                opacity: 1
               }}
             >
               <DialogTitle

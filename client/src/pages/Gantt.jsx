@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import GanttComp from '../components/GanttComp';
 import { useOutletContext } from "react-router-dom";
-import AddTaskPopup from '../components/modals/AddTaskPopup';
+import AddTaskModal from '../components/modals/AddTaskModal';
 import { gantt } from 'dhtmlx-gantt';
 import Sidebar from '../components/Sidebar';
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from '../redux/slices/taskSlice';
@@ -11,7 +11,7 @@ import ObjectId from 'bson-objectid'
 
 
 // Team members data for assignment (Ideally, this should be fetched or in a shared context)
-// Duplicated here and in AddTaskPopup-1.jsx - consider centralizing.
+// Duplicated here and in AddTaskModal-1.jsx - consider centralizing.
 
 
 // Helper to format date string to DHTMLX Gantt Date object (sets time to noon)
@@ -60,7 +60,7 @@ function formatDateForPopup(dateObj) {
 
 const Gantt = () => {
     const { currentProject } = useOutletContext();
-    const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
+    const [showAddTaskModal, setShowAddTaskModal] = useState(false);
     const [editingTask, setEditingTask] = useState(null); // State to hold the task data when editing
 
     const [addTask] = useAddTaskMutation();
@@ -166,7 +166,7 @@ const handleDeleteTaskFromPopup = async() =>{
     console.error("failed to delete task: ",error)
   }
   setEditingTask(null);
-  setShowAddTaskPopup(false);
+  setShowAddTaskModal(false);
 };
 
   // Handler for adding/saving a task from the popup
@@ -328,14 +328,14 @@ const handleDeleteTaskFromPopup = async() =>{
       }
 
     // Close popup and reset editing state
-    setShowAddTaskPopup(false);
+    setShowAddTaskModal(false);
     setEditingTask(null);
   };
 
   // Handler to open the popup for adding a new task
-  const openAddTaskPopup = (initialTaskData = {}) => {
+  const openAddTaskModal = (initialTaskData = {}) => {
       // setEditingTask(initialTaskData)
-       setShowAddTaskPopup(true);
+       setShowAddTaskModal(true);
   };
 
 
@@ -365,7 +365,7 @@ const handleDeleteTaskFromPopup = async() =>{
        };
         console.log("Opening popup with data:", taskDataForPopup);
        setEditingTask(taskDataForPopup);
-       setShowAddTaskPopup(true);
+       setShowAddTaskModal(true);
   };
   const handleEditTaskConfirm = async(formData) => {
     console.log("commencing backend task update ", formData);
@@ -423,7 +423,7 @@ const handleDeleteTaskFromPopup = async() =>{
       });
 
       setEditingTask(null);
-      setShowAddTaskPopup(false);
+      setShowAddTaskModal(false);
     } catch (error) {
       console.error("Failed to update task:", error);
     }
@@ -435,7 +435,7 @@ const handleDeleteTaskFromPopup = async() =>{
     if (editingTask) {
         setEditingTask(null);
     }
-    setShowAddTaskPopup(false);
+    setShowAddTaskModal(false);
   };
 
   return (
@@ -449,7 +449,7 @@ const handleDeleteTaskFromPopup = async() =>{
         <div className="w-full h-full">
           <GanttComp
             tasks={tasks} // Pass the tasks state
-            onAddTask={openAddTaskPopup}
+            onAddTask={openAddTaskModal}
             onEditTask={handleEditTask}
             onGanttTaskUpdate={handleGanttTaskUpdate} // Handle updates from Gantt drag/resize
             onGanttTaskDelete={handleGanttTaskDelete} // Handle deletes from Gantt
@@ -458,10 +458,10 @@ const handleDeleteTaskFromPopup = async() =>{
         </div>
 
         {/* Complete Task Popup with all fields (without Headless UI) */}
-        {/* Render the popup based on showAddTaskPopup state */}
-        {showAddTaskPopup && (
-          <AddTaskPopup
-            show={showAddTaskPopup} // Pass the show state explicitly
+        {/* Render the popup based on showAddTaskModal state */}
+        {showAddTaskModal && (
+          <AddTaskModal
+            show={showAddTaskModal} // Pass the show state explicitly
             onAddTask={handleSaveTaskFromPopup} // Use the save handler
             onCancel={handleCancelPopup}
             onEdit={handleEditTaskConfirm}

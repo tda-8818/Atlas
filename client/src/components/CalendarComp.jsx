@@ -3,13 +3,13 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import AddTaskPopup from "./modals/AddTaskPopup";
+import AddTaskModal from "./modals/AddTaskModal";
 import "./css/CalendarComp.css"
 import taskApiSlice, { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
 import { useGetProjectTasksQuery, useGetProjectUsersQuery } from "../redux/slices/projectSlice";
 const CalendarComp = ({ project }) => {
 
-  const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [selectedDateInfo, setSelectedDateInfo] = useState(null);
 
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -61,7 +61,7 @@ const CalendarComp = ({ project }) => {
   // handles date selection via click and opens modal when clicked
   const handleDateSelect = async (selectInfo) => {
     setSelectedDateInfo(selectInfo);
-    setShowAddTaskPopup(true);
+    setShowAddTaskModal(true);
     };
 
   // createss a new event using the form data from the modal
@@ -105,7 +105,7 @@ const CalendarComp = ({ project }) => {
     };
 
     // Close the modal and clear our saved selection.
-    setShowAddTaskPopup(false);
+    setShowAddTaskModal(false);
     setSelectedDateInfo(false);
 
   };
@@ -123,7 +123,7 @@ const CalendarComp = ({ project }) => {
       console.log("Clicked event:", event);
       console.log("Event extended props:", event.extendedProps);
       
-      // Convert the event to a task format that AddTaskPopup can use
+      // Convert the event to a task format that AddTaskModal can use
       const taskData = {
         id: event.id,
         title: event.title,
@@ -161,7 +161,7 @@ const CalendarComp = ({ project }) => {
       
       // Open the popup
       console.log("team members: ",projectUsers)
-      setShowAddTaskPopup(true);
+      setShowAddTaskModal(true);
     } catch (error) {
       console.error("Error handling event click:", error);
     }
@@ -180,7 +180,7 @@ const CalendarComp = ({ project }) => {
     } catch (error) {
       console.error("Error deleting task:", error);
     } finally {
-      setShowAddTaskPopup(false);
+      setShowAddTaskModal(false);
       setSelectedEvent(null); // Clear the selected event
     }
   };
@@ -221,7 +221,7 @@ calendarEvent.setExtendedProp("priority",formData.priority);
     console.error("error modifying task: ", error);
   }
 
-  setShowAddTaskPopup(false);
+  setShowAddTaskModal(false);
   setSelectedEvent(null);
 };
 
@@ -244,12 +244,12 @@ calendarEvent.setExtendedProp("priority",formData.priority);
         eventClick={handleEventClick}
         events={currentEvents}
       />
-       {/* Render the reusable AddTaskPopup */}
-       <AddTaskPopup
-          show={showAddTaskPopup}
+       {/* Render the reusable AddTaskModal */}
+       <AddTaskModal
+          show={showAddTaskModal}
           onAddTask={handleEventSubmission}
           onCancel={() => {
-            setShowAddTaskPopup(false);
+            setShowAddTaskModal(false);
             setSelectedEvent(null);
             
           }}

@@ -1,95 +1,157 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 @import "tailwindcss";
 
+/* ============================================
+   CSS CUSTOM PROPERTIES (Design Tokens)
+   ============================================ */
+
 :root {
+  /* Base Color Palette - Source of truth */
+  --color-primary: #3F84D1;
+  --color-secondary: #2E86C1;
+  --color-accent: #F1A7C2;
+  --color-accent-hover: #0f5b8c;
+
+  /* Dark Theme Base Colors */
   --color-background-dark-primary: #080d17;
   --color-background-dark: #0F172A;
+  --color-background-dark-elevated: #1A2332;
   --color-border-dark: #1E293B;
   --color-text-dark: #CBD5E1;
-  --color-nav-text-dark: #CBD5E1;
-  --color-text-hover-dark: #FFFFFF;
-  --color-text-active-dark: #FFFFFF;
-  --color-nav-hover-dark: #1E293B;
-  
-  --color-text-muted-dark: #70757b;
+  --color-text-dark-muted: #70757b;
+  --color-text-dark-hover: #FFFFFF;
 
+  /* Light Theme Base Colors */
   --color-background-light: #FFFFFF;
-  
-  /* Additional Colors */
-  --color-primary: #3F84D1; /* Soft Blue */
-  --color-secondary: #2E86C1; /* Deeper Blue */
-  --color-accent: #F1A7C2; /* Soft Pink Accent */
-  --color-accent-hover: #0f5b8c; /* Darker Pink Hover */
-  --color-light-gray: #F5F5F5; /* Light Gray Backgrounds */
-  --color-dark-gray: #2D3748; /* Darker Gray for text & borders */
-  --color-card-background: #1A2238; /* Dark Background for Cards */
+  --color-background-light-secondary: #F5F5F5;
+  --color-background-light-elevated: #FFFFFF;
+  --color-border-light: #f5f5f7;
+  --color-text-light: #1F2937;
+  --color-text-light-muted: #6B7280;
+  --color-text-light-hover: #000000;
+
+  /* Neutral Colors */
+  --color-card-background-dark: #1A2238;
+  --color-input-background-dark: #0F1621;
+  --color-input-background-light: #F9FAFB;
 }
 
-.dark{
+/* ============================================
+   DARK THEME
+   ============================================ */
+
+[data-theme="dark"],
+.dark {
+  /* Backgrounds */
   --background: var(--color-background-dark);
   --background-primary: var(--color-background-dark-primary);
-  --text: var(--color-text-dark);
-  --text-muted: var(--color-text-muted-dark);
-  --nav-text: var(--color-nav-text-dark);
-  --nav-hover: var(--color-nav-hover-dark);
-  --border-color: var(--color-border-dark);
-  --text-hover: var(--color-text-hover-dark);
-  --text-active: var(--color-text-active-dark);
-  --border-color-accent: #7d7d7d;
-  --text-accent: black;
-  --today-active: #094d75;
+  --background-modal: var(--color-background-dark-elevated);
+  --background-input: var(--color-input-background-dark);
+  --card-background: var(--color-card-background-dark);
 
-  /* Use Dark Theme Colors */
+  /* Text */
+  --text: var(--color-text-dark);
+  --text-muted: var(--color-text-dark-muted);
+  --text-hover: var(--color-text-dark-hover);
+  --text-active: var(--color-text-dark-hover);
+
+  /* Navigation */
+  --nav-text: var(--color-text-dark);
+  --nav-hover: var(--color-border-dark);
+
+  /* Borders */
+  --border-color: var(--color-border-dark);
+  --border-color-accent: #7d7d7d;
+
+  /* Theme Colors */
   --primary-color: var(--color-primary);
   --secondary-color: var(--color-secondary);
   --accent-color: var(--color-accent);
   --accent-hover-color: var(--color-accent-hover);
-  --light-gray: var(--color-light-gray);
-  --dark-gray: var(--color-dark-gray);
-  --card-background: var(--color-card-background);
+
+  /* Specific Use Cases */
+  --today-active: #094d75;
 }
 
-.light{
+/* ============================================
+   LIGHT THEME
+   ============================================ */
+
+[data-theme="light"],
+.light {
+  /* Backgrounds */
   --background: var(--color-background-light);
-  --background-primary: var(--color-light-gray);
-  --text: black;
+  --background-primary: var(--color-background-light-secondary);
+  --background-modal: var(--color-background-light-elevated);
+  --background-input: var(--color-input-background-light);
+  --card-background: var(--color-background-light);
+
+  /* Text */
+  --text: var(--color-text-light);
+  --text-muted: var(--color-text-light-muted);
+  --text-hover: var(--color-text-light-hover);
+  --text-active: var(--color-text-light-hover);
+
+  /* Navigation */
   --nav-text: #8E92BC;
   --nav-hover: #f5f5f7;
-  --border-color: #f5f5f7;
-  --text-hover: #000000;
-  --text-active: #000000;
-  --border-color-accent: #DDDDDD;
-  --text-accent:  #CBD5E1;
-  --today-active: #F7F2D7;
 
-  /* Use Light Theme Colors */
+  /* Borders */
+  --border-color: var(--color-border-light);
+  --border-color-accent: #DDDDDD;
+
+  /* Theme Colors */
   --primary-color: var(--color-primary);
   --secondary-color: var(--color-secondary);
   --accent-color: var(--color-accent);
   --accent-hover-color: var(--color-accent-hover);
-  --light-gray: var(--color-light-gray);
-  --dark-gray: var(--color-dark-gray);
-  --card-background: var(--color-card-background);
+
+  /* Specific Use Cases */
+  --today-active: #F7F2D7;
 }
 
-body {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  background-color: var(--background);
+/* ============================================
+   TAILWIND BASE LAYER CUSTOMIZATIONS
+   ============================================ */
 
+@layer base {
+  body {
+    @apply font-sans bg-[var(--background)] text-[var(--text)] antialiased;
+  }
+
+  a {
+    @apply text-[var(--text)] transition-colors duration-300;
+  }
+
+  a:hover {
+    @apply text-[var(--accent-hover-color)];
+  }
 }
 
-a {
-  color: var(--text);
-  transition: color 0.3s ease;
+/* ============================================
+   TAILWIND UTILITIES LAYER
+   ============================================ */
+
+@layer utilities {
+  /* Hide Scrollbars Utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-a:hover {
-  color: var(--accent-color-hover);
-}
+/* ============================================
+   LEGACY CLASSES (To be migrated to Tailwind)
+   TODO: Replace these with Tailwind classes in components
+   ============================================ */
 
-/* Buttons & Links */
+/* Button Classes - DEPRECATED: Use Tailwind button classes instead */
 .btn-primary {
-  background: #3A5ECC;
+  background: var(--color-primary);
   color: white;
   padding: 12px 24px;
   border-radius: 8px;
@@ -102,20 +164,11 @@ a:hover {
   font-size: 16px;
 }
 
-.button-primary:hover {
-  background-color: var(--secondary-color);
+.btn-primary:hover {
+  background-color: var(--color-secondary);
 }
 
-.button-accent {
-  background-color: var(--accent-color);
-  color: white;
-}
-
-.button-accent:hover {
-  background-color: var(--accent-hover-color);
-}
-
-/* Navbar */
+/* Navigation Classes - DEPRECATED: Use Tailwind classes instead */
 .nav-button {
   background-color: var(--background);
   color: var(--nav-text);
@@ -132,7 +185,7 @@ a:hover {
   color: var(--text-active);
 }
 
-/* Card Background */
+/* Card Classes - DEPRECATED: Use Tailwind classes instead */
 .card {
   background-color: var(--card-background);
   color: var(--text);
@@ -141,7 +194,7 @@ a:hover {
   padding: 20px;
 }
 
-/* Stat Box */
+/* Stat Box Classes - DEPRECATED: Use Tailwind classes instead */
 .stat-box {
   background-color: var(--card-background);
   color: var(--text);
@@ -158,13 +211,4 @@ a:hover {
   font-size: 2rem;
   font-weight: 700;
   color: var(--primary-color);
-}
-
-/* Optional: hide scrollbars */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;     /* Firefox */
 }
