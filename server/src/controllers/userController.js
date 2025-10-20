@@ -16,37 +16,42 @@ const cookieOptions = {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    // Sanitize email
+    const sanitizedEmail = email.trim().toLowerCase();
+
     // 1. Find user WITH password
-    const user = await UserModel.findOne({ email }).select('+password');
+    const user = await UserModel.findOne({ email: sanitizedEmail }).select('+password');
+
+    // Always use same error message to prevent user enumeration
     if (!user) {
-      console.log("user not found");
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // 2. Debug password comparison
-    console.log('Comparing:', {
-      input: password,
-      stored: user.password,
-      match: await bcrypt.compare(password, user.password)
-    });
+    // 2. Compare passwords
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if (!(await bcrypt.compare(password, user.password))) {
+    if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // 3. Create token
+    // 3. Create token with 7 days expiry (matching cookie)
     const token = jwt.sign(
-      { id: user._id.toString() }, // Ensure string conversion
+      { id: user._id.toString() },
       process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: '7d' }
     );
 
     // 4. Set cookie
     res.cookie('token', token, cookieOptions);
 
     // 5. Send response (excluding password)
-    res.json({ 
+    res.json({
       user: {
         id: user._id,
         firstName: user.firstName,
@@ -56,7 +61,8 @@ export const login = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Login error:', error.message);
+    res.status(500).json({ message: 'An error occurred during login' });
   }
 };
 
@@ -66,38 +72,65 @@ export const signup = async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
 
-    // 1. check if user exists
-    const existingUser = await UserModel.findOne({email});
-    if (existingUser) {
+    // Validate input
+    if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists.'
-      })
+        message: 'All fields are required'
+      });
     }
 
-    // 2. hash password 
-    const hashedPassword = await bcrypt.hash(password, 12);
-    console.log('Hashed password:', hashedPassword); // Verify output
+    // Sanitize inputs
+    const sanitizedEmail = email.trim().toLowerCase();
+    const sanitizedFirstName = firstName.trim().charAt(0).toUpperCase() + firstName.trim().slice(1).toLowerCase();
+    const sanitizedLastName = lastName.trim().charAt(0).toUpperCase() + lastName.trim().slice(1).toLowerCase();
 
-    // 3. create user
+    // Validate password strength (min 8 chars, uppercase, number)
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters long'
+      });
+    }
+
+    if (!/(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must contain at least one uppercase letter and one number'
+      });
+    }
+
+    // 1. Check if user exists
+    const existingUser = await UserModel.findOne({ email: sanitizedEmail });
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: 'User already exists'
+      });
+    }
+
+    // 2. Hash password with consistent salt rounds
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // 3. Create user
     const user = await UserModel.create({
-      firstName,
-      lastName,
-      email,
+      firstName: sanitizedFirstName,
+      lastName: sanitizedLastName,
+      email: sanitizedEmail,
       password: hashedPassword,
     });
 
-     // Generate token
+    // 4. Generate token with 7 days expiry (matching cookie)
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
-      { expiresIn: '1d' } // Match cookie maxAge
+      { expiresIn: '7d' }
     );
 
-    // 5. set http-only cookie
+    // 5. Set http-only cookie
     res.cookie('token', token, cookieOptions);
 
-    // 6. send response (excluding password)
+    // 6. Send response (excluding password)
     res.status(201).json({
       success: true,
       data: {
@@ -112,9 +145,10 @@ export const signup = async (req, res) => {
     });
 
   } catch (error) {
+    console.error('Signup error:', error.message);
     res.status(400).json({
       success: false,
-      message: error.message,
+      message: 'An error occurred during signup',
     });
   }
 };
@@ -122,17 +156,16 @@ export const signup = async (req, res) => {
 // Logout Controller
 export const logout = (req, res) => {
   try {
-    // Remove the cookie without unnecessary options
+    // Clear cookie with matching options
     res.clearCookie('token', {
       httpOnly: true,
-      secure: 'lax',
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/'
     });
-    console.log('User logged out, cookie cleared');
     res.status(200).json({ message: 'Logged out successfully' });
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error('Logout error:', error.message);
     res.status(500).json({ message: 'Logout failed' });
   }
 };
@@ -158,48 +191,63 @@ export const getMe = async (req, res) => {
 // user password controller
 export const updatePassword = async (req, res) => {
   try {
-      // receive username and plaintext password from the settings page 
-      const {currentPassword, confirmPassword} = req.body
-      //currentPassword and confirmPassword are both unhashed, plaintext passwords
-      console.log("recieved token: ", req.user);
+      const { currentPassword, confirmPassword } = req.body;
+
+      // Validate input
+      if (!currentPassword || !confirmPassword) {
+          return res.status(400).json({ message: "Current password and new password are required" });
+      }
+
+      // Validate new password strength
+      if (confirmPassword.length < 8) {
+          return res.status(400).json({ message: "New password must be at least 8 characters long" });
+      }
+
+      if (!/(?=.*[A-Z])(?=.*\d)/.test(confirmPassword)) {
+          return res.status(400).json({
+              message: "New password must contain at least one uppercase letter and one number"
+          });
+      }
 
       const email = req.user.email;
-      console.log(email);
 
-      console.log("User entered old password:", currentPassword);
-      console.log("User entered new password:", confirmPassword);
-
-      // find if the user exists
-      const existingUser = await UserModel.findOne({ email: email });
-      console.log("Test User found with password", existingUser.password);
+      // Find user with password field
+      const existingUser = await UserModel.findOne({ email }).select('+password');
       if (!existingUser) {
-          return res.status(404).json({ message: "User not found." });
+          return res.status(404).json({ message: "User not found" });
       }
 
-      // Allow a user to change their password but first get them to enter their password
-      // Compare passwords -> if they enter the same password: continue, else: fail 
-      // compare hashed passwords 
-      const hashed_pw = existingUser.password;
-      const isMatch = await bcrypt.compare(currentPassword, hashed_pw)
-      
+      // Verify current password
+      const isMatch = await bcrypt.compare(currentPassword, existingUser.password);
+
       if (!isMatch) {
-          return res.status(401).json({ message: 'Incorrect Password.'})
+          return res.status(401).json({ message: 'Current password is incorrect' });
       }
 
-      // hash new password
-      const newHashedPassword = await bcrypt.hash(confirmPassword, 10);
+      // Check if new password is same as old password
+      const isSameAsOld = await bcrypt.compare(confirmPassword, existingUser.password);
+      if (isSameAsOld) {
+          return res.status(400).json({ message: 'New password must be different from current password' });
+      }
 
-      // update user password
-      //const updatedUser = await UserModel.findOneAndUpdate({email}, {password:newHashedPassword}, {new:true});
-      const updatedUser = await UserModel.findOne({email});
-      console.log(updatedUser);
+      // Hash new password with consistent salt rounds (12)
+      const newHashedPassword = await bcrypt.hash(confirmPassword, 12);
 
+      // Update user password - CRITICAL FIX: Actually save the password
+      const updatedUser = await UserModel.findOneAndUpdate(
+          { email },
+          { password: newHashedPassword },
+          { new: true }
+      ).select('-password');
 
-      res.status(200).json( { message: "User Updated.", user: updatedUser});
+      res.status(200).json({
+          message: "Password updated successfully",
+          user: updatedUser
+      });
 
   } catch (error) {
-      console.error(error);
-      res.status(400).json({ message: 'Server error', error });
+      console.error('Update password error:', error.message);
+      res.status(500).json({ message: 'Server error' });
   }
 };
 
