@@ -1,18 +1,19 @@
 /**
  * Sign up page with updated display to match login page.
  */
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Transition, Button } from '@headlessui/react';
+import { Button } from '@headlessui/react';
 import Textbox from '../components/Textbox';
 import logo from '../assets/logo.png';
-import toast from 'react-hot-toast'; // Import toast for success messages
+import toast from 'react-hot-toast';
 import { useSignupMutation } from '../redux/slices/userSlice.js';
 
 const Signup = () => {
     const navigate = useNavigate();
-    const [signup, { isLoading }] = useSignupMutation(); // Use the signup mutation hook
+    const [signup, { isLoading }] = useSignupMutation();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const {
         register,
@@ -20,14 +21,19 @@ const Signup = () => {
         formState: { errors },
         watch,
         reset
-    } = useForm(); // Use react-hook-form
+    } = useForm();
 
-    const password = watch("password", ""); // Watch password input
+    const password = watch("password", "");
 
-    // Handles form submission
-    const onSubmit = async (data) => {
+    // Debounced submit handler to prevent rapid submissions
+    const onSubmit = useCallback(async (data) => {
+        // Prevent multiple submissions
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
+
         try {
-            // Convert email, firstName, and lastName to lowercase
+            // Convert email, firstName, and lastName to proper format
             const userData = {
                 ...data,
                 email: data.email.toLowerCase(),
@@ -39,46 +45,40 @@ const Signup = () => {
             delete userData.confirmPassword;
 
             // Trigger the signup mutation
-            const result = await signup(userData).unwrap();
+            await signup(userData).unwrap();
 
             // Show success toast
-            toast.success("Account created successfully! Redirecting to login...", {
+            toast.success("Account created successfully! Redirecting to projects...", {
                 duration: 2000,
             });
 
             reset();
 
-            // Redirect after 2 seconds
+            // Redirect to projects after 2 seconds
             setTimeout(() => navigate('/projects'), 2000);
 
         } catch (error) {
-            // Enhanced error handling with toast notifications based on RTK Query error structure
+            console.error('Signup failed:', error);
+
+            // Enhanced error handling with specific messages
             if (error?.data) {
-                switch (error.data.status) {
-                    case 400:
-                        if (error.data?.message?.includes('already exists')) {
-                            toast.error("An account with this email already exists", "400");
-                        } else {
-                            toast.error("Invalid registration data. Please check your inputs.", "400");
-                        }
-                        break;
-                    case 409:
-                        toast.error("An account with this email already exists.", "409");
-                        break;
-                    case 500:
-                        toast.error("Server error. Please try again later.", "500");
-                        break;
-                    default:
-                        toast.error(`Registration failed: ${error.data.message}`, "error");
-                        break;
+                if (error.status === 409 || error.data?.message?.includes('already exists')) {
+                    toast.error("An account with this email already exists.");
+                } else if (error.status === 500) {
+                    toast.error("Server error. Please try again later.");
+                } else {
+                    toast.error(error.data?.message || "Registration failed. Please check your inputs.");
                 }
             } else if (error?.error) {
-                toast.error(`Network error: ${error.error}`, "network");
+                toast.error("Network error. Please check your connection.");
             } else {
-                toast.error("An unexpected error occurred.", "error");
+                toast.error("An unexpected error occurred.");
             }
+        } finally {
+            // Re-enable form after 1 second to prevent spam
+            setTimeout(() => setIsSubmitting(false), 1000);
         }
-    };
+    }, [isSubmitting, signup, navigate, reset]);
 
     return (
         <div className='w-full min-h-screen flex items-center justify-center flex-col lg:flex-row bg-[#F4F9F9]'>
@@ -140,8 +140,8 @@ const Signup = () => {
                                 register={register("email", {
                                     required: "Email required",
                                     pattern: {
-                                        value: /^[A-Z0-9._%+-]+@student\.monash\.edu$/i,
-                                        message: "Must be a valid Monash student email"
+                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                        message: "Invalid email address"
                                     }
                                 })}
                                 error={errors.email ? errors.email.message : ""}
@@ -181,16 +181,10 @@ const Signup = () => {
                             <Button
                                 type='submit'
                                 className='w-full h-9 bg-[var(--color-primary)] text-white rounded-full text-sm mt-1'
-                                disabled={isLoading} // Disable button while signing up
+                                disabled={isLoading || isSubmitting}
                             >
-                                {isLoading ? 'Signing Up...' : 'Sign Up'}
+                                {isLoading || isSubmitting ? 'Signing Up...' : 'Sign Up'}
                             </Button>
-
-                            {toast.success && (
-                                <div className="text-green-500 text-center text-xs mt-1">
-                                    {toast.success}
-                                </div>
-                            )}
 
                             <div className="text-center text-xs text-gray-600 mt-1">
                                 Already have an account?{' '}

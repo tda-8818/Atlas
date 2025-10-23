@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, Link } from 'react-router-dom';
-import { useLoginMutation, useGetCurrentUserQuery } from '../redux/slices/userSlice';
+import { useLoginMutation } from '../redux/slices/userSlice';
 import logo from '../assets/logo.png';
 import Textbox from '../components/Textbox';
 import { Button } from '@headlessui/react';
-import { showErrorToast } from '../components/errorToast.jsx'; 
+import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';
+
 const Login = () => {
   const {
     register,
@@ -16,23 +17,23 @@ const Login = () => {
 
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
-  //const { refetch } = useGetCurrentUserQuery(); // Add this if needed
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmit = async (data) => {
+  // Debounced submit handler to prevent rapid submissions
+  const onSubmit = useCallback(async (data) => {
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
     try {
       const loginData = {
         ...data,
         email: data.email.toLowerCase()
       };
 
-      console.log("Login attempt:", loginData);
-
-      // 1. Make login request
+      // Make login request
       const result = await login(loginData).unwrap();
-      console.log("Login response:", result);
-
-      // 2. Verify cookie was set
-      console.log('Document cookies:', document.cookie);
 
       // Show success toast
       toast.success("Login successful!", {
@@ -40,24 +41,19 @@ const Login = () => {
         position: "bottom-right"
       });
 
-      // 3. Redirect to home
+      // Redirect to projects
       navigate('/projects');
 
     } catch (err) {
       console.error('Login failed:', err);
-      
-      // Show error toast based on error status
-      if (err.status === 401) {
-        showErrorToast("Invalid email or password", "401");
-      } else if (err.status === 404) {
-        showErrorToast("Account not found", "404");
-      } else if (err.status === 400) {
-        showErrorToast(err.data?.message || "Invalid login data", "400");
-      } else {
-        showErrorToast(err.data?.message || "Login failed", err.status?.toString() || "error");
-      }
+
+      // Use generic error message for all authentication failures
+      showErrorToast("Invalid credentials", "error");
+    } finally {
+      // Re-enable form after 1 second to prevent spam
+      setTimeout(() => setIsSubmitting(false), 1000);
     }
-  };
+  }, [isSubmitting, login, navigate]);
 
   return (
     <div className='w-full min-h-screen flex items-center justify-center flex-col lg:flex-row bg-[#F4F9F9]'>
@@ -109,8 +105,8 @@ const Login = () => {
                 register={register("password", {
                   required: "Password is required!",
                   minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters"
+                    value: 8,
+                    message: "Password must be at least 8 characters"
                   }
                 })}
                 error={errors.password ? errors.password.message : ""}
@@ -118,11 +114,11 @@ const Login = () => {
 
               <Button
                 type='submit'
-                label={isLoading ? 'Logging in...' : 'Login'}
-                disabled={isLoading}
+                label={isLoading || isSubmitting ? 'Logging in...' : 'Login'}
+                disabled={isLoading || isSubmitting}
                 className='w-full h-10 bg-blue-700 text-white rounded-full'
               >
-                {isLoading ? 'Logging in...' : 'Login'}
+                {isLoading || isSubmitting ? 'Logging in...' : 'Login'}
               </Button>
 
               <div className="text-center mt-4 text-sm text-gray-600">
