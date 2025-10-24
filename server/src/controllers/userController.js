@@ -1,6 +1,11 @@
 import UserModel from '../models/UserModel.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import {
+  sendVerificationEmail,
+  generateVerificationToken,
+  hashToken
+} from '../utils/emailService.js';
 
 const cookieOptions = {
   httpOnly: true,
@@ -112,25 +117,44 @@ export const signup = async (req, res) => {
     // 2. Hash password with consistent salt rounds
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // 3. Create user
+    // 3. Generate verification token
+    const { token: verificationToken, hashedToken } = generateVerificationToken();
+
+    // 4. Create user with verification token
     const user = await UserModel.create({
       firstName: sanitizedFirstName,
       lastName: sanitizedLastName,
       email: sanitizedEmail,
       password: hashedPassword,
+      verificationToken: hashedToken,
+      verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      emailVerified: false
     });
 
-    // 4. Generate token with 7 days expiry (matching cookie)
-    const token = jwt.sign(
+    // 5. Send verification email (non-blocking)
+    try {
+      await sendVerificationEmail({
+        to: user.email,
+        userName: user.firstName,
+        verificationToken
+      });
+      console.log('Verification email sent to:', user.email);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError.message);
+      // Don't fail signup if email fails - user can resend later
+    }
+
+    // 6. Generate JWT token with 7 days expiry (matching cookie)
+    const authToken = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    // 5. Set http-only cookie
-    res.cookie('token', token, cookieOptions);
+    // 7. Set http-only cookie
+    res.cookie('token', authToken, cookieOptions);
 
-    // 6. Send response (excluding password)
+    // 8. Send response (excluding password)
     res.status(201).json({
       success: true,
       data: {
@@ -139,9 +163,11 @@ export const signup = async (req, res) => {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          profilePic: user.profilePic
+          profilePic: user.profilePic,
+          emailVerified: user.emailVerified
         },
       },
+      message: 'Account created successfully. Please check your email to verify your account.'
     });
 
   } catch (error) {
@@ -352,6 +378,89 @@ export const updateMe = async (req, res) => {
   }
 };
 
+// Verify email controller
+export const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      return res.status(400).json({ message: 'Verification token is required' });
+    }
+
+    // Hash the token to compare with stored hashed token
+    const hashedToken = hashToken(token);
+
+    // Find user with matching token and check expiry
+    const user = await UserModel.findOne({
+      verificationToken: hashedToken,
+      verificationTokenExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message: 'Invalid or expired verification token'
+      });
+    }
+
+    // Update user to verified status and clear token
+    user.emailVerified = true;
+    user.verificationToken = null;
+    user.verificationTokenExpiry = null;
+    await user.save();
+
+    res.status(200).json({
+      message: 'Email verified successfully',
+      success: true
+    });
+
+  } catch (error) {
+    console.error('Email verification error:', error.message);
+    res.status(500).json({ message: 'An error occurred during email verification' });
+  }
+};
+
+// Resend verification email controller
+export const resendVerificationEmail = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Find user
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.emailVerified) {
+      return res.status(400).json({ message: 'Email is already verified' });
+    }
+
+    // Generate new verification token
+    const { token, hashedToken } = generateVerificationToken();
+
+    // Set token expiry to 24 hours from now
+    user.verificationToken = hashedToken;
+    user.verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await user.save();
+
+    // Send verification email
+    await sendVerificationEmail({
+      to: user.email,
+      userName: user.firstName,
+      verificationToken: token
+    });
+
+    res.status(200).json({
+      message: 'Verification email sent successfully',
+      success: true
+    });
+
+  } catch (error) {
+    console.error('Resend verification email error:', error.message);
+    res.status(500).json({ message: 'Failed to send verification email' });
+  }
+};
+
 export default {
   login,
   signup,
@@ -360,5 +469,7 @@ export default {
   getAllUsers,
   updatePassword,
   updateProfilePicture,
-  updateMe
+  updateMe,
+  verifyEmail,
+  resendVerificationEmail
 };
