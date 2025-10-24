@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 import Presignup from "./pages/Presignup";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import VerifyEmail from "./pages/VerifyEmail";
 import Projects from "./pages/Projects.jsx";
 import Dashboard from "./pages/Dashboard";
 import Calendar from "./pages/Calendar";
@@ -89,6 +90,7 @@ function App() {
             <Route path="/" element={ isLoading ? ( null) : user ? (<Navigate to="/projects" replace />) : (<Presignup />)}/>
             <Route path="/login" element={!user ? <Login /> : <Navigate to="/projects" replace />} />
             <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/projects" replace />} />
+            <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
             {/* Protected Routes (Require Authentication) */}
             <Route path="/projects" element={user ? <Projects /> : <Navigate to="/" replace />} />
