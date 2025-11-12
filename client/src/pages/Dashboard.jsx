@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
 import StatBox from '../components/StatBox';
-import Navbar from '../components/Navbar';
 import UserAvatar from '../components/avatar/UserAvatar';
 import ProjectUsersModal from '../components/modals/ProjectUsersModal.jsx';
 import { useOutletContext } from 'react-router-dom';
@@ -175,11 +173,7 @@ const Dashboard = () => {
 
   return (
     <>
-      <Sidebar />
-      <div className="ml-[15%] w-[85%] min-h-screen bg-[var(--background-primary)]">
-        <Navbar project={currentProject} />
-
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 auto-rows-fr">
+        <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 sm:gap-6 auto-rows-fr">
           {/* Top Stats */}
           <div className="col-span-12 xl:col-span-4 flex ">
             <div className="h-full w-full flex items-center justify-center">
@@ -277,7 +271,6 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-      </div>
 
       <ProjectUsersModal
         show={isProjectUsersModalOpen}

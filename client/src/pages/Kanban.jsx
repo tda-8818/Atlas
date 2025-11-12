@@ -1,6 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AddTaskModal from '../components/modals/AddTaskModal';
 import { useOutletContext } from "react-router-dom";
@@ -672,14 +670,9 @@ const Kanban = () => {
 
 
   return (
-    <div>
-      <Sidebar />
-      <div className=" ml-[15%] w-[85%] h-[9vh] bg-[var(--background-primary)] text-[var(--text)]">
-        <Navbar project={currentProject} />
-      </div>
-      <div className="p-4 ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
-        {/* Kanban Board (Main DragDropContext) */}
-        <DragDropContext onDragEnd={onDragEnd}>
+    <div className="p-4 sm:p-6 bg-[var(--background-primary)] text-[var(--text)] h-full overflow-y-auto">
+      {/* Kanban Board (Main DragDropContext) */}
+      <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="all-columns" direction="horizontal" type="column">
             {(provided) => (
               <div
@@ -902,7 +895,6 @@ const Kanban = () => {
           initialValues={selectedCard}
         />
 
-      </div>
     </div>
   );
 };

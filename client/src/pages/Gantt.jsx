@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Navbar from '../components/Navbar';
 import GanttComp from '../components/GanttComp';
 import { useOutletContext } from "react-router-dom";
 import AddTaskModal from '../components/modals/AddTaskModal';
 import { gantt } from 'dhtmlx-gantt';
-import Sidebar from '../components/Sidebar';
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from '../redux/slices/taskSlice';
 import { useGetProjectTasksQuery, useGetProjectUsersQuery } from '../redux/slices/projectSlice';
 import ObjectId from 'bson-objectid'
@@ -439,38 +437,32 @@ const handleDeleteTaskFromPopup = async() =>{
   };
 
   return (
-    <div>
-      <Sidebar />
-      <div className="ml-[15%] w-[85%] h-[9vh] bg-[var(--background-primary)] text-[var(--text)]">
-        <Navbar project={currentProject} />
+    <div className="p-4 sm:p-6 bg-[var(--background-primary)] text-[var(--text)] h-full overflow-y-auto">
+      {/* Gantt Chart Component */}
+      <div className="w-full h-full">
+        <GanttComp
+          tasks={tasks} // Pass the tasks state
+          onAddTask={openAddTaskModal}
+          onEditTask={handleEditTask}
+          onGanttTaskUpdate={handleGanttTaskUpdate} // Handle updates from Gantt drag/resize
+          onGanttTaskDelete={handleGanttTaskDelete} // Handle deletes from Gantt
+          teamMembers={teamMembers} // Pass team members to GanttComp for column template
+        />
       </div>
-      <div className="p-4 font-sans ml-[15%] w-[85%] bg-[var(--background-primary)] text-[var(--text)] h-[91vh] overflow-y-auto">
-        {/* Gantt Chart Component */}
-        <div className="w-full h-full">
-          <GanttComp
-            tasks={tasks} // Pass the tasks state
-            onAddTask={openAddTaskModal}
-            onEditTask={handleEditTask}
-            onGanttTaskUpdate={handleGanttTaskUpdate} // Handle updates from Gantt drag/resize
-            onGanttTaskDelete={handleGanttTaskDelete} // Handle deletes from Gantt
-            teamMembers={teamMembers} // Pass team members to GanttComp for column template
-          />
-        </div>
 
-        {/* Complete Task Popup with all fields (without Headless UI) */}
-        {/* Render the popup based on showAddTaskModal state */}
-        {showAddTaskModal && (
-          <AddTaskModal
-            show={showAddTaskModal} // Pass the show state explicitly
-            onAddTask={handleSaveTaskFromPopup} // Use the save handler
-            onCancel={handleCancelPopup}
-            onEdit={handleEditTaskConfirm}
-            onDelete={handleDeleteTaskFromPopup}
-            teamMembers={teamMembers} // Pass team members to the popup
-            initialValues={editingTask} // Pass the task data when editing
-          />
-        )}
-      </div>
+      {/* Complete Task Popup with all fields (without Headless UI) */}
+      {/* Render the popup based on showAddTaskModal state */}
+      {showAddTaskModal && (
+        <AddTaskModal
+          show={showAddTaskModal} // Pass the show state explicitly
+          onAddTask={handleSaveTaskFromPopup} // Use the save handler
+          onCancel={handleCancelPopup}
+          onEdit={handleEditTaskConfirm}
+          onDelete={handleDeleteTaskFromPopup}
+          teamMembers={teamMembers} // Pass team members to the popup
+          initialValues={editingTask} // Pass the task data when editing
+        />
+      )}
     </div>
   );
 };

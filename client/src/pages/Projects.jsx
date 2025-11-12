@@ -168,7 +168,7 @@ const Projects = () => {
   return (
     <PageLayout title="Projects">
       {/* Header Section with Add Button */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-6">
         <div>
           <p className="text-[#546e7a] text-sm">
             {projectsLoading ? "Loading projects..." : `${projects.length} ${projects.length === 1 ? 'Project' : 'Projects'}`}
@@ -176,7 +176,7 @@ const Projects = () => {
         </div>
         <button
           onClick={handleAddProjectClick}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0b80c3] to-[#0d9ae6] text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+          className="flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-[#0b80c3] to-[#0d9ae6] text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 w-full sm:w-auto justify-center"
         >
           <MdAdd className="text-xl" />
           Add Project
@@ -192,23 +192,23 @@ const Projects = () => {
           </div>
         </div>
       ) : projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-64 bg-white/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-[#bbdefb]">
-          <div className="text-center px-6">
-            <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-[#f0f8ff] to-[#e3f2fd] rounded-full flex items-center justify-center">
-              <MdAdd className="text-4xl text-[#0b80c3]" />
+        <div className="flex flex-col items-center justify-center min-h-[300px] sm:h-64 bg-white/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-[#bbdefb] mx-auto max-w-2xl">
+          <div className="text-center px-6 py-8">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 bg-gradient-to-br from-[#f0f8ff] to-[#e3f2fd] rounded-full flex items-center justify-center">
+              <MdAdd className="text-3xl sm:text-4xl text-[#0b80c3]" />
             </div>
-            <h3 className="text-xl font-bold text-[#0b80c3] mb-2">No Projects Yet</h3>
-            <p className="text-[#546e7a] mb-6">Get started by creating your first project</p>
+            <h3 className="text-lg sm:text-xl font-bold text-[#0b80c3] mb-2">No Projects Yet</h3>
+            <p className="text-sm sm:text-base text-[#546e7a] mb-6">Get started by creating your first project</p>
             <button
               onClick={handleAddProjectClick}
-              className="px-6 py-3 bg-gradient-to-r from-[#0b80c3] to-[#0d9ae6] text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-[#0b80c3] to-[#0d9ae6] text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 w-full sm:w-auto"
             >
               Create Your First Project
             </button>
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {projects.map((project) => (
             <ProjectCard
               key={project.id}
