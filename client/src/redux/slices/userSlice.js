@@ -88,12 +88,18 @@ export const userApiSlice = createApi({
                 url: 'api/users/profile-pic',
                 method: 'PUT',
                 body: formData,
-                formData: true, 
+                formData: true,
             }),
             invalidatesTags: ['User'],
         }),
 
-        
+        resendVerificationEmail: builder.mutation({
+            query: () => ({
+                url: 'api/users/resend-verification',
+                method: 'POST',
+            }),
+        }),
+
     }),
 });
 
@@ -105,7 +111,8 @@ export const {
     useGetAllUsersQuery,
     useUpdatePasswordMutation,
     useUpdateProfilePicMutation,
-    useUpdateMeMutation
+    useUpdateMeMutation,
+    useResendVerificationEmailMutation
 
 } = userApiSlice;
 

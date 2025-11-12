@@ -54,7 +54,7 @@ const VerifyEmail = () => {
         {/* Logo */}
         <div className='flex flex-col items-center gap-4'>
           <img src={logo} alt="Logo" className="rounded-full w-24 h-24" />
-          <h1 className='text-4xl font-black text-[#1B4965]'>UniFlow</h1>
+          <h1 className='text-4xl font-black text-[#1B4965]'>Atlas</h1>
         </div>
 
         {/* Verification Card */}

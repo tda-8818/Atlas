@@ -11,6 +11,8 @@ RUN npm ci --prefer-offline --no-audit || npm install --prefer-offline --no-audi
 
 # Copy configuration and source files
 COPY vite.config.js ./
+COPY tailwind.config.js* ./
+COPY postcss.config.js* ./
 COPY eslint.config.js* ./
 COPY src ./src/
 COPY index.html ./
@@ -22,5 +24,5 @@ RUN npm run build
 # Expose port
 EXPOSE 4173
 
-# Start the preview server
-CMD ["npm", "run", "preview", "--", "--host"]
+# Start the preview server with host binding for Render
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0"]

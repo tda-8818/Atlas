@@ -4,7 +4,8 @@ import {
   useUpdateProfilePicMutation,
   useGetCurrentUserQuery,
   useUpdatePasswordMutation,
-  useUpdateMeMutation
+  useUpdateMeMutation,
+  useResendVerificationEmailMutation
 } from "../redux/slices/userSlice";
 import { showErrorToast } from "../components/errorToast";
 import toast from "react-hot-toast";
@@ -16,6 +17,7 @@ const Settings = ({ setTheme }) => {
   const [updateProfilePic, { isLoading: isUpdatingPic }] = useUpdateProfilePicMutation();
   const [updateUser, { isLoading: isUpdatingUser }] = useUpdateMeMutation(); // Destructure loading state for name/email
   const [updatePasswordMutation, { isLoading: isUpdatingPassword }] = useUpdatePasswordMutation();
+  const [resendVerificationEmail, { isLoading: isResendingVerification }] = useResendVerificationEmailMutation();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -102,7 +104,7 @@ const Settings = ({ setTheme }) => {
     }
 
     try {
-      const result = await updatePassword({ currentPassword, newPassword }).unwrap();
+      const result = await updatePasswordMutation({ currentPassword, confirmPassword }).unwrap();
       if (result?.message) {
         toast(result.message); // Show success message from backend if available
       } else {
@@ -114,6 +116,16 @@ const Settings = ({ setTheme }) => {
       setConfirmPassword('');
     } catch (err) {
       showErrorToast(err?.data?.message || "Failed to update password."); // Show error message from backend if available
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      const result = await resendVerificationEmail().unwrap();
+      toast.success(result.message || 'Verification email sent! Please check your inbox.');
+    } catch (err) {
+      console.error('Resend verification failed:', err);
+      showErrorToast(err?.data?.message || 'Failed to send verification email.');
     }
   };
 
@@ -213,6 +225,46 @@ const Settings = ({ setTheme }) => {
                   Save Name & Email
                 </button>
               </div>
+            </div>
+          </div>
+
+          <div className="bg-[var(--background)] rounded-2xl p-6 mb-12 shadow-sm">
+            <h2 className="text-xl font-semibold text-[var(--text)] mb-6">Email Verification</h2>
+
+            <div className="flex items-center justify-between p-4 bg-[var(--background-primary)] rounded-lg border border-[var(--border-color)]">
+              <div className="flex items-center gap-3">
+                {userData?.user?.emailVerified ? (
+                  <>
+                    <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p className="text-[var(--text)] font-semibold">Email Verified</p>
+                      <p className="text-sm text-gray-500">Your email address has been verified</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div>
+                      <p className="text-[var(--text)] font-semibold">Email Not Verified</p>
+                      <p className="text-sm text-gray-500">Please verify your email to enable collaboration features</p>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {!userData?.user?.emailVerified && (
+                <button
+                  onClick={handleResendVerification}
+                  disabled={isResendingVerification}
+                  className="bg-[#187cb4] hover:bg-[#12547a] text-white py-2 px-4 text-sm font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isResendingVerification ? 'Sending...' : 'Resend Verification Email'}
+                </button>
+              )}
             </div>
           </div>
 

@@ -9,6 +9,7 @@ import Textbox from '../components/Textbox';
 import logo from '../assets/logo.png';
 import toast from 'react-hot-toast';
 import { useSignupMutation } from '../redux/slices/userSlice.js';
+import { FaGoogle, FaGithub } from 'react-icons/fa';
 
 const Signup = () => {
     const navigate = useNavigate();
@@ -24,6 +25,15 @@ const Signup = () => {
     } = useForm();
 
     const password = watch("password", "");
+
+    // OAuth handlers
+    const handleGoogleSignup = () => {
+      window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/users/auth/google`;
+    };
+
+    const handleGithubSignup = () => {
+      window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/users/auth/github`;
+    };
 
     // Debounced submit handler to prevent rapid submissions
     const onSubmit = useCallback(async (data) => {
@@ -48,14 +58,14 @@ const Signup = () => {
             await signup(userData).unwrap();
 
             // Show success toast
-            toast.success("Account created successfully! Redirecting to projects...", {
-                duration: 2000,
+            toast.success("Account created successfully! Please check your email to verify your account.", {
+                duration: 3000,
             });
 
             reset();
 
-            // Redirect to projects after 2 seconds
-            setTimeout(() => navigate('/projects'), 2000);
+            // Redirect to projects immediately
+            navigate('/projects');
 
         } catch (error) {
             console.error('Signup failed:', error);
@@ -86,9 +96,9 @@ const Signup = () => {
                 {/* Left side - logo and app name */}
                 <div className='h-full w-full lg:w-2/3 flex flex-col items-center justify-center'>
                     <div className='w-full md:max-w-lg 2xl:max-w-3xl flex flex-col items-center justify-center gap-5 md:gap-y-10 2xl:-mt-20'>
-                        <img src={logo} alt="Logo" className="rounded-full w-32 h32" />
+                        <img src={logo} alt="Logo" className="rounded-full w-32 h-32" />
                         <p className='flex flex-col gap-0 md:gap-4 text-4xl md:text-6xl 2xl:text-7xl font-black text-center text-[#1B4965]'>
-                            <span>UniFlow</span>
+                            <span>Atlas</span>
                         </p>
                     </div>
                 </div>
@@ -97,15 +107,15 @@ const Signup = () => {
                 <div className='w-full md:w-1/3 p-4 md:p-1 flex flex-col justify-center items-center'>
                     <form
                         onSubmit={handleSubmit(onSubmit)}
-                        className='form-container w-full md:w-[400px] flex flex-col gap-y-5 bg-white px-10 pt-10 pb-10'
+                        className='form-container w-full md:w-[400px] flex flex-col gap-y-8 bg-white px-10 pt-14 pb-14'
                     >
-                        <div className='mb-2'>
-                            <p className='text-[#1B4965] text-2xl font-bold text-center'>
+                        <div className=''>
+                            <p className='text-[#1B4965] text-3xl font-bold text-center'>
                                 Sign Up
                             </p>
                         </div>
 
-                        <div className='flex flex-col gap-y-3'>
+                        <div className='flex flex-col gap-y-4'>
                             <div className='flex gap-x-2'>
                                 <div className='w-1/2'>
                                     <Textbox
@@ -180,13 +190,42 @@ const Signup = () => {
 
                             <Button
                                 type='submit'
-                                className='w-full h-9 bg-[var(--color-primary)] text-white rounded-full text-sm mt-1'
+                                className='w-full h-10 bg-[var(--color-primary)] text-white rounded-full'
                                 disabled={isLoading || isSubmitting}
                             >
                                 {isLoading || isSubmitting ? 'Signing Up...' : 'Sign Up'}
                             </Button>
 
-                            <div className="text-center text-xs text-gray-600 mt-1">
+                            {/* OAuth Buttons */}
+                            <div className="flex flex-col gap-2 mt-4">
+                                <div className="relative">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-gray-300" />
+                                    </div>
+                                    <div className="relative flex justify-center text-sm">
+                                        <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <Button
+                                        onClick={handleGoogleSignup}
+                                        className="flex-1 flex items-center justify-center gap-2 h-10 bg-white border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50"
+                                    >
+                                        <FaGoogle className="text-red-500" />
+                                        Google
+                                    </Button>
+                                    <Button
+                                        onClick={handleGithubSignup}
+                                        className="flex-1 flex items-center justify-center gap-2 h-10 bg-white border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50"
+                                    >
+                                        <FaGithub className="text-gray-900" />
+                                        GitHub
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="text-center mt-4 text-sm text-gray-600">
                                 Already have an account?{' '}
                                 <Link
                                     to="/login"

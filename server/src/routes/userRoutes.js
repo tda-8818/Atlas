@@ -9,11 +9,16 @@ import {
   updateMe,
   getAllUsers,
   verifyEmail,
-  resendVerificationEmail
+  resendVerificationEmail,
+  googleAuth,
+  googleAuthCallback,
+  githubAuth,
+  githubAuthCallback
 } from "../controllers/userController.js";
 import { uploadProfilePicture } from '../../utils/cloudinary.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import rateLimit from 'express-rate-limit';
+import passport from '../config/passport.js';
 
 const router = express.Router();
 
@@ -32,7 +37,8 @@ const emailLimiter = rateLimit({
 console.log('User routes loaded');  // Should appear when server starts
 // pass authMiddleware as an argument if you are wanting to deal with cookie data
 router.post('/login', authLimiter, login);
-router.post('/signup', authLimiter, signup);
+// Temporarily disabled rate limiter for debugging
+router.post('/signup', signup); // authLimiter removed for testing
 router.post('/logout', authMiddleware, logout);
 router.get('/me', authMiddleware, getMe);
 router.put('/profile-pic',authMiddleware,uploadProfilePicture.single('profilePic'),updateProfilePicture);
@@ -44,5 +50,10 @@ router.put('/', authMiddleware, updatePassword);
 router.get('/verify-email/:token', verifyEmail);
 router.post('/resend-verification', authMiddleware, emailLimiter, resendVerificationEmail);
 
+// OAuth routes
+router.get('/auth/google', googleAuth);
+router.get('/auth/google/callback', googleAuthCallback);
+router.get('/auth/github', githubAuth);
+router.get('/auth/github/callback', githubAuthCallback);
 
 export default router;

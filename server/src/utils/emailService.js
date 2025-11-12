@@ -1,7 +1,17 @@
 import { Resend } from 'resend';
 import crypto from 'crypto';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-load Resend client to ensure env vars are loaded
+let resend = null;
+const getResendClient = () => {
+  if (!resend) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY is not set in environment variables');
+    }
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+};
 
 /**
  * Generate a secure verification token
@@ -105,10 +115,10 @@ const getVerificationEmailTemplate = (verificationUrl, userName) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1>UniFlow</h1>
+          <h1>Atlas</h1>
         </div>
         <div class="content">
-          <h2>Welcome to UniFlow, ${userName}!</h2>
+          <h2>Welcome to Atlas, ${userName}!</h2>
           <p>Thanks for signing up! To get started, please verify your email address by clicking the button below:</p>
 
           <div style="text-align: center;">
@@ -119,11 +129,11 @@ const getVerificationEmailTemplate = (verificationUrl, userName) => {
           <p style="word-break: break-all; color: #6c757d; font-size: 14px;">${verificationUrl}</p>
 
           <div class="warning">
-            <strong>Note:</strong> This verification link will expire in 24 hours. If you didn't create an account with UniFlow, you can safely ignore this email.
+            <strong>Note:</strong> This verification link will expire in 24 hours. If you didn't create an account with Atlas, you can safely ignore this email.
           </div>
         </div>
         <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} UniFlow. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} Atlas. All rights reserved.</p>
           <p>This is an automated message, please do not reply to this email.</p>
         </div>
       </div>
@@ -214,7 +224,7 @@ const getPasswordResetEmailTemplate = (resetUrl, userName) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1>UniFlow</h1>
+          <h1>Atlas</h1>
         </div>
         <div class="content">
           <h2>Password Reset Request</h2>
@@ -233,7 +243,7 @@ const getPasswordResetEmailTemplate = (resetUrl, userName) => {
           </div>
         </div>
         <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} UniFlow. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} Atlas. All rights reserved.</p>
           <p>This is an automated message, please do not reply to this email.</p>
         </div>
       </div>
@@ -252,12 +262,13 @@ const getPasswordResetEmailTemplate = (resetUrl, userName) => {
  */
 export const sendVerificationEmail = async ({ to, userName, verificationToken }) => {
   const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+  const resendClient = getResendClient();
 
   try {
-    const data = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'UniFlow <onboarding@resend.dev>',
+    const data = await resendClient.emails.send({
+      from: process.env.EMAIL_FROM || 'Atlas <onboarding@resend.dev>',
       to: [to],
-      subject: 'Verify your email address - UniFlow',
+      subject: 'Verify your email address - Atlas',
       html: getVerificationEmailTemplate(verificationUrl, userName),
     });
 
@@ -279,12 +290,13 @@ export const sendVerificationEmail = async ({ to, userName, verificationToken })
  */
 export const sendPasswordResetEmail = async ({ to, userName, resetToken }) => {
   const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+  const resendClient = getResendClient();
 
   try {
-    const data = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'UniFlow <onboarding@resend.dev>',
+    const data = await resendClient.emails.send({
+      from: process.env.EMAIL_FROM || 'Atlas <onboarding@resend.dev>',
       to: [to],
-      subject: 'Reset your password - UniFlow',
+      subject: 'Reset your password - Atlas',
       html: getPasswordResetEmailTemplate(resetUrl, userName),
     });
 

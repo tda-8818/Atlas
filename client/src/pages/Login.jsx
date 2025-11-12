@@ -7,6 +7,7 @@ import Textbox from '../components/Textbox';
 import { Button } from '@headlessui/react';
 import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';
+import { FaGoogle, FaGithub } from 'react-icons/fa';
 
 const Login = () => {
   const {
@@ -18,6 +19,15 @@ const Login = () => {
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // OAuth handlers
+  const handleGoogleLogin = () => {
+    window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/users/auth/google`;
+  };
+
+  const handleGithubLogin = () => {
+    window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/users/auth/github`;
+  };
 
   // Debounced submit handler to prevent rapid submissions
   const onSubmit = useCallback(async (data) => {
@@ -61,9 +71,9 @@ const Login = () => {
         {/* Left side - unchanged */}
         <div className='h-full w-full lg:w-2/3 flex flex-col items-center justify-center'>
           <div className='w-full md:max-w-lg 2xl:max-w-3xl flex flex-col items-center justify-center gap-5 md:gap-y-10 2xl:-mt-20'>
-            <img src={logo} alt="Logo" className="rounded-full w-32 h32" />
+            <img src={logo} alt="Logo" className="rounded-full w-32 h-32" />
             <p className='flex flex-col gap-0 md:gap-4 text-4xl md:text-6xl 2xl:text-7xl font-black text-center text-[#1B4965]'>
-              <span>UniFlow</span>
+              <span>Atlas</span>
             </p>
           </div>
         </div>
@@ -116,16 +126,45 @@ const Login = () => {
                 type='submit'
                 label={isLoading || isSubmitting ? 'Logging in...' : 'Login'}
                 disabled={isLoading || isSubmitting}
-                className='w-full h-10 bg-blue-700 text-white rounded-full'
+                className='w-full h-10 bg-[var(--color-primary)] text-white rounded-full'
               >
                 {isLoading || isSubmitting ? 'Logging in...' : 'Login'}
               </Button>
+
+              {/* OAuth Buttons */}
+              <div className="flex flex-col gap-2 mt-4">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleGoogleLogin}
+                    className="flex-1 flex items-center justify-center gap-2 h-10 bg-white border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50"
+                  >
+                    <FaGoogle className="text-red-500" />
+                    Google
+                  </Button>
+                  <Button
+                    onClick={handleGithubLogin}
+                    className="flex-1 flex items-center justify-center gap-2 h-10 bg-white border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50"
+                  >
+                    <FaGithub className="text-gray-900" />
+                    GitHub
+                  </Button>
+                </div>
+              </div>
 
               <div className="text-center mt-4 text-sm text-gray-600">
                 Don't have an account?{' '}
                 <Link
                   to="/signup"
-                  className="text-blue-600 hover:underline font-medium"
+                  className="text-[var(--color-primary)] hover:underline font-medium"
                 >Sign Up</Link>
               </div>
             </div>

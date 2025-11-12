@@ -6,6 +6,7 @@ import {
   generateVerificationToken,
   hashToken
 } from '../utils/emailService.js';
+import passport from '../config/passport.js';
 
 const cookieOptions = {
   httpOnly: true,
@@ -75,10 +76,19 @@ export const login = async (req, res) => {
 // Signup controller
 export const signup = async (req, res) => {
   try {
+    console.log('Signup attempt:', {
+      body: req.body,
+      hasFirstName: !!req.body.firstName,
+      hasLastName: !!req.body.lastName,
+      hasEmail: !!req.body.email,
+      hasPassword: !!req.body.password
+    });
+
     const { firstName, lastName, email, password } = req.body;
 
     // Validate input
     if (!firstName || !lastName || !email || !password) {
+      console.log('Validation failed: Missing fields');
       return res.status(400).json({
         success: false,
         message: 'All fields are required'
@@ -171,10 +181,10 @@ export const signup = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Signup error:', error.message);
+    console.error('Signup error:', error);
     res.status(400).json({
       success: false,
-      message: 'An error occurred during signup',
+      message: error.message || 'An error occurred during signup',
     });
   }
 };
@@ -461,6 +471,78 @@ export const resendVerificationEmail = async (req, res) => {
   }
 };
 
+// Google OAuth handlers
+export const googleAuth = passport.authenticate('google', {
+  scope: ['profile', 'email']
+});
+
+export const googleAuthCallback = (req, res, next) => {
+  passport.authenticate('google', { failureRedirect: `${process.env.CLIENT_URL}/login` }, async (err, user) => {
+    if (err) {
+      console.error('Google auth error:', err);
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_failed`);
+    }
+
+    if (!user) {
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_failed`);
+    }
+
+    try {
+      // Generate JWT token
+      const token = jwt.sign(
+        { id: user._id.toString() },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      // Set cookie
+      res.cookie('token', token, cookieOptions);
+
+      // Redirect to projects
+      res.redirect(`${process.env.CLIENT_URL}/projects`);
+    } catch (error) {
+      console.error('Google auth callback error:', error);
+      res.redirect(`${process.env.CLIENT_URL}/login?error=token_generation_failed`);
+    }
+  })(req, res, next);
+};
+
+// GitHub OAuth handlers
+export const githubAuth = passport.authenticate('github', {
+  scope: ['user:email']
+});
+
+export const githubAuthCallback = (req, res, next) => {
+  passport.authenticate('github', { failureRedirect: `${process.env.CLIENT_URL}/login` }, async (err, user) => {
+    if (err) {
+      console.error('GitHub auth error:', err);
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_failed`);
+    }
+
+    if (!user) {
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_failed`);
+    }
+
+    try {
+      // Generate JWT token
+      const token = jwt.sign(
+        { id: user._id.toString() },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      // Set cookie
+      res.cookie('token', token, cookieOptions);
+
+      // Redirect to projects
+      res.redirect(`${process.env.CLIENT_URL}/projects`);
+    } catch (error) {
+      console.error('GitHub auth callback error:', error);
+      res.redirect(`${process.env.CLIENT_URL}/login?error=token_generation_failed`);
+    }
+  })(req, res, next);
+};
+
 export default {
   login,
   signup,
@@ -471,5 +553,9 @@ export default {
   updateProfilePicture,
   updateMe,
   verifyEmail,
-  resendVerificationEmail
+  resendVerificationEmail,
+  googleAuth,
+  googleAuthCallback,
+  githubAuth,
+  githubAuthCallback
 };

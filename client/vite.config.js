@@ -22,6 +22,14 @@ export default defineConfig(({ mode }) => {
       }
     },
     preview: {
+      host: true,
+      port: 4173,
+      strictPort: false,
+      allowedHosts: [
+        'atlas-gl63.onrender.com',
+        '.onrender.com',
+        'localhost'
+      ],
       proxy: {
         '/api': {
           target: apiTarget,

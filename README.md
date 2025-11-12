@@ -92,7 +92,7 @@ A modern task management application built with the MERN stack, featuring real-t
    # Server Configuration
    PORT=5001
    NODE_ENV=development
-   CLIENT_URL=http://localhost:3000
+   CLIENT_URL=http://localhost:5173
    SERVER_URL=http://localhost:5001
 
    # Email Service (Resend)
@@ -129,7 +129,7 @@ A modern task management application built with the MERN stack, featuring real-t
    ```
 
 5. **Access the application**
-   - Frontend: http://localhost:3000
+   - Frontend: http://localhost:5173 (Vite default port)
    - Backend: http://localhost:5001
 
 ---

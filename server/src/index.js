@@ -12,6 +12,8 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import WebSocketService from './middleware/websocketService.js'; // WebSocket service
 import http from 'http'; // HTTP module for creating a server
+import passport from './config/passport.js'; // Passport configuration
+import session from 'express-session'; // Session middleware for Passport
 
 // Load environment variables from .env (for local development) or use those provided by Render
 dotenv.config();
@@ -31,6 +33,23 @@ const clientUrl =  process.env.CLIENT_URL;
 // Express Middleware Setup
 app.use(express.json());
 app.use(cookieParser());
+
+// Session middleware for Passport
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-session-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(
   cors({
     origin: clientUrl, // Allow requests from the client URL defined in your environment

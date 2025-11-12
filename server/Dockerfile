@@ -21,4 +21,5 @@ COPY . .
 EXPOSE 5001
 
 # Start the application with the correct entry point
-CMD ["npm", "run", "dev"]
+# Use "start" for production, "dev" for development
+CMD ["npm", "start"]

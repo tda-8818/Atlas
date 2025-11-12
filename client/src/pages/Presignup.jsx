@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@headlessui/react';
-import LogoImage from '../assets/logoName.png';
+import logo from '../assets/logo.png';
 
 const Presignup = () => {
   const navigate = useNavigate();
@@ -9,8 +9,9 @@ const Presignup = () => {
   return (
     <div className="min-h-screen bg-white text-gray-800 overflow-x-hidden w-full bg-[radial-gradient(600px_circle_at_20%_80%,rgba(100,120,220,0.05)_0%,transparent_80%),radial-gradient(600px_circle_at_80%_20%,rgba(100,120,220,0.05)_0%,transparent_80%),repeating-radial-gradient(circle_at_center,rgba(100,120,220,0.03)_0px,rgba(100,120,220,0.03)_1px,transparent_1px,transparent_150px)] bg-no-repeat bg-center bg-cover">
       <header className="max-w-4xl mx-auto bg-white/80 rounded-xl backdrop-blur-sm flex justify-between items-center p-4 shadow-md relative z-10">
-        <div className="flex items-center">
-          <img src={LogoImage} alt="Uniflow" className="h-20 w-auto block max-w-none" />
+        <div className="flex items-center gap-3">
+          <img src={logo} alt="Atlas" className="h-16 w-16 rounded-full" />
+          <span className="text-3xl font-bold text-[#1B4965]">Atlas</span>
         </div>
         <div className="flex gap-4">
           <Button onClick={() => navigate('/signup')} className="bg-[var(--color-primary)] text-white py-3 px-6 rounded-md font-semibold border-none cursor-pointer font-sans transition-colors duration-300 text-base hover:bg-blue-500">
