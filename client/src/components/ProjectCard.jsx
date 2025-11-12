@@ -1,83 +1,116 @@
 // components/ProjectCard.jsx
-import React from "react";
+import React, { useMemo } from "react";
 import { useGetProjectTasksQuery } from "../redux/slices/projectSlice";
 import { calculateProgress, calculateDaysLeft, isProjectOwner } from "../utils/projectUtils";
 import UserAvatar from "./avatar/UserAvatar";
-import { LuClock } from "react-icons/lu";
+import { LuClock, LuTrash2 } from "react-icons/lu";
+import { MdOutlineFolderOpen } from "react-icons/md";
 import { useGetCurrentUserQuery } from "../redux/slices/userSlice";
 
 
 const ProjectCard = ({ project, users, onProjectClick, onRequestDelete }) => {
-  // Assume your getProjectTasks query takes a project ID as its argument.
-  const { data: tasks = [], isLoading: tasksLoading, isError: tasksError } =
-    useGetProjectTasksQuery(project.id);
+  const { data: tasks = [], isLoading: tasksLoading } = useGetProjectTasksQuery(project.id);
+  const { data: currentUser } = useGetCurrentUserQuery();
 
-  const {data: currentUser} = useGetCurrentUserQuery();
+  // Memoize expensive calculations
+  const progress = useMemo(() => {
+    return tasks && tasks.length > 0 ? calculateProgress(tasks) : 0;
+  }, [tasks]);
 
-  // Calculate progress if tasks are available.
-  const progress = tasks && tasks.length > 0 ? calculateProgress(tasks) : 0;
+  const daysLeft = useMemo(() => {
+    if (!project.startDate || !project.dueDate) return null;
+    return Math.max(0, calculateDaysLeft(project.startDate, project.dueDate));
+  }, [project.startDate, project.dueDate]);
+
+  const isOwner = useMemo(() => {
+    return isProjectOwner(currentUser?.user.id, project.owner);
+  }, [currentUser?.user.id, project.owner]);
+
+  // Determine progress bar color based on progress
+  const progressColor = useMemo(() => {
+    if (progress >= 75) return 'from-green-500 to-green-600';
+    if (progress >= 50) return 'from-[#0b80c3] to-[#0d9ae6]';
+    if (progress >= 25) return 'from-yellow-500 to-yellow-600';
+    return 'from-red-500 to-red-600';
+  }, [progress]);
 
   return (
     <div
-      className="relative bg-[var(--background)] rounded-2xl shadow-md p-5 w-[300px] cursor-pointer hover:shadow-lg transition-shadow duration-200"
+      className="relative bg-white/70 backdrop-blur-lg rounded-3xl shadow-lg border border-[#bbdefb]/50 p-6 cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group"
       onClick={() => onProjectClick(project)}
     >
       {/* Delete Button */}
-      {isProjectOwner(currentUser?.user.id, project.owner) && <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onRequestDelete(project);
-        }}
-        className="absolute p-1 top-2 right-2 text-gray-400 hover:text-red-500 cursor-pointer"
-        title="Delete Project"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-4 w-4"
-          viewBox="0 0 20 20"
-          fill="currentColor"
+      {isOwner && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRequestDelete(project);
+          }}
+          className="absolute top-4 right-4 p-2 rounded-full bg-white/80 text-[#546e7a] hover:bg-red-50 hover:text-red-500 transition-all duration-300 opacity-0 group-hover:opacity-100"
+          title="Delete Project"
         >
-          <path
-            fillRule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-            clipRule="evenodd"
-          />
-        </svg>
-      </button>}
+          <LuTrash2 className="w-4 h-4" />
+        </button>
+      )}
 
-      <div className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-lg font-semibold text-[var(--text)]">{project.title}</h2>
-          <p className="text-sm text-[var(--text-muted)] mt-1">{project.description}</p>
+      <div className="flex flex-col gap-4">
+        {/* Project Icon and Title */}
+        <div className="flex items-start gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0b80c3] to-[#0d9ae6] flex items-center justify-center shadow-md shrink-0">
+            <MdOutlineFolderOpen className="text-white text-2xl" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg font-bold text-[#0a1929] truncate group-hover:text-[#0b80c3] transition-colors duration-300">
+              {project.title}
+            </h2>
+            <p className="text-sm text-[#546e7a] line-clamp-2 mt-1">
+              {project.description || "No description"}
+            </p>
+          </div>
         </div>
 
-        <div>
-          <div className="flex justify-between items-center text-sm text-[var(--text)] mb-1">
-            <span>Progress</span>
-            <span>{tasksLoading ? "Loading..." : `${progress}%`}</span>
+        {/* Progress Section */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-[#546e7a] font-medium">Progress</span>
+            <span className="text-[#0a1929] font-bold">
+              {tasksLoading ? (
+                <span className="inline-block w-12 h-4 bg-gray-200 animate-pulse rounded"></span>
+              ) : (
+                `${progress}%`
+              )}
+            </span>
           </div>
-          <div className="w-full bg-[var(--background-primary)] h-2 rounded-full overflow-hidden">
+          <div className="w-full bg-[#e3f2fd] h-2.5 rounded-full overflow-hidden shadow-inner">
             <div
-              className="bg-[var(--color-primary)] h-2 rounded-full"
+              className={`h-2.5 rounded-full bg-gradient-to-r ${progressColor} transition-all duration-500 shadow-sm`}
               style={{ width: tasksLoading ? "0%" : `${progress}%` }}
             ></div>
           </div>
         </div>
 
-        <div className="flex justify-between items-center text-xs text-[var(--text)] mt-3">
-          <div className="flex items-center gap-1">
-            <LuClock />
-            <span>
-              {project.startDate && project.endDate
-                ? `${Math.max(0, calculateDaysLeft(project.startDate, project.endDate))} Days Left`
-                : "N/A"}
+        {/* Footer with Time and Users */}
+        <div className="flex justify-between items-center pt-2 border-t border-[#bbdefb]/30">
+          <div className="flex items-center gap-2 text-xs text-[#546e7a]">
+            <LuClock className="w-4 h-4" />
+            <span className="font-medium">
+              {daysLeft !== null ? `${daysLeft} Days Left` : "No deadline"}
             </span>
           </div>
-          <div className="flex -space-x-2">
+          <div className="flex items-center">
             {users && users.length > 0 ? (
-              users.map((user, i) => <UserAvatar key={i} user={user} size={6} />)
+              <div className="flex -space-x-2">
+                {users.slice(0, 3).map((user, i) => (
+                  <UserAvatar key={i} user={user} size={8} />
+                ))}
+                {users.length > 3 && (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0b80c3] to-[#0d9ae6] flex items-center justify-center text-[10px] text-white font-bold shadow-md border-2 border-white">
+                    +{users.length - 3}
+                  </div>
+                )}
+              </div>
             ) : (
-              <span className="text-xs text-gray-400">Loading...</span>
+              <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
             )}
           </div>
         </div>

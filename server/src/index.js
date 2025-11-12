@@ -34,7 +34,7 @@ const clientUrl =  process.env.CLIENT_URL;
 app.use(express.json());
 app.use(cookieParser());
 
-// Session middleware for Passport
+// Session middleware for Passport with extended expiry
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-session-secret',
   resave: false,
@@ -42,7 +42,8 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days to match JWT expiry
   }
 }));
 

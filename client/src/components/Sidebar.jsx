@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import logo from '../assets/logo.png';
 import { RxHome } from "react-icons/rx";
-import { useNavigate } from 'react-router-dom';
+import { MdOutlineFolderOpen } from "react-icons/md";
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useProjects } from '../contexts/ProjectsContext';
 
 const navItems = [
@@ -11,15 +12,33 @@ const navItems = [
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Use context to get projects data (instead of making another API call)
   const { projectsData = [] } = useProjects();
 
+  // Memoize sorted projects to avoid re-sorting on every render
+  const sortedProjects = useMemo(() => {
+    return [...projectsData].sort((a, b) =>
+      a.title.localeCompare(b.title)
+    );
+  }, [projectsData]);
+
+  // Check if current path matches navigation item
+  const isActivePath = useCallback((href) => {
+    return location.pathname === href;
+  }, [location.pathname]);
+
+  // Check if current project is active
+  const isActiveProject = useCallback((projectId) => {
+    return location.pathname.includes(`/projects/${projectId}`);
+  }, [location.pathname]);
+
   return (
     <nav className={`fixed top-0 left-0 h-full z-40 transition-all duration-300
-      bg-[var(--background)] border-r-2 border-[var(--border-color)] 
-      flex flex-col justify-between py-3 ${collapsed ? 'w-16' : 'w-[15%]'}`}>
-      
+      bg-[var(--background)] border-r-2 border-[var(--border-color)]
+      flex flex-col py-4 ${collapsed ? 'w-20' : 'w-64'}`}>
+
       {/* Logo */}
       <div className="px-5 mb-6 flex items-center gap-3 justify-between">
         {!collapsed ? (
@@ -50,42 +69,79 @@ const Sidebar = () => {
       </div>
 
       {/* Nav Links */}
-      <ul className="flex flex-col px-2 space-y-2">
-        {navItems.map(({ label, icon, href }) => (
-          <li key={label} className="w-full">
-            <a href={href} className="block w-full">
-              <button className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg
-                bg-[var(--background)] text-[var(--nav-text)]
-                hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)]
-                transition duration-200 cursor-pointer overflow-hidden">
-                <span className="text-xl shrink-0">{icon}</span>
-                {!collapsed && <span className="truncate min-w-0">{label}</span>}
-              </button>
-            </a>
-          </li>
-        ))}
+      <ul className="flex flex-col px-3 space-y-1 mb-4">
+        {navItems.map(({ label, icon, href }) => {
+          const isActive = isActivePath(href);
+          return (
+            <li key={label} className="w-full">
+              <a href={href} className="block w-full">
+                <button
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl
+                    transition-all duration-200 cursor-pointer overflow-hidden
+                    ${isActive
+                      ? 'bg-gradient-to-r from-[#0b80c3]/10 to-[#0d9ae6]/10 text-[#0b80c3] shadow-sm'
+                      : 'text-[var(--nav-text)] hover:bg-[#f0f8ff] hover:text-[#0b80c3]'
+                    }`}
+                >
+                  <span className={`text-xl shrink-0 ${isActive ? 'scale-110' : ''} transition-transform duration-200`}>
+                    {icon}
+                  </span>
+                  {!collapsed && <span className="truncate min-w-0 font-semibold">{label}</span>}
+                </button>
+              </a>
+            </li>
+          );
+        })}
       </ul>
 
-      {/* Project List */}
+      {/* Project List Header */}
       {!collapsed && (
-        <h2 className="px-4 pb-2 pt-4 text-sm font-bold text-[1rem] text-[var(--text)]">Your Projects</h2>
+        <div className="px-4 pb-3 flex items-center justify-between">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-[#546e7a]">
+            Your Projects ({sortedProjects.length})
+          </h2>
+        </div>
       )}
-      <ul className="flex-1 px-2 space-y-2 overflow-y-auto">
-        {projectsData.map((project) => (
-          <li key={project._id} className="w-full">
-            <button
-              onClick={() => navigate(`/projects/${project._id}/dashboard`)}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg
-                bg-[var(--background)] text-[var(--nav-text)]
-                hover:bg-[var(--nav-hover)] hover:text-[var(--text-hover)]
-                transition duration-200 cursor-pointer overflow-hidden"
-            >
-              <span className="truncate min-w-0">
-                {collapsed ? project.title[0] : project.title}
-              </span>
-            </button>
-          </li>
-        ))}
+
+      {/* Project List */}
+      <ul className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
+        {sortedProjects.length > 0 ? (
+          sortedProjects.map((project) => {
+            const isActive = isActiveProject(project._id);
+            return (
+              <li key={project._id} className="w-full">
+                <button
+                  onClick={() => navigate(`/projects/${project._id}/dashboard`)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl
+                    transition-all duration-200 cursor-pointer overflow-hidden group
+                    ${isActive
+                      ? 'bg-gradient-to-r from-[#0b80c3]/10 to-[#0d9ae6]/10 text-[#0b80c3] shadow-sm'
+                      : 'text-[var(--nav-text)] hover:bg-[#f0f8ff] hover:text-[#0b80c3]'
+                    }`}
+                  title={project.title}
+                >
+                  <MdOutlineFolderOpen className={`text-lg shrink-0 ${isActive ? 'text-[#0b80c3]' : 'text-[#546e7a]'} group-hover:text-[#0b80c3] transition-colors duration-200`} />
+                  {!collapsed && (
+                    <span className="truncate min-w-0">
+                      {project.title}
+                    </span>
+                  )}
+                  {collapsed && (
+                    <span className="text-xs font-bold">
+                      {project.title[0].toUpperCase()}
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })
+        ) : (
+          !collapsed && (
+            <li className="px-4 py-6 text-center">
+              <p className="text-xs text-[#546e7a]">No projects yet</p>
+            </li>
+          )
+        )}
       </ul>
     </nav>
   );

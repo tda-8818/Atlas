@@ -7,7 +7,8 @@ import Textbox from '../components/Textbox';
 import { Button } from '@headlessui/react';
 import { showErrorToast } from '../components/errorToast.jsx';
 import toast from 'react-hot-toast';
-import { FaGoogle, FaGithub } from 'react-icons/fa';
+import { FaGithub } from 'react-icons/fa';
+import { FcGoogle } from 'react-icons/fc';
 
 const Login = () => {
   const {
@@ -172,7 +173,7 @@ const Login = () => {
                     type="button"
                     className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border-2 border-[#bbdefb] text-[#546e7a] font-semibold rounded-full hover:border-[#0b80c3] hover:bg-[#f0f8ff] transition-all duration-300"
                   >
-                    <FaGoogle className="text-red-500 text-lg" />
+                    <FcGoogle className="text-xl" />
                     Google
                   </Button>
                   <Button

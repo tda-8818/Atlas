@@ -4,7 +4,7 @@ import { Button } from '@headlessui/react';
 import logo from '../assets/logo.png';
 import { FaChartLine, FaUsers, FaTasks, FaRocket } from 'react-icons/fa';
 
-const Presignup = () => {
+const Landing = () => {
   const navigate = useNavigate();
 
   return (
@@ -161,4 +161,4 @@ const Presignup = () => {
   );
 };
 
-export default Presignup;
+export default Landing;
