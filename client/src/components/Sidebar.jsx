@@ -21,13 +21,30 @@ const Sidebar = () => {
       flex flex-col justify-between py-3 ${collapsed ? 'w-16' : 'w-[15%]'}`}>
       
       {/* Logo */}
-      <div className="px-5 mb-6 flex items-center gap-2 justify-between">
-        {!collapsed && (
-          <a href="/projects" className="flex items-center gap-2 w-full overflow-hidden">
-            <img src={logo} alt="Logo" className="w-6 h-6 object-contain shrink-0" />
-            <h1 className="text-base font-extrabold text-[var(--text)] truncate min-w-0">
-              UniFlow
-            </h1>
+      <div className="px-5 mb-6 flex items-center gap-3 justify-between">
+        {!collapsed ? (
+          <a href="/projects" className="flex items-center gap-3 w-full overflow-hidden group transition-all duration-300">
+            <img
+              src={logo}
+              alt="Atlas Logo"
+              className="w-10 h-10 rounded-full object-cover shrink-0 shadow-md group-hover:shadow-lg transition-shadow duration-300"
+            />
+            <div className="flex flex-col justify-center min-w-0">
+              <h1 className="text-xl font-black bg-gradient-to-r from-[#0b80c3] to-[#0d9ae6] bg-clip-text text-transparent truncate leading-tight">
+                Atlas
+              </h1>
+              <p className="text-[10px] text-[#546e7a] font-medium truncate leading-tight">
+                Navigate & Conquer
+              </p>
+            </div>
+          </a>
+        ) : (
+          <a href="/projects" className="flex items-center justify-center w-full">
+            <img
+              src={logo}
+              alt="Atlas Logo"
+              className="w-10 h-10 rounded-full object-cover shadow-md hover:shadow-lg transition-shadow duration-300"
+            />
           </a>
         )}
       </div>

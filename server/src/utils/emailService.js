@@ -46,13 +46,13 @@ const getVerificationEmailTemplate = (verificationUrl, userName) => {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Verify Your Email</title>
+      <title>Verify Your Email - Atlas</title>
       <style>
         body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
           line-height: 1.6;
-          color: #333;
-          background-color: #F4F9F9;
+          color: #0a1929;
+          background: linear-gradient(135deg, #f0f8ff 0%, #ffffff 50%, #e3f2fd 100%);
           margin: 0;
           padding: 0;
         }
@@ -60,81 +60,128 @@ const getVerificationEmailTemplate = (verificationUrl, userName) => {
           max-width: 600px;
           margin: 40px auto;
           background-color: #ffffff;
-          border-radius: 8px;
+          border-radius: 16px;
           overflow: hidden;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          box-shadow: 0 10px 30px rgba(11, 128, 195, 0.1);
         }
         .header {
-          background-color: #1B4965;
+          background: linear-gradient(135deg, #0b80c3 0%, #0d9ae6 100%);
           color: #ffffff;
-          padding: 30px 20px;
+          padding: 40px 20px;
           text-align: center;
+        }
+        .logo {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          background-color: #ffffff;
+          margin: 0 auto 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 36px;
+          font-weight: bold;
+          color: #0b80c3;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .header h1 {
           margin: 0;
-          font-size: 28px;
+          font-size: 32px;
           font-weight: bold;
+        }
+        .header p {
+          margin: 8px 0 0 0;
+          font-size: 14px;
+          opacity: 0.9;
         }
         .content {
           padding: 40px 30px;
         }
         .content h2 {
-          color: #1B4965;
+          color: #0b80c3;
           margin-top: 0;
+          font-size: 24px;
+        }
+        .content p {
+          color: #546e7a;
+          font-size: 16px;
+        }
+        .button-container {
+          text-align: center;
+          margin: 30px 0;
         }
         .button {
           display: inline-block;
-          padding: 14px 32px;
-          background-color: #1B4965;
+          padding: 16px 40px;
+          background: linear-gradient(135deg, #0b80c3 0%, #0d9ae6 100%);
           color: #ffffff;
           text-decoration: none;
           border-radius: 50px;
           font-weight: 600;
-          margin: 20px 0;
+          font-size: 16px;
+          box-shadow: 0 4px 15px rgba(11, 128, 195, 0.3);
+          transition: transform 0.2s;
         }
         .button:hover {
-          background-color: #153a52;
+          transform: scale(1.05);
         }
-        .footer {
-          background-color: #f8f9fa;
-          padding: 20px;
-          text-align: center;
-          font-size: 12px;
-          color: #6c757d;
-          border-top: 1px solid #dee2e6;
+        .link-box {
+          background-color: #f0f8ff;
+          border: 2px dashed #bbdefb;
+          border-radius: 8px;
+          padding: 15px;
+          margin: 20px 0;
+          word-break: break-all;
+          font-size: 13px;
+          color: #546e7a;
         }
         .warning {
-          background-color: #fff3cd;
-          border-left: 4px solid #ffc107;
-          padding: 12px;
-          margin: 20px 0;
+          background-color: #e3f2fd;
+          border-left: 4px solid #0b80c3;
+          padding: 15px;
+          margin: 25px 0;
           font-size: 14px;
+          border-radius: 4px;
+        }
+        .footer {
+          background-color: #f0f8ff;
+          padding: 30px 20px;
+          text-align: center;
+          font-size: 13px;
+          color: #546e7a;
+          border-top: 1px solid #bbdefb;
+        }
+        .footer p {
+          margin: 5px 0;
         }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
+          <div class="logo">A</div>
           <h1>Atlas</h1>
+          <p>Navigate Your Work, Conquer Your Goals</p>
         </div>
         <div class="content">
           <h2>Welcome to Atlas, ${userName}!</h2>
-          <p>Thanks for signing up! To get started, please verify your email address by clicking the button below:</p>
+          <p>Thanks for signing up! We're excited to have you on board. To get started and unlock all features, please verify your email address by clicking the button below:</p>
 
-          <div style="text-align: center;">
+          <div class="button-container">
             <a href="${verificationUrl}" class="button">Verify Email Address</a>
           </div>
 
-          <p>Or copy and paste this link into your browser:</p>
-          <p style="word-break: break-all; color: #6c757d; font-size: 14px;">${verificationUrl}</p>
+          <p style="text-align: center; color: #546e7a; font-size: 14px;">Or copy and paste this link into your browser:</p>
+          <div class="link-box">${verificationUrl}</div>
 
           <div class="warning">
-            <strong>Note:</strong> This verification link will expire in 24 hours. If you didn't create an account with Atlas, you can safely ignore this email.
+            <strong style="color: #0b80c3;">Important:</strong> This verification link will expire in 24 hours. If you didn't create an account with Atlas, you can safely ignore this email.
           </div>
         </div>
         <div class="footer">
+          <p><strong>Atlas by TDA Consulting</strong></p>
           <p>&copy; ${new Date().getFullYear()} Atlas. All rights reserved.</p>
-          <p>This is an automated message, please do not reply to this email.</p>
+          <p style="margin-top: 15px; font-size: 12px;">This is an automated message, please do not reply to this email.</p>
         </div>
       </div>
     </body>
@@ -155,13 +202,13 @@ const getPasswordResetEmailTemplate = (resetUrl, userName) => {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Reset Your Password</title>
+      <title>Reset Your Password - Atlas</title>
       <style>
         body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
           line-height: 1.6;
-          color: #333;
-          background-color: #F4F9F9;
+          color: #0a1929;
+          background: linear-gradient(135deg, #f0f8ff 0%, #ffffff 50%, #e3f2fd 100%);
           margin: 0;
           padding: 0;
         }
@@ -169,82 +216,129 @@ const getPasswordResetEmailTemplate = (resetUrl, userName) => {
           max-width: 600px;
           margin: 40px auto;
           background-color: #ffffff;
-          border-radius: 8px;
+          border-radius: 16px;
           overflow: hidden;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          box-shadow: 0 10px 30px rgba(11, 128, 195, 0.1);
         }
         .header {
-          background-color: #1B4965;
+          background: linear-gradient(135deg, #0b80c3 0%, #0d9ae6 100%);
           color: #ffffff;
-          padding: 30px 20px;
+          padding: 40px 20px;
           text-align: center;
+        }
+        .logo {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          background-color: #ffffff;
+          margin: 0 auto 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 36px;
+          font-weight: bold;
+          color: #0b80c3;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .header h1 {
           margin: 0;
-          font-size: 28px;
+          font-size: 32px;
           font-weight: bold;
+        }
+        .header p {
+          margin: 8px 0 0 0;
+          font-size: 14px;
+          opacity: 0.9;
         }
         .content {
           padding: 40px 30px;
         }
         .content h2 {
-          color: #1B4965;
+          color: #0b80c3;
           margin-top: 0;
+          font-size: 24px;
+        }
+        .content p {
+          color: #546e7a;
+          font-size: 16px;
+        }
+        .button-container {
+          text-align: center;
+          margin: 30px 0;
         }
         .button {
           display: inline-block;
-          padding: 14px 32px;
-          background-color: #1B4965;
+          padding: 16px 40px;
+          background: linear-gradient(135deg, #0b80c3 0%, #0d9ae6 100%);
           color: #ffffff;
           text-decoration: none;
           border-radius: 50px;
           font-weight: 600;
-          margin: 20px 0;
+          font-size: 16px;
+          box-shadow: 0 4px 15px rgba(11, 128, 195, 0.3);
+          transition: transform 0.2s;
         }
         .button:hover {
-          background-color: #153a52;
+          transform: scale(1.05);
         }
-        .footer {
-          background-color: #f8f9fa;
-          padding: 20px;
-          text-align: center;
-          font-size: 12px;
-          color: #6c757d;
-          border-top: 1px solid #dee2e6;
+        .link-box {
+          background-color: #f0f8ff;
+          border: 2px dashed #bbdefb;
+          border-radius: 8px;
+          padding: 15px;
+          margin: 20px 0;
+          word-break: break-all;
+          font-size: 13px;
+          color: #546e7a;
         }
         .warning {
           background-color: #fff3cd;
           border-left: 4px solid #ffc107;
-          padding: 12px;
-          margin: 20px 0;
+          padding: 15px;
+          margin: 25px 0;
           font-size: 14px;
+          border-radius: 4px;
+        }
+        .footer {
+          background-color: #f0f8ff;
+          padding: 30px 20px;
+          text-align: center;
+          font-size: 13px;
+          color: #546e7a;
+          border-top: 1px solid #bbdefb;
+        }
+        .footer p {
+          margin: 5px 0;
         }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
+          <div class="logo">A</div>
           <h1>Atlas</h1>
+          <p>Navigate Your Work, Conquer Your Goals</p>
         </div>
         <div class="content">
           <h2>Password Reset Request</h2>
           <p>Hi ${userName},</p>
           <p>We received a request to reset your password. Click the button below to create a new password:</p>
 
-          <div style="text-align: center;">
+          <div class="button-container">
             <a href="${resetUrl}" class="button">Reset Password</a>
           </div>
 
-          <p>Or copy and paste this link into your browser:</p>
-          <p style="word-break: break-all; color: #6c757d; font-size: 14px;">${resetUrl}</p>
+          <p style="text-align: center; color: #546e7a; font-size: 14px;">Or copy and paste this link into your browser:</p>
+          <div class="link-box">${resetUrl}</div>
 
           <div class="warning">
-            <strong>Important:</strong> This password reset link will expire in 1 hour. If you didn't request a password reset, please ignore this email or contact support if you have concerns.
+            <strong style="color: #856404;">Important:</strong> This password reset link will expire in 1 hour. If you didn't request a password reset, please ignore this email or contact support if you have concerns.
           </div>
         </div>
         <div class="footer">
+          <p><strong>Atlas by TDA Consulting</strong></p>
           <p>&copy; ${new Date().getFullYear()} Atlas. All rights reserved.</p>
-          <p>This is an automated message, please do not reply to this email.</p>
+          <p style="margin-top: 15px; font-size: 12px;">This is an automated message, please do not reply to this email.</p>
         </div>
       </div>
     </body>

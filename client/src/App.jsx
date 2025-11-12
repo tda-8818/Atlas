@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import Presignup from "./pages/Presignup";
+import Landing from "./pages/Landing";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -62,13 +62,13 @@ function App() {
   // Add this effect to handle API errors with toast notifications
   useEffect(() => {
     if (isError && error) {
-      // Don't show error toasts for auth errors when on login or presignup page or when logging out
+      // Don't show error toasts for auth errors when on login or Landing page or when logging out
       const isAuthError = error?.status === 401;
       const isLoginPage = location.pathname === '/login';
       const isSignupPage = location.pathname === '/signup';
-      const isPresignupPage = location.pathname === '/';
+      const isLandingPage = location.pathname === '/';
 
-      if (!(isAuthError && (isLoginPage || isSignupPage || isPresignupPage || isLoggingOut.current))) {
+      if (!(isAuthError && (isLoginPage || isSignupPage || isLandingPage || isLoggingOut.current))) {
         handleApiError(error);
       }
     }
@@ -87,7 +87,7 @@ function App() {
         <ProjectsProvider>
           <Routes>
             {/* Public Routes */}
-            <Route path="/" element={ isLoading ? ( null) : user ? (<Navigate to="/projects" replace />) : (<Presignup />)}/>
+            <Route path="/" element={ isLoading ? ( null) : user ? (<Navigate to="/projects" replace />) : (<Landing />)}/>
             <Route path="/login" element={!user ? <Login /> : <Navigate to="/projects" replace />} />
             <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/projects" replace />} />
             <Route path="/verify-email/:token" element={<VerifyEmail />} />

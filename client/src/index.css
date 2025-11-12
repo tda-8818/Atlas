@@ -6,28 +6,39 @@
    ============================================ */
 
 @theme {
-  /* Extended Color Palette */
-  --color-primary: #3F84D1;
-  --color-primary-hover: #2E86C1;
-  --color-accent: #F1A7C2;
-  --color-accent-hover: #0f5b8c;
+  /* Extended Color Palette - Based on Logo Color #0b80c3 */
+  --color-primary: #0b80c3;           /* Main logo blue */
+  --color-primary-hover: #096ba8;     /* Darker blue for hover */
+  --color-primary-light: #0d9ae6;     /* Lighter blue */
+  --color-accent: #08a0f5;            /* Bright accent blue */
+  --color-accent-hover: #0873a8;      /* Darker accent */
+
+  /* Complementary Colors */
+  --color-secondary: #0a5f8f;         /* Deep blue for depth */
+  --color-tertiary: #5eb8e5;          /* Light blue for highlights */
+
+  /* Gradient Colors */
+  --gradient-start: #0b80c3;
+  --gradient-mid: #0d9ae6;
+  --gradient-end: #5eb8e5;
 
   /* Dark Mode Colors */
-  --color-bg-dark: #0F172A;
-  --color-bg-dark-primary: #080d17;
-  --color-bg-dark-elevated: #1A2332;
-  --color-bg-dark-input: #0F1621;
-  --color-border-dark: #1E293B;
-  --color-text-dark: #CBD5E1;
-  --color-text-dark-muted: #70757b;
+  --color-bg-dark: #0a1929;           /* Deep navy background */
+  --color-bg-dark-primary: #051219;   /* Darker navy */
+  --color-bg-dark-elevated: #132f45;  /* Elevated surfaces */
+  --color-bg-dark-input: #0d1f2d;     /* Input backgrounds */
+  --color-border-dark: #1a3a52;       /* Borders in dark mode */
+  --color-text-dark: #e3f2fd;         /* Light text for dark mode */
+  --color-text-dark-muted: #90caf9;   /* Muted text in dark mode */
 
   /* Light Mode Colors */
-  --color-bg-light: #FFFFFF;
-  --color-bg-light-secondary: #F5F5F5;
-  --color-bg-light-input: #F9FAFB;
-  --color-border-light: #E5E7EB;
-  --color-text-light: #1F2937;
-  --color-text-light-muted: #6B7280;
+  --color-bg-light: #FFFFFF;          /* Pure white */
+  --color-bg-light-secondary: #f0f8ff; /* Very light blue tint */
+  --color-bg-light-tertiary: #e3f2fd; /* Light blue background */
+  --color-bg-light-input: #f8fbfd;    /* Input backgrounds */
+  --color-border-light: #bbdefb;      /* Light blue borders */
+  --color-text-light: #0a1929;        /* Dark navy text */
+  --color-text-light-muted: #546e7a;  /* Muted text in light mode */
 }
 
 /* ============================================
@@ -66,7 +77,7 @@
   --accent-hover-color: var(--color-accent-hover);
 
   /* Specific Use Cases */
-  --today-active: light-dark(#F7F2D7, #094d75);
+  --today-active: light-dark(#e3f2fd, #0a5f8f);
 }
 
 /* ============================================

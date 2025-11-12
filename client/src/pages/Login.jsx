@@ -66,109 +66,138 @@ const Login = () => {
   }, [isSubmitting, login, navigate]);
 
   return (
-    <div className='w-full min-h-screen flex items-center justify-center flex-col lg:flex-row bg-[#F4F9F9]'>
-      <div className='w-full md:w-auto flex gap-0 md:gap-40 flex-col md:flex-row items-center justify-center'>
-        {/* Left side - unchanged */}
-        <div className='h-full w-full lg:w-2/3 flex flex-col items-center justify-center'>
-          <div className='w-full md:max-w-lg 2xl:max-w-3xl flex flex-col items-center justify-center gap-5 md:gap-y-10 2xl:-mt-20'>
-            <img src={logo} alt="Logo" className="rounded-full w-32 h-32" />
-            <p className='flex flex-col gap-0 md:gap-4 text-4xl md:text-6xl 2xl:text-7xl font-black text-center text-[#1B4965]'>
-              <span>Atlas</span>
-            </p>
+    <div className='w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0f8ff] via-white to-[#e3f2fd]'>
+      <div className='w-full max-w-6xl mx-auto px-6 flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-20'>
+        {/* Left side - Branding */}
+        <div className='flex-1 flex flex-col items-center lg:items-start justify-center text-center lg:text-left'>
+          <div className='flex flex-col items-center lg:items-start gap-6'>
+            <div className='flex items-center gap-4'>
+              <img src={logo} alt="Atlas Logo" className="rounded-full w-20 h-20 shadow-lg" />
+              <h1 className='text-5xl md:text-6xl font-black bg-gradient-to-r from-[#0b80c3] to-[#0d9ae6] bg-clip-text text-transparent'>
+                Atlas
+              </h1>
+            </div>
+            <div className='space-y-3'>
+              <h2 className='text-3xl md:text-4xl font-bold text-[#0b80c3]'>
+                Welcome Back
+              </h2>
+              <p className='text-lg text-[#546e7a] max-w-md'>
+                Log in to continue managing your projects and conquering your goals
+              </p>
+            </div>
+            <div className='mt-6'>
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 text-[#0b80c3] hover:text-[#0d9ae6] font-semibold transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Home
+              </Link>
+            </div>
           </div>
         </div>
 
-        {/* Right side - form with improved logic */}
-        <div className='w-full md:w-1/3 p-4 md:p-1 flex flex-col justify-center items-center'>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className='form-container w-full md:w-[400px] flex flex-col gap-y-8 bg-white px-10 pt-14 pb-14'
-          >
-            <div className=''>
-              <p className='text-[#1B4965] text-3xl font-bold text-center'>
-                Log In
-              </p>
-            </div>
+        {/* Right side - Login Form */}
+        <div className='w-full lg:w-auto flex justify-center'>
+          <div className='w-full max-w-md'>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className='bg-white/70 backdrop-blur-lg rounded-3xl shadow-2xl border border-[#bbdefb]/50 p-8 md:p-10'
+            >
+              <div className='mb-8'>
+                <h3 className='text-2xl font-bold text-[#0b80c3] text-center mb-2'>
+                  Log In
+                </h3>
+                <p className='text-sm text-[#546e7a] text-center'>
+                  Enter your credentials to access your account
+                </p>
+              </div>
 
-            <div className='flex flex-col gap-y-4'>
-              <Textbox
-                placeholder='email@example.com'
-                type='email'
-                name='email'
-                label='Email Address'
-                className='w-full rounded-full'
-                register={register("email", {
-                  required: "Email address is required!",
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Invalid email address"
-                  }
-                })}
-                error={errors.email ? errors.email.message : ""}
-              />
-              <Textbox
-                placeholder='Password'
-                type='password'
-                name='password'
-                label='Password'
-                className='w-full rounded-full'
-                register={register("password", {
-                  required: "Password is required!",
-                  minLength: {
-                    value: 8,
-                    message: "Password must be at least 8 characters"
-                  }
-                })}
-                error={errors.password ? errors.password.message : ""}
-              />
+              <div className='flex flex-col gap-5'>
+                <Textbox
+                  placeholder='email@example.com'
+                  type='email'
+                  name='email'
+                  label='Email Address'
+                  className='w-full rounded-full'
+                  register={register("email", {
+                    required: "Email address is required!",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address"
+                    }
+                  })}
+                  error={errors.email ? errors.email.message : ""}
+                />
+                <Textbox
+                  placeholder='Password'
+                  type='password'
+                  name='password'
+                  label='Password'
+                  className='w-full rounded-full'
+                  register={register("password", {
+                    required: "Password is required!",
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters"
+                    }
+                  })}
+                  error={errors.password ? errors.password.message : ""}
+                />
 
-              <Button
-                type='submit'
-                label={isLoading || isSubmitting ? 'Logging in...' : 'Login'}
-                disabled={isLoading || isSubmitting}
-                className='w-full h-10 bg-[var(--color-primary)] text-white rounded-full'
-              >
-                {isLoading || isSubmitting ? 'Logging in...' : 'Login'}
-              </Button>
+                <Button
+                  type='submit'
+                  disabled={isLoading || isSubmitting}
+                  className='w-full py-3 bg-gradient-to-r from-[#0b80c3] to-[#0d9ae6] text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
+                >
+                  {isLoading || isSubmitting ? 'Logging in...' : 'Log In'}
+                </Button>
 
-              {/* OAuth Buttons */}
-              <div className="flex flex-col gap-2 mt-4">
-                <div className="relative">
+                {/* Divider */}
+                <div className="relative my-2">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300" />
+                    <div className="w-full border-t border-[#bbdefb]" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                    <span className="px-3 bg-white/70 text-[#546e7a] font-medium">Or continue with</span>
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                {/* OAuth Buttons */}
+                <div className="flex gap-3">
                   <Button
                     onClick={handleGoogleLogin}
-                    className="flex-1 flex items-center justify-center gap-2 h-10 bg-white border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50"
+                    type="button"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border-2 border-[#bbdefb] text-[#546e7a] font-semibold rounded-full hover:border-[#0b80c3] hover:bg-[#f0f8ff] transition-all duration-300"
                   >
-                    <FaGoogle className="text-red-500" />
+                    <FaGoogle className="text-red-500 text-lg" />
                     Google
                   </Button>
                   <Button
                     onClick={handleGithubLogin}
-                    className="flex-1 flex items-center justify-center gap-2 h-10 bg-white border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50"
+                    type="button"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border-2 border-[#bbdefb] text-[#546e7a] font-semibold rounded-full hover:border-[#0b80c3] hover:bg-[#f0f8ff] transition-all duration-300"
                   >
-                    <FaGithub className="text-gray-900" />
+                    <FaGithub className="text-gray-900 text-lg" />
                     GitHub
                   </Button>
                 </div>
-              </div>
 
-              <div className="text-center mt-4 text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link
-                  to="/signup"
-                  className="text-[var(--color-primary)] hover:underline font-medium"
-                >Sign Up</Link>
+                {/* Sign Up Link */}
+                <div className="text-center mt-4 text-sm">
+                  <span className="text-[#546e7a]">Don't have an account? </span>
+                  <Link
+                    to="/signup"
+                    className="text-[#0b80c3] hover:text-[#0d9ae6] font-semibold hover:underline transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </div>

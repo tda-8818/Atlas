@@ -91,151 +91,182 @@ const Signup = () => {
     }, [isSubmitting, signup, navigate, reset]);
 
     return (
-        <div className='w-full min-h-screen flex items-center justify-center flex-col lg:flex-row bg-[#F4F9F9]'>
-            <div className='w-full md:w-auto flex gap-0 md:gap-40 flex-col md:flex-row items-center justify-center'>
-                {/* Left side - logo and app name */}
-                <div className='h-full w-full lg:w-2/3 flex flex-col items-center justify-center'>
-                    <div className='w-full md:max-w-lg 2xl:max-w-3xl flex flex-col items-center justify-center gap-5 md:gap-y-10 2xl:-mt-20'>
-                        <img src={logo} alt="Logo" className="rounded-full w-32 h-32" />
-                        <p className='flex flex-col gap-0 md:gap-4 text-4xl md:text-6xl 2xl:text-7xl font-black text-center text-[#1B4965]'>
-                            <span>Atlas</span>
-                        </p>
+        <div className='w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0f8ff] via-white to-[#e3f2fd]'>
+            <div className='w-full max-w-6xl mx-auto px-6 flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-20'>
+                {/* Left side - Branding */}
+                <div className='flex-1 flex flex-col items-center lg:items-start justify-center text-center lg:text-left'>
+                    <div className='flex flex-col items-center lg:items-start gap-6'>
+                        <div className='flex items-center gap-4'>
+                            <img src={logo} alt="Atlas Logo" className="rounded-full w-20 h-20 shadow-lg" />
+                            <h1 className='text-5xl md:text-6xl font-black bg-gradient-to-r from-[#0b80c3] to-[#0d9ae6] bg-clip-text text-transparent'>
+                                Atlas
+                            </h1>
+                        </div>
+                        <div className='space-y-3'>
+                            <h2 className='text-3xl md:text-4xl font-bold text-[#0b80c3]'>
+                                Start Your Journey
+                            </h2>
+                            <p className='text-lg text-[#546e7a] max-w-md'>
+                                Create your account and begin navigating your work to conquer your goals
+                            </p>
+                        </div>
+                        <div className='mt-6'>
+                            <Link
+                                to="/"
+                                className="inline-flex items-center gap-2 text-[#0b80c3] hover:text-[#0d9ae6] font-semibold transition-colors"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                Back to Home
+                            </Link>
+                        </div>
                     </div>
                 </div>
 
-                {/* Right side - form */}
-                <div className='w-full md:w-1/3 p-4 md:p-1 flex flex-col justify-center items-center'>
-                    <form
-                        onSubmit={handleSubmit(onSubmit)}
-                        className='form-container w-full md:w-[400px] flex flex-col gap-y-8 bg-white px-10 pt-14 pb-14'
-                    >
-                        <div className=''>
-                            <p className='text-[#1B4965] text-3xl font-bold text-center'>
-                                Sign Up
-                            </p>
-                        </div>
-
-                        <div className='flex flex-col gap-y-4'>
-                            <div className='flex gap-x-2'>
-                                <div className='w-1/2'>
-                                    <Textbox
-                                        placeholder='First Name'
-                                        type='text'
-                                        name='firstName'
-                                        register={register("firstName", {
-                                            required: "Required"
-                                        })}
-                                        error={errors.firstName ? errors.firstName.message : ""}
-                                        className='w-full rounded-full text-sm'
-                                    />
-                                </div>
-                                <div className='w-1/2'>
-                                    <Textbox
-                                        placeholder='Last Name'
-                                        type='text'
-                                        name='lastName'
-                                        register={register("lastName", {
-                                            required: "Required"
-                                        })}
-                                        error={errors.lastName ? errors.lastName.message : ""}
-                                        className='w-full rounded-full text-sm'
-                                    />
-                                </div>
+                {/* Right side - Signup Form */}
+                <div className='w-full lg:w-auto flex justify-center'>
+                    <div className='w-full max-w-md'>
+                        <form
+                            onSubmit={handleSubmit(onSubmit)}
+                            className='bg-white/70 backdrop-blur-lg rounded-3xl shadow-2xl border border-[#bbdefb]/50 p-8 md:p-10'
+                        >
+                            <div className='mb-8'>
+                                <h3 className='text-2xl font-bold text-[#0b80c3] text-center mb-2'>
+                                    Sign Up
+                                </h3>
+                                <p className='text-sm text-[#546e7a] text-center'>
+                                    Create your account to get started
+                                </p>
                             </div>
 
-                            <Textbox
-                                placeholder='Email'
-                                type='email'
-                                name='email'
-                                register={register("email", {
-                                    required: "Email required",
-                                    pattern: {
-                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                        message: "Invalid email address"
-                                    }
-                                })}
-                                error={errors.email ? errors.email.message : ""}
-                                className='w-full rounded-full text-sm'
-                            />
-
-                            <Textbox
-                                placeholder='Password'
-                                type='password'
-                                name='password'
-                                register={register("password", {
-                                    required: "Password required",
-                                    minLength: {
-                                        value: 8,
-                                        message: "Your password must be at least 8 characters long and include an uppercase letter and a number."
-                                    },
-                                    pattern: {
-                                        value: /^(?=.*[A-Z])(?=.*\d).+$/,
-                                        message: "Your password must contain at least one uppercase letter (A-Z) and one number (0-9)."
-                                    }
-                                })}
-                                error={errors.password ? errors.password.message : ""}
-                                className='w-full rounded-full text-sm'
-                            />
-
-                            <Textbox
-                                placeholder='Confirm Password'
-                                type='password'
-                                name='confirmPassword'
-                                register={register("confirmPassword", {
-                                    validate: (value) => value === password || 'Passwords do not match'
-                                })}
-                                error={errors.confirmPassword ? errors.confirmPassword.message : ""}
-                                className='w-full rounded-full text-sm'
-                            />
-
-                            <Button
-                                type='submit'
-                                className='w-full h-10 bg-[var(--color-primary)] text-white rounded-full'
-                                disabled={isLoading || isSubmitting}
-                            >
-                                {isLoading || isSubmitting ? 'Signing Up...' : 'Sign Up'}
-                            </Button>
-
-                            {/* OAuth Buttons */}
-                            <div className="flex flex-col gap-2 mt-4">
-                                <div className="relative">
-                                    <div className="absolute inset-0 flex items-center">
-                                        <div className="w-full border-t border-gray-300" />
+                            <div className='flex flex-col gap-5'>
+                                <div className='flex gap-3'>
+                                    <div className='flex-1'>
+                                        <Textbox
+                                            placeholder='First Name'
+                                            type='text'
+                                            name='firstName'
+                                            register={register("firstName", {
+                                                required: "Required"
+                                            })}
+                                            error={errors.firstName ? errors.firstName.message : ""}
+                                            className='w-full rounded-full'
+                                        />
                                     </div>
-                                    <div className="relative flex justify-center text-sm">
-                                        <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                                    <div className='flex-1'>
+                                        <Textbox
+                                            placeholder='Last Name'
+                                            type='text'
+                                            name='lastName'
+                                            register={register("lastName", {
+                                                required: "Required"
+                                            })}
+                                            error={errors.lastName ? errors.lastName.message : ""}
+                                            className='w-full rounded-full'
+                                        />
                                     </div>
                                 </div>
 
-                                <div className="flex gap-2">
+                                <Textbox
+                                    placeholder='email@example.com'
+                                    type='email'
+                                    name='email'
+                                    label='Email Address'
+                                    register={register("email", {
+                                        required: "Email required",
+                                        pattern: {
+                                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                            message: "Invalid email address"
+                                        }
+                                    })}
+                                    error={errors.email ? errors.email.message : ""}
+                                    className='w-full rounded-full'
+                                />
+
+                                <Textbox
+                                    placeholder='Password'
+                                    type='password'
+                                    name='password'
+                                    label='Password'
+                                    register={register("password", {
+                                        required: "Password required",
+                                        minLength: {
+                                            value: 8,
+                                            message: "Your password must be at least 8 characters long and include an uppercase letter and a number."
+                                        },
+                                        pattern: {
+                                            value: /^(?=.*[A-Z])(?=.*\d).+$/,
+                                            message: "Your password must contain at least one uppercase letter (A-Z) and one number (0-9)."
+                                        }
+                                    })}
+                                    error={errors.password ? errors.password.message : ""}
+                                    className='w-full rounded-full'
+                                />
+
+                                <Textbox
+                                    placeholder='Confirm Password'
+                                    type='password'
+                                    name='confirmPassword'
+                                    label='Confirm Password'
+                                    register={register("confirmPassword", {
+                                        validate: (value) => value === password || 'Passwords do not match'
+                                    })}
+                                    error={errors.confirmPassword ? errors.confirmPassword.message : ""}
+                                    className='w-full rounded-full'
+                                />
+
+                                <Button
+                                    type='submit'
+                                    className='w-full py-3 bg-gradient-to-r from-[#0b80c3] to-[#0d9ae6] text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
+                                    disabled={isLoading || isSubmitting}
+                                >
+                                    {isLoading || isSubmitting ? 'Signing Up...' : 'Sign Up'}
+                                </Button>
+
+                                {/* Divider */}
+                                <div className="relative my-2">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-[#bbdefb]" />
+                                    </div>
+                                    <div className="relative flex justify-center text-sm">
+                                        <span className="px-3 bg-white/70 text-[#546e7a] font-medium">Or continue with</span>
+                                    </div>
+                                </div>
+
+                                {/* OAuth Buttons */}
+                                <div className="flex gap-3">
                                     <Button
                                         onClick={handleGoogleSignup}
-                                        className="flex-1 flex items-center justify-center gap-2 h-10 bg-white border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50"
+                                        type="button"
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border-2 border-[#bbdefb] text-[#546e7a] font-semibold rounded-full hover:border-[#0b80c3] hover:bg-[#f0f8ff] transition-all duration-300"
                                     >
-                                        <FaGoogle className="text-red-500" />
+                                        <FaGoogle className="text-red-500 text-lg" />
                                         Google
                                     </Button>
                                     <Button
                                         onClick={handleGithubSignup}
-                                        className="flex-1 flex items-center justify-center gap-2 h-10 bg-white border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50"
+                                        type="button"
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border-2 border-[#bbdefb] text-[#546e7a] font-semibold rounded-full hover:border-[#0b80c3] hover:bg-[#f0f8ff] transition-all duration-300"
                                     >
-                                        <FaGithub className="text-gray-900" />
+                                        <FaGithub className="text-gray-900 text-lg" />
                                         GitHub
                                     </Button>
                                 </div>
-                            </div>
 
-                            <div className="text-center mt-4 text-sm text-gray-600">
-                                Already have an account?{' '}
-                                <Link
-                                    to="/login"
-                                    className="text-[var(--color-primary)] hover:underline font-medium"
-                                >
-                                    Login
-                                </Link>
+                                {/* Login Link */}
+                                <div className="text-center mt-4 text-sm">
+                                    <span className="text-[#546e7a]">Already have an account? </span>
+                                    <Link
+                                        to="/login"
+                                        className="text-[#0b80c3] hover:text-[#0d9ae6] font-semibold hover:underline transition-colors"
+                                    >
+                                        Log In
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

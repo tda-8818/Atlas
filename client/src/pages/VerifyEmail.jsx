@@ -49,23 +49,26 @@ const VerifyEmail = () => {
   }, [token, navigate]);
 
   return (
-    <div className='w-full min-h-screen flex items-center justify-center flex-col bg-[#F4F9F9]'>
+    <div className='w-full min-h-screen flex items-center justify-center flex-col bg-gradient-to-br from-[#f0f8ff] via-white to-[#e3f2fd]'>
       <div className='w-full md:max-w-md flex flex-col items-center justify-center gap-8 p-8'>
         {/* Logo */}
         <div className='flex flex-col items-center gap-4'>
-          <img src={logo} alt="Logo" className="rounded-full w-24 h-24" />
-          <h1 className='text-4xl font-black text-[#1B4965]'>Atlas</h1>
+          <img src={logo} alt="Atlas Logo" className="rounded-full w-24 h-24 shadow-lg" />
+          <h1 className='text-4xl font-black bg-gradient-to-r from-[#0b80c3] to-[#0d9ae6] bg-clip-text text-transparent'>
+            Atlas
+          </h1>
+          <p className='text-sm text-[#546e7a] font-medium'>Navigate Your Work, Conquer Your Goals</p>
         </div>
 
         {/* Verification Card */}
-        <div className='w-full bg-white rounded-lg shadow-md p-8'>
+        <div className='w-full bg-white/70 backdrop-blur-lg rounded-3xl shadow-2xl border border-[#bbdefb]/50 p-8'>
           {status === 'verifying' && (
             <div className='text-center'>
               <div className='flex justify-center mb-4'>
-                <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-[#1B4965]'></div>
+                <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-[#0b80c3]'></div>
               </div>
-              <h2 className='text-2xl font-bold text-[#1B4965] mb-2'>Verifying your email...</h2>
-              <p className='text-gray-600'>Please wait while we verify your email address.</p>
+              <h2 className='text-2xl font-bold text-[#0b80c3] mb-2'>Verifying your email...</h2>
+              <p className='text-[#546e7a]'>Please wait while we verify your email address.</p>
             </div>
           )}
 
@@ -77,8 +80,8 @@ const VerifyEmail = () => {
                 </svg>
               </div>
               <h2 className='text-2xl font-bold text-green-600 mb-2'>Email Verified!</h2>
-              <p className='text-gray-600 mb-4'>{message}</p>
-              <p className='text-sm text-gray-500'>Redirecting you to your projects...</p>
+              <p className='text-[#546e7a] mb-4'>{message}</p>
+              <p className='text-sm text-[#546e7a]'>Redirecting you to your projects...</p>
             </div>
           )}
 
@@ -90,18 +93,12 @@ const VerifyEmail = () => {
                 </svg>
               </div>
               <h2 className='text-2xl font-bold text-red-600 mb-2'>Verification Failed</h2>
-              <p className='text-gray-600 mb-6'>{message}</p>
+              <p className='text-[#546e7a] mb-6'>{message}</p>
 
               <div className='flex flex-col gap-3'>
                 <Link
-                  to='/projects'
-                  className='w-full py-2 px-4 bg-[#1B4965] text-white rounded-full hover:bg-[#153a52] transition-colors text-center font-semibold'
-                >
-                  Go to Projects
-                </Link>
-                <Link
                   to='/login'
-                  className='w-full py-2 px-4 border border-[#1B4965] text-[#1B4965] rounded-full hover:bg-gray-50 transition-colors text-center font-semibold'
+                  className='w-full py-3 bg-gradient-to-r from-[#0b80c3] to-[#0d9ae6] text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-center'
                 >
                   Back to Login
                 </Link>
@@ -112,8 +109,8 @@ const VerifyEmail = () => {
 
         {/* Help Text */}
         {status === 'error' && (
-          <div className='text-center text-sm text-gray-600'>
-            <p>Need help? Contact support or try requesting a new verification email from your account settings.</p>
+          <div className='text-center text-sm text-[#546e7a] bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-[#bbdefb]/30'>
+            <p>Need help? Contact support or try requesting a new verification email after logging in.</p>
           </div>
         )}
       </div>
