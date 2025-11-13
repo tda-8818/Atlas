@@ -53,25 +53,27 @@ const Modal = ({
             leaveTo="opacity-0 scale-95 translate-y-4"
           >
             <DialogPanel
-              className={`mx-auto ${sizeClasses[size]} w-full p-6 my-8 overflow-hidden text-left align-middle transition-all transform border-2 border-[var(--border-color)] shadow-2xl rounded-lg ring-4 ring-black/5`}
+              className={`mx-auto ${sizeClasses[size]} w-full my-8 text-left align-middle transition-all transform border-2 border-[var(--border-color)] shadow-2xl rounded-lg ring-4 ring-black/5 flex flex-col max-h-[90vh]`}
               style={{
                 backgroundColor: 'var(--background-modal)',
                 opacity: 1
               }}
             >
-              <DialogTitle
-                as="h3"
-                className="text-xl font-semibold leading-6 text-[var(--text)] mb-1"
-              >
-                {title}
-              </DialogTitle>
-              <div className="w-12 h-1 bg-[var(--color-primary)] rounded-full mb-6"></div>
+              <div className="p-6 pb-4">
+                <DialogTitle
+                  as="h3"
+                  className="text-xl font-semibold leading-6 text-[var(--text)] mb-1"
+                >
+                  {title}
+                </DialogTitle>
+                <div className="w-12 h-1 bg-[var(--color-primary)] rounded-full mb-6"></div>
+              </div>
 
-              <div className="mt-4">
+              <div className="px-6 overflow-y-auto flex-1">
                 {children}
               </div>
 
-              <div className="flex justify-between items-center gap-3 mt-8 pt-4 border-t border-[var(--border-color)]">
+              <div className="flex justify-between items-center gap-3 p-6 pt-4 border-t border-[var(--border-color)]">
                 {showDelete ? (
                   <button
                     type="button"

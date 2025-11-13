@@ -5,6 +5,7 @@ import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation, useCreateSubTaskMutation } from "../redux/slices/taskSlice";
 import { useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation, useGetProjectUsersQuery } from "../redux/slices/projectSlice";
 import { TaskTypeIcon, getTaskTypeConfig } from '../utils/taskTypeUtils';
+import UserAvatar from '../components/avatar/UserAvatar';
 
 // Define priority levels
 const priorityLevels = ['none', '!', '!!', '!!!'];
@@ -839,10 +840,10 @@ const Kanban = () => {
                                           {/* Subtask counter */}
                                           {card.subtasks && card.subtasks.length > 0 && (
                                             <div className={`text-xs rounded-full px-1.5 py-0.5 flex items-center ${
-                                              card.subtasks.filter(st => st.completed).length === card.subtasks.length 
-                                                ? 'bg-green-100 text-green-800' 
-                                                : (card.subtasks.filter(st => st.completed).length > 0 
-                                                  ? 'bg-orange-100 text-orange-800' 
+                                              card.subtasks.filter(st => st.completed).length === card.subtasks.length
+                                                ? 'bg-green-100 text-green-800'
+                                                : (card.subtasks.filter(st => st.completed).length > 0
+                                                  ? 'bg-orange-100 text-orange-800'
                                                   : 'bg-gray-100 text-gray-600')
                                             }`}>
                                               {card.subtasks.filter(st => st.completed).length === card.subtasks.length && (
@@ -853,20 +854,24 @@ const Kanban = () => {
                                               {card.subtasks.filter(st => st.completed).length}/{card.subtasks.length}
                                             </div>
                                           )}
-                                          
+
                                           {/* Assigned User Avatars */}
-                                          {/* <MultiAvatar assignedUsers={card.assignedTo} /> */}
+                                          {card.assignedTo && card.assignedTo.length > 0 && (
+                                            <div className="flex -space-x-2">
+                                              {card.assignedTo.slice(0, 3).map((user, idx) => (
+                                                <div key={user._id || idx} className="relative">
+                                                  <UserAvatar user={user} size={6} />
+                                                </div>
+                                              ))}
+                                              {card.assignedTo.length > 3 && (
+                                                <div className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
+                                                  <span className="text-xs font-medium text-gray-600">+{card.assignedTo.length - 3}</span>
+                                                </div>
+                                              )}
+                                            </div>
+                                          )}
                                         </div>
                                       </div>
-
-                                      <button
-                                        onClick={(e) => deleteCard(columnIndex, cardIndex, e)}
-                                        className="absolute top-1 right-1 text-gray-400 hover:text-red-500 transition-colors"
-                                      >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                        </svg>
-                                      </button>
                                     </div>
                                   )}
                                 </Draggable>

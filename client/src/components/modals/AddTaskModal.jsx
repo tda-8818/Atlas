@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useGetSubTasksQuery, useCreateSubTaskMutation, useDeleteSubTaskMutation, useUpdateSubTaskMutation } from '../../redux/slices/taskSlice';
 import Modal from './Modal';
 import LabelPicker from '../LabelPicker';
+import UserAvatar from '../avatar/UserAvatar';
 import { TASK_TYPES, STORY_POINTS_OPTIONS, TaskTypeIcon } from '../../utils/taskTypeUtils';
 
 // Define priority levels
@@ -27,10 +28,6 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
 
   const [showMemberSearch, setShowMemberSearch] = useState(false);
   const [searchMember, setSearchMember] = useState("");
-
-  // State for collapsible sections
-  const [isDescriptionCollapsed, setIsDescriptionCollapsed] = useState(true);
-  const [isSubtasksCollapsed, setIsSubtasksCollapsed] = useState(true);
 
   const [createSubTask] = useCreateSubTaskMutation();
   const [deleteSubTask] = useDeleteSubTaskMutation();
@@ -62,8 +59,6 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
         setStoryPoints(initialValues.storyPoints || 0);
         setLabels(initialValues.labels || []);
         setIsEditing(true);
-        setIsDescriptionCollapsed(!initialValues.description);
-        setIsSubtasksCollapsed(!initialValues.subtasks?.length);
       } else {
         // We're creating a new task
         setTitle('');
@@ -78,8 +73,6 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
         setStoryPoints(0);
         setLabels([]);
         setIsEditing(false);
-        setIsDescriptionCollapsed(true);
-        setIsSubtasksCollapsed(true);
       }
 
       setNewSubtaskTitle('');
@@ -208,7 +201,6 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
     // Add to local state (for both new and existing tasks)
     setSubtasks([...subtasks, { ...newSubtask, id: Date.now() }]); // Temporary ID for new tasks
     setNewSubtaskTitle('');
-    setIsSubtasksCollapsed(false);
   };
 
   const deleteSubtask = async (subtaskId) => {
@@ -322,17 +314,32 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
         )}
       </div>
 
-      {/* Task Type and Story Points Row */}
-      <div className="mb-6 grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="taskType" className="block text-sm font-medium text-[var(--text)] mb-2">
-            Type
-          </label>
+      {/* Status and Type Row */}
+      <div className="mb-6 flex items-center justify-between gap-4 p-4 bg-[var(--background-primary)] border border-[var(--border-color-accent)] rounded-lg">
+        {/* Completion Button */}
+        <button
+          type="button"
+          onClick={() => setIsCompleted(!isCompleted)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            isCompleted
+              ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20 border border-green-500/30'
+              : 'bg-gray-500/10 text-gray-600 hover:bg-gray-500/20 border border-gray-500/30'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+          <span className="text-sm">{isCompleted ? 'Completed' : 'Not completed'}</span>
+        </button>
+
+        {/* Task Type Selector */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-[var(--text-muted)]">Type:</span>
           <select
             id="taskType"
             value={taskType}
             onChange={(e) => setTaskType(e.target.value)}
-            className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
+            className="px-3 py-1.5 bg-[var(--background)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all duration-200 text-sm"
           >
             {Object.values(TASK_TYPES).map(type => (
               <option key={type.value} value={type.value}>
@@ -340,6 +347,45 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
               </option>
             ))}
           </select>
+        </div>
+      </div>
+
+      {/* Priority and Story Points Row */}
+      <div className="mb-6 grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-[var(--text)] mb-2">
+            Priority
+          </label>
+          <div className="flex gap-2">
+            {priorityLevels.map(level => {
+              const colors = {
+                'none': 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200',
+                '!': 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200',
+                '!!': 'bg-orange-100 text-orange-700 border-orange-300 hover:bg-orange-200',
+                '!!!': 'bg-red-100 text-red-700 border-red-300 hover:bg-red-200'
+              };
+
+              const selectedColors = {
+                'none': 'bg-gray-500 text-white border-gray-600',
+                '!': 'bg-blue-600 text-white border-blue-700',
+                '!!': 'bg-orange-600 text-white border-orange-700',
+                '!!!': 'bg-red-600 text-white border-red-700'
+              };
+
+              return (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setPriority(level)}
+                  className={`flex-1 px-3 py-2 text-xs font-semibold rounded-lg border-2 transition-all duration-200 ${
+                    priority === level ? selectedColors[level] : colors[level]
+                  }`}
+                >
+                  {level === 'none' ? 'None' : level}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div>
@@ -350,7 +396,7 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
             id="storyPoints"
             value={storyPoints}
             onChange={(e) => setStoryPoints(Number(e.target.value))}
-            className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
+            className="w-full px-4 py-2 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
           >
             {STORY_POINTS_OPTIONS.map(points => (
               <option key={points} value={points}>
@@ -358,45 +404,6 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
               </option>
             ))}
           </select>
-        </div>
-      </div>
-
-      {/* Priority and Completion Row */}
-      <div className="mb-6 grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="taskPriority" className="block text-sm font-medium text-[var(--text)] mb-2">
-            Priority
-          </label>
-          <select
-            id="taskPriority"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-            className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
-          >
-            {priorityLevels.map(level => (
-              <option key={level} value={level}>
-                {level === 'none' ? 'None' : level}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="completed" className="block text-sm font-medium text-[var(--text)] mb-2">
-            Status
-          </label>
-          <div className="flex items-center h-[42px] px-4 bg-[var(--background-primary)] border border-[var(--border-color-accent)] rounded-lg">
-            <input
-              type="checkbox"
-              id="completed"
-              checked={isCompleted}
-              onChange={(e) => setIsCompleted(e.target.checked)}
-              className="w-5 h-5 text-[var(--color-primary)] bg-[var(--background)] border-[var(--border-color-accent)] rounded focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer"
-            />
-            <label htmlFor="completed" className="ml-3 text-sm text-[var(--text)] cursor-pointer">
-              Mark as completed
-            </label>
-          </div>
         </div>
       </div>
 
@@ -436,14 +443,15 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
         </label>
         <div className="flex items-center flex-wrap gap-2 p-3 bg-[var(--background-primary)] border border-[var(--border-color-accent)] rounded-lg min-h-[48px]">
           {(assignedTo || []).map((user) => (
-            <div key={user._id} className="flex items-center bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 rounded-full px-3 py-1.5 text-sm text-[var(--text)]">
+            <div key={user._id} className="flex items-center gap-2 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 rounded-full pl-1 pr-3 py-1 text-sm text-[var(--text)]">
+              <UserAvatar user={user} size={6} />
               <span>{user.firstName}</span>
               <button
                 onClick={() => toggleUserAssignment(user)}
-                className="ml-2 text-[var(--text-muted)] hover:text-red-500 transition-colors"
+                className="text-[var(--text-muted)] hover:text-red-500 transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
                 </svg>
               </button>
             </div>
@@ -480,13 +488,14 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
                 .map(member => (
                   <div
                     key={member._id}
-                    className="flex items-center gap-2 p-2 hover:bg-[var(--background-primary)] rounded-lg cursor-pointer transition-colors"
+                    className="flex items-center gap-3 p-2 hover:bg-[var(--background-primary)] rounded-lg cursor-pointer transition-colors"
                     onClick={() => {
                       toggleUserAssignment(member);
                       setSearchMember("");
                       setShowMemberSearch(false);
                     }}
                   >
+                    <UserAvatar user={member} size={8} />
                     <span className="text-sm text-[var(--text)]">{member.firstName} {member.lastName}</span>
                   </div>
                 ))}
@@ -515,52 +524,28 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
         </div>
       )}
 
-      {/* Description Section (Collapsible) */}
+      {/* Notes Section */}
       <div className="mb-6">
-        <button
-          className="flex items-center justify-between w-full py-2 text-sm font-medium text-left text-[var(--text)] hover:text-[var(--color-primary)] focus:outline-none transition-colors"
-          onClick={() => setIsDescriptionCollapsed(!isDescriptionCollapsed)}
-        >
-          <span>Description</span>
-          <svg
-            className={`w-5 h-5 transform transition-transform duration-200 ${isDescriptionCollapsed ? '' : 'rotate-180'}`}
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-          </svg>
-        </button>
-        <div className={`mt-3 ${isDescriptionCollapsed ? 'hidden' : ''}`}>
-          <textarea
-            id="taskDescription"
-            value={description || ''}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add a detailed description..."
-            rows={3}
-            className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200 resize-none placeholder:text-[var(--text-muted)]"
-          />
-        </div>
+        <label htmlFor="taskDescription" className="block text-sm font-medium text-[var(--text)] mb-2">
+          Notes
+        </label>
+        <textarea
+          id="taskDescription"
+          value={description || ''}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Add notes, details, or any additional information..."
+          rows={3}
+          className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200 resize-none placeholder:text-[var(--text-muted)]"
+        />
       </div>
 
-      {/* Subtasks Section (Collapsible) */}
+      {/* Subtasks Section */}
       <div className="mb-4">
-        <button
-          className="flex items-center justify-between w-full py-2 text-sm font-medium text-left text-[var(--text)] hover:text-[var(--color-primary)] focus:outline-none transition-colors"
-          onClick={() => setIsSubtasksCollapsed(!isSubtasksCollapsed)}
-        >
-          <span>Subtasks {subtasks.length > 0 && `(${subtasks.length})`}</span>
-          <svg
-            className={`w-5 h-5 transform transition-transform duration-200 ${isSubtasksCollapsed ? '' : 'rotate-180'}`}
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-          </svg>
-        </button>
+        <label className="block text-sm font-medium text-[var(--text)] mb-2">
+          Subtasks {subtasks.length > 0 && <span className="text-[var(--text-muted)] font-normal">({subtasks.length})</span>}
+        </label>
 
-        <div className={`mt-3 ${isSubtasksCollapsed ? 'hidden' : ''}`}>
+        <div>
             {(subtasks || []).length > 0 && (
               <div className="space-y-2 mb-3">
                 {(subtasks || []).map((subtask) => (
@@ -612,7 +597,7 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
                 id="newSubtaskInput"
                 value={newSubtaskTitle}
                 onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                placeholder="Add a new subtask..."
+                placeholder="✨ Add subtask..."
                 className="flex-1 px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200 placeholder:text-[var(--text-muted)]"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' && newSubtaskTitle.trim()) {
@@ -620,13 +605,16 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
                   }
                 }}
               />
-              <button
-                onClick={addSubtask}
-                disabled={!newSubtaskTitle.trim()}
-                className="px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-accent-hover)] text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--color-primary)]"
-              >
-                Add
-              </button>
+              {newSubtaskTitle.trim() && (
+                <button
+                  onClick={addSubtask}
+                  className="px-4 py-2.5 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-accent-hover)] text-sm font-medium transition-all duration-200"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
       </div>
