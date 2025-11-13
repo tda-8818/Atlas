@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AddTaskModal from '../components/modals/AddTaskModal';
+import FilterBar from '../components/FilterBar';
 import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation, useCreateSubTaskMutation } from "../redux/slices/taskSlice";
 import { useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation, useGetProjectUsersQuery } from "../redux/slices/projectSlice";
+import { useGetProjectLabelsQuery } from '../redux/slices/labelSlice';
 import { TaskTypeIcon, getTaskTypeConfig } from '../utils/taskTypeUtils';
 import UserAvatar from '../components/avatar/UserAvatar';
 
@@ -77,10 +79,21 @@ const Kanban = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(null);
   const [currentColumnIndex, setCurrentColumnIndex] = useState(null);
 
+  // Phase 2: Filter state
+  const [filters, setFilters] = useState({
+    searchQuery: '',
+    priorities: [],
+    labels: [],
+    assignees: [],
+    taskTypes: [],
+    showCompleted: true,
+    quickFilter: null
+  });
+
   // Ref for the card detail modal content
   const cardModalRef = useRef(null);
 
-  const { currentProject } = useOutletContext();
+  const { currentProject, user } = useOutletContext();
 
   /// RTK QUERY FUNCTIONS ///
   const [addTask] = useAddTaskMutation();
@@ -94,11 +107,59 @@ const Kanban = () => {
 
   const { data: projectTasks, isLoading, isError, refetch} = useGetProjectTasksQuery(currentProject._id);
   const { data: columnData} = useGetProjectColumnsQuery(currentProject._id);
-
   const { data: teamMembers } = useGetProjectUsersQuery(currentProject._id);
+  const { data: projectLabels } = useGetProjectLabelsQuery(currentProject._id);
   
 
-  // 
+  // Filter function to apply all active filters
+  const applyFilters = (task) => {
+    // Search filter
+    if (filters.searchQuery) {
+      const query = filters.searchQuery.toLowerCase();
+      const matchesTitle = task.title?.toLowerCase().includes(query);
+      const matchesDescription = task.description?.toLowerCase().includes(query);
+      if (!matchesTitle && !matchesDescription) return false;
+    }
+
+    // Priority filter
+    if (filters.priorities.length > 0) {
+      if (!filters.priorities.includes(task.priority)) return false;
+    }
+
+    // Label filter
+    if (filters.labels.length > 0) {
+      if (!task.labels || task.labels.length === 0) return false;
+      const taskLabelIds = task.labels.map(l => l._id || l);
+      const hasMatchingLabel = filters.labels.some(filterId => taskLabelIds.includes(filterId));
+      if (!hasMatchingLabel) return false;
+    }
+
+    // Assignee filter
+    if (filters.assignees.length > 0) {
+      if (filters.assignees.includes('unassigned')) {
+        if (task.assignedTo && task.assignedTo.length > 0) return false;
+      } else {
+        if (!task.assignedTo || task.assignedTo.length === 0) return false;
+        const taskAssigneeIds = task.assignedTo.map(a => a._id || a);
+        const hasMatchingAssignee = filters.assignees.some(filterId => taskAssigneeIds.includes(filterId));
+        if (!hasMatchingAssignee) return false;
+      }
+    }
+
+    // Task type filter
+    if (filters.taskTypes.length > 0) {
+      if (!filters.taskTypes.includes(task.taskType || 'task')) return false;
+    }
+
+    // Completed filter
+    if (!filters.showCompleted && task.status === true) {
+      return false;
+    }
+
+    return true;
+  };
+
+  //
   const mapTasksToColumns = () => {
     if (!columnData || !projectTasks) return [];
     console.log("project tasks: ", projectTasks);
@@ -108,6 +169,7 @@ const Kanban = () => {
       title: column.title,
       cards: projectTasks
         .filter(task => task.columnId === column._id)
+        .filter(applyFilters) // Apply filters
         .map(task => ({
           ...task,
           id: String(task._id),
@@ -180,7 +242,7 @@ const Kanban = () => {
     };
 
 
-  }, [columnData, projectTasks]); // Added columns to dependencies because handleSaveChanges uses it
+  }, [columnData, projectTasks, filters]); // Added columns to dependencies because handleSaveChanges uses it, filters for real-time filtering
 
 
 
@@ -674,6 +736,14 @@ const Kanban = () => {
 
   return (
     <div className="p-4 sm:p-6 bg-[var(--background-primary)] text-[var(--text)] h-full overflow-y-auto">
+      {/* Phase 2: Filter Bar */}
+      <FilterBar
+        onFilterChange={setFilters}
+        teamMembers={teamMembers || []}
+        availableLabels={projectLabels || []}
+        currentUserId={user?._id}
+      />
+
       {/* Kanban Board (Main DragDropContext) */}
       <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="all-columns" direction="horizontal" type="column">
