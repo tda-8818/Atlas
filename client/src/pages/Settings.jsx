@@ -9,13 +9,15 @@ import {
 } from "../redux/slices/userSlice";
 import { showErrorToast } from "../components/errorToast";
 import toast from "react-hot-toast";
+import PageLayout from "../layouts/PageLayout";
+import { MdVerified, MdWarning, MdEdit, MdCheck, MdArrowBack } from "react-icons/md";
 
 const Settings = ({ setTheme }) => {
   const navigate = useNavigate();
-  
-  const { data: userData, isLoading } = useGetCurrentUserQuery();
+
+  const { data: userData, isLoading, refetch } = useGetCurrentUserQuery();
   const [updateProfilePic, { isLoading: isUpdatingPic }] = useUpdateProfilePicMutation();
-  const [updateUser, { isLoading: isUpdatingUser }] = useUpdateMeMutation(); // Destructure loading state for name/email
+  const [updateUser, { isLoading: isUpdatingUser }] = useUpdateMeMutation();
   const [updatePasswordMutation, { isLoading: isUpdatingPassword }] = useUpdatePasswordMutation();
   const [resendVerificationEmail, { isLoading: isResendingVerification }] = useResendVerificationEmailMutation();
 
@@ -29,19 +31,38 @@ const Settings = ({ setTheme }) => {
   const [profileImagePreview, setProfileImagePreview] = useState(null);
   const [profileImageFile, setProfileImageFile] = useState(null);
 
-  // Add useEffect to load user data when component mounts
+  // Track if profile form has changed
+  const [hasProfileChanges, setHasProfileChanges] = useState(false);
+  const [hasPasswordChanges, setHasPasswordChanges] = useState(false);
+
+  // Load user data
   useEffect(() => {
     if (userData && userData.user) {
       setFirstName(userData.user.firstName || "");
       setLastName(userData.user.lastName || "");
       setEmail(userData.user.email || "");
-      
-      // Set profile picture if available
+
       if (userData.user.profilePic) {
         setProfileImagePreview(userData.user.profilePic);
       }
     }
   }, [userData]);
+
+  // Track changes for save button
+  useEffect(() => {
+    if (userData?.user) {
+      const changed =
+        firstName !== (userData.user.firstName || "") ||
+        lastName !== (userData.user.lastName || "") ||
+        (email !== (userData.user.email || "") && !userData.user.emailVerified);
+      setHasProfileChanges(changed);
+    }
+  }, [firstName, lastName, email, userData]);
+
+  useEffect(() => {
+    const changed = currentPassword || newPassword || confirmPassword;
+    setHasPasswordChanges(!!changed);
+  }, [currentPassword, newPassword, confirmPassword]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -49,73 +70,84 @@ const Settings = ({ setTheme }) => {
       setProfileImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfileImagePreview(reader.result); // Sets preview URL for UI
+        setProfileImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
-  
+
   const handleProfilePictureChange = async () => {
     try {
       if (!profileImageFile) {
-        toast.warn("No profile image selected!");
+        toast.error("No profile image selected!");
         return;
       }
 
       const formData = new FormData();
       formData.append("profilePic", profileImageFile);
 
-      const result = await updateProfilePic(formData).unwrap(); // Correct function call
-      console.log("Upload success:", result);
+      const result = await updateProfilePic(formData).unwrap();
 
       if (result.user && result.user.profilePic) {
-        console.log("New profile picture URL:", result.user.profilePic);
         setProfileImagePreview(result.user.profilePic);
       }
 
+      setProfileImageFile(null);
       toast.success("Profile picture updated successfully!");
+      refetch();
     } catch (error) {
       console.error("Profile picture update failed:", error);
       toast.error(error?.data?.message || "Failed to update profile picture.");
     }
   };
 
-
-  const handleUpdateNameAndEmail = async () => {
+  const handleUpdateProfile = async () => {
     try {
-      const updatedData = { firstName, lastName, email };
-      const result = await updateUser(updatedData).unwrap(); // Correct function call
-      toast.success('Name and email updated successfully!');
+      const updatedData = { firstName, lastName };
+
+      // Only include email if it's not verified (allow changes)
+      if (!userData?.user?.emailVerified) {
+        updatedData.email = email;
+      }
+
+      const result = await updateUser(updatedData).unwrap();
+      toast.success('Profile updated successfully!');
+
       if (result?.user) {
         setFirstName(result.user.firstName || "");
         setLastName(result.user.lastName || "");
         setEmail(result.user.email || "");
       }
+
+      setHasProfileChanges(false);
+      refetch();
     } catch (err) {
-      console.error('Name and email update failed:', err);
-      toast.error(err?.data?.message || 'Failed to update name and email.');
+      console.error('Profile update failed:', err);
+      toast.error(err?.data?.message || 'Failed to update profile.');
     }
   };
 
   const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
-      showErrorToast("Passwords do not match!");
+      toast.error("Passwords do not match!");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters!");
       return;
     }
 
     try {
       const result = await updatePasswordMutation({ currentPassword, confirmPassword }).unwrap();
-      if (result?.message) {
-        toast(result.message); // Show success message from backend if available
-      } else {
-        toast("Password updated successfully!");
-      }
-      // Optionally clear the password fields after successful update
+      toast.success(result?.message || "Password updated successfully!");
+
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      setHasPasswordChanges(false);
     } catch (err) {
-      showErrorToast(err?.data?.message || "Failed to update password."); // Show error message from backend if available
+      toast.error(err?.data?.message || "Failed to update password.");
     }
   };
 
@@ -125,50 +157,51 @@ const Settings = ({ setTheme }) => {
       toast.success(result.message || 'Verification email sent! Please check your inbox.');
     } catch (err) {
       console.error('Resend verification failed:', err);
-      showErrorToast(err?.data?.message || 'Failed to send verification email.');
+      toast.error(err?.data?.message || 'Failed to send verification email.');
     }
   };
 
+  if (isLoading) {
+    return (
+      <PageLayout title="Settings">
+        <div className="flex justify-center items-center h-64">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]"></div>
+            <p className="text-[var(--text-muted)]">Loading settings...</p>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
-    <div className="p-8 bg-[var(--background-primary)] min-h-screen">
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-lg text-gray-500">Loading user data...</p>
-        </div>
-      ) : (
-        <>
-          <div className="mb-6">
-            <button
-              onClick={() => navigate('/')}
-              className="bg-[var(--background)] text-[var(--text)] border border-[var(--border-color)] rounded-lg px-4 py-2 text-sm hover:bg-[var(--background-secondary)] transition-all"
-            >
-              ← Back to Projects
-            </button>
-          </div>
+    <PageLayout title="Settings">
+      <div className="max-w-4xl mx-auto">
 
-          <h1 className="text-[2rem] font-bold text-[var(--text)] mb-8">Settings</h1>
+        {/* Profile Section */}
+        <div className="bg-[var(--background)] rounded-2xl border border-[var(--border-color)] p-6 mb-6">
+          <h2 className="text-lg font-semibold text-[var(--text)] mb-6">Profile</h2>
 
-          <div className="bg-[var(--background)] rounded-2xl p-6 mb-12 shadow-sm">
-            <h2 className="text-xl font-semibold text-[var(--text)] mb-6">General</h2>
+          {/* Profile Picture */}
+          <div className="flex items-start gap-6 mb-6 pb-6 border-b border-[var(--border-color)]">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-[var(--background-secondary)] border-2 border-[var(--border-color)]">
+                {profileImagePreview ? (
+                  <img
+                    src={profileImagePreview}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-[var(--color-primary)]">
+                    {firstName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+            </div>
 
-            <div className="flex flex-col gap-6">
-              <div>
-                <label className="text-[0.9rem] text-gray-500 mb-2 block">Your Profile Picture</label>
-                <label
-                  htmlFor="upload-photo"
-                  className="w-[120px] h-[120px] border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer bg-[var(--background-primary)] text-[var(--text)]"
-                >
-                  {profileImagePreview ? (
-                    <img
-                      src={profileImagePreview}
-                      alt="Profile"
-                      className="w-full h-full object-cover rounded-xl"
-                    />
-                  ) : (
-                    <span className="text-[0.9rem] text-gray-400 text-center">Upload your photo</span>
-                  )}
-                </label>
+            <div className="flex-1">
+              <label htmlFor="upload-photo">
                 <input
                   id="upload-photo"
                   type="file"
@@ -176,167 +209,239 @@ const Settings = ({ setTheme }) => {
                   onChange={handleImageUpload}
                   className="hidden"
                 />
-              </div>
+                <span className="inline-block px-4 py-2 bg-[var(--background-secondary)] hover:bg-[var(--background-primary)] border border-[var(--border-color)] text-[var(--text)] text-sm font-medium rounded-lg cursor-pointer transition-colors">
+                  Choose Photo
+                </span>
+              </label>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[0.9rem] text-gray-500 mb-2 block">First Name</label>
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Enter first name"
-                    className="w-full p-3 rounded-lg bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color)]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[0.9rem] text-gray-500 mb-2 block">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter email"
-                    className="w-full p-3 rounded-lg bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color)]"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="text-[0.9rem] text-gray-500 mb-2 block">Last Name</label>
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Enter last name"
-                    className="w-full p-3 rounded-lg bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color)]"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-4">
+              {profileImageFile && (
                 <button
                   onClick={handleProfilePictureChange}
-                  className="bg-[#187cb4] hover:bg-[#12547a] text-white py-3 px-6 text-sm font-medium rounded-lg"
+                  disabled={isUpdatingPic}
+                  className="ml-3 px-4 py-2 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  Save Profile Picture
+                  {isUpdatingPic ? 'Uploading...' : 'Upload'}
                 </button>
-                <button
-                  onClick={handleUpdateNameAndEmail}
-                  className="bg-[#187cb4] hover:bg-[#12547a] text-white py-3 px-6 text-sm font-medium rounded-lg"
-                >
-                  Save Name & Email
-                </button>
-              </div>
+              )}
+
+              <p className="text-xs text-[var(--text-muted)] mt-2">
+                JPG, PNG or GIF. Max size 5MB.
+              </p>
             </div>
           </div>
 
-          <div className="bg-[var(--background)] rounded-2xl p-6 mb-12 shadow-sm">
-            <h2 className="text-xl font-semibold text-[var(--text)] mb-6">Email Verification</h2>
+          {/* Name Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-[var(--text)] mb-2">
+                First Name
+              </label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Enter first name"
+                className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all placeholder:text-[var(--text-muted)]"
+              />
+            </div>
 
-            <div className="flex items-center justify-between p-4 bg-[var(--background-primary)] rounded-lg border border-[var(--border-color)]">
-              <div className="flex items-center gap-3">
+            <div>
+              <label className="block text-sm font-medium text-[var(--text)] mb-2">
+                Last Name
+              </label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Enter last name"
+                className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all placeholder:text-[var(--text-muted)]"
+              />
+            </div>
+          </div>
+
+          {/* Email Field with Verification Badge */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-[var(--text)] mb-2">
+              Email Address
+            </label>
+            <div className="relative">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={userData?.user?.emailVerified}
+                placeholder="Enter email"
+                className={`w-full px-4 py-2.5 pr-32 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all placeholder:text-[var(--text-muted)] ${
+                  userData?.user?.emailVerified ? 'opacity-75 cursor-not-allowed' : ''
+                }`}
+              />
+
+              {/* Verification Badge */}
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                 {userData?.user?.emailVerified ? (
-                  <>
-                    <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                      <p className="text-[var(--text)] font-semibold">Email Verified</p>
-                      <p className="text-sm text-gray-500">Your email address has been verified</p>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 border border-green-500/30 rounded-full">
+                    <MdVerified className="text-green-500 text-sm" />
+                    <span className="text-xs font-medium text-green-600">Verified</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-yellow-500/10 border border-yellow-500/30 rounded-full">
+                      <MdWarning className="text-yellow-500 text-sm" />
+                      <span className="text-xs font-medium text-yellow-600">Unverified</span>
                     </div>
+                    <button
+                      onClick={handleResendVerification}
+                      disabled={isResendingVerification}
+                      className="text-xs font-medium text-[var(--color-primary)] hover:underline disabled:opacity-50"
+                    >
+                      {isResendingVerification ? 'Sending...' : 'Resend'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {!userData?.user?.emailVerified && (
+              <p className="text-xs text-[var(--text-muted)] mt-2">
+                Please verify your email to enable all collaboration features.
+              </p>
+            )}
+
+            {userData?.user?.emailVerified && (
+              <p className="text-xs text-[var(--text-muted)] mt-2">
+                Your email is verified and cannot be changed. Contact support to update.
+              </p>
+            )}
+          </div>
+
+          {/* Save Button */}
+          {hasProfileChanges && (
+            <div className="pt-4 border-t border-[var(--border-color)]">
+              <button
+                onClick={handleUpdateProfile}
+                disabled={isUpdatingUser}
+                className="px-6 py-2.5 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
+              >
+                {isUpdatingUser ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Saving...
                   </>
                 ) : (
                   <>
-                    <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <div>
-                      <p className="text-[var(--text)] font-semibold">Email Not Verified</p>
-                      <p className="text-sm text-gray-500">Please verify your email to enable collaboration features</p>
-                    </div>
+                    <MdCheck className="text-lg" />
+                    Save Changes
                   </>
                 )}
-              </div>
-
-              {!userData?.user?.emailVerified && (
-                <button
-                  onClick={handleResendVerification}
-                  disabled={isResendingVerification}
-                  className="bg-[#187cb4] hover:bg-[#12547a] text-white py-2 px-4 text-sm font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isResendingVerification ? 'Sending...' : 'Resend Verification Email'}
-                </button>
-              )}
+              </button>
             </div>
-          </div>
+          )}
+        </div>
 
-          <div className="bg-[var(--background)] rounded-2xl p-6 mb-12 shadow-sm">
-            <h2 className="text-xl font-semibold text-[var(--text)] mb-6">Change Password</h2>
+        {/* Password Section */}
+        <div className="bg-[var(--background)] rounded-2xl border border-[var(--border-color)] p-6 mb-6">
+          <h2 className="text-lg font-semibold text-[var(--text)] mb-6">Password</h2>
 
-            <div className="flex flex-col gap-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-[var(--text)] mb-2">
+                Current Password
+              </label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
+                className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all placeholder:text-[var(--text-muted)]"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[0.9rem] text-gray-500 mb-2 block">Current Password</label>
+                <label className="block text-sm font-medium text-[var(--text)] mb-2">
+                  New Password
+                </label>
                 <input
                   type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Enter current password"
-                  className="w-full p-3 rounded-lg bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color)]"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all placeholder:text-[var(--text-muted)]"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[0.9rem] text-gray-500 mb-2 block">New Password</label>
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter new password"
-                    className="w-full p-3 rounded-lg bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color)]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[0.9rem] text-gray-500 mb-2 block">Confirm Password</label>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm new password"
-                    className="w-full p-3 rounded-lg bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color)]"
-                  />
-                </div>
-              </div>
-
               <div>
-                <button
-                  onClick={handlePasswordChange}
-                  className="mt-2 bg-[#187cb4] hover:bg-[#12547a] text-white py-3 px-6 text-sm font-medium rounded-lg cursor-pointer"
-                >
-                  Update Password
-                </button>
+                <label className="block text-sm font-medium text-[var(--text)] mb-2">
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all placeholder:text-[var(--text-muted)]"
+                />
               </div>
             </div>
           </div>
 
-          <div className="bg-[var(--background)] rounded-2xl p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-[var(--text)] mb-6">Display</h2>
-            <div className="flex gap-4">
+          {hasPasswordChanges && (
+            <div className="pt-4 border-t border-[var(--border-color)] mt-6">
               <button
-                onClick={() => setTheme("light")}
-                className="px-6 py-3 rounded-xl bg-white text-black shadow-md hover:shadow-lg transition"
+                onClick={handlePasswordChange}
+                disabled={isUpdatingPassword}
+                className="px-6 py-2.5 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
               >
-                Light
-              </button>
-              <button
-                onClick={() => setTheme("dark")}
-                className="px-6 py-3 rounded-xl bg-[#1e1e1e] text-white shadow-md hover:shadow-lg transition"
-              >
-                Dark
+                {isUpdatingPassword ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <MdCheck className="text-lg" />
+                    Update Password
+                  </>
+                )}
               </button>
             </div>
+          )}
+        </div>
+
+        {/* Theme Section */}
+        <div className="bg-[var(--background)] rounded-2xl border border-[var(--border-color)] p-6">
+          <h2 className="text-lg font-semibold text-[var(--text)] mb-6">Appearance</h2>
+
+          <div className="grid grid-cols-2 gap-4 max-w-md">
+            <button
+              onClick={() => setTheme("light")}
+              className="relative px-6 py-4 rounded-xl bg-white border-2 border-gray-200 hover:border-[var(--color-primary)] transition-all group"
+            >
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <MdCheck className="text-[var(--color-primary)]" />
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-300"></div>
+                <span className="text-sm font-medium text-gray-900">Light</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setTheme("dark")}
+              className="relative px-6 py-4 rounded-xl bg-[#1e1e1e] border-2 border-gray-700 hover:border-[var(--color-primary)] transition-all group"
+            >
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <MdCheck className="text-[var(--color-primary)]" />
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600"></div>
+                <span className="text-sm font-medium text-white">Dark</span>
+              </div>
+            </button>
           </div>
-        </>
-      )}
-    </div>
+        </div>
+      </div>
+    </PageLayout>
   );
 };
 
