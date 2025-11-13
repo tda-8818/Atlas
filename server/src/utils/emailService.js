@@ -70,20 +70,6 @@ const getVerificationEmailTemplate = (verificationUrl, userName) => {
           padding: 40px 20px;
           text-align: center;
         }
-        .logo {
-          width: 80px;
-          height: 80px;
-          border-radius: 50%;
-          background-color: #ffffff;
-          margin: 0 auto 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 36px;
-          font-weight: bold;
-          color: #0b80c3;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
         .header h1 {
           margin: 0;
           font-size: 32px;
@@ -159,7 +145,7 @@ const getVerificationEmailTemplate = (verificationUrl, userName) => {
     <body>
       <div class="container">
         <div class="header">
-          <div class="logo">A</div>
+          <img src="${process.env.LOGO_URL || 'https://via.placeholder.com/80'}" alt="Atlas Logo" style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
           <h1>Atlas</h1>
           <p>Navigate Your Work, Conquer Your Goals</p>
         </div>
@@ -168,7 +154,7 @@ const getVerificationEmailTemplate = (verificationUrl, userName) => {
           <p>Thanks for signing up! We're excited to have you on board. To get started and unlock all features, please verify your email address by clicking the button below:</p>
 
           <div class="button-container">
-            <a href="${verificationUrl}" class="button">Verify Email Address</a>
+            <a href="${verificationUrl}" class="button" style="color: #ffffff !important;">Verify Email Address</a>
           </div>
 
           <p style="text-align: center; color: #546e7a; font-size: 14px;">Or copy and paste this link into your browser:</p>
@@ -225,20 +211,6 @@ const getPasswordResetEmailTemplate = (resetUrl, userName) => {
           color: #ffffff;
           padding: 40px 20px;
           text-align: center;
-        }
-        .logo {
-          width: 80px;
-          height: 80px;
-          border-radius: 50%;
-          background-color: #ffffff;
-          margin: 0 auto 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 36px;
-          font-weight: bold;
-          color: #0b80c3;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .header h1 {
           margin: 0;
@@ -315,7 +287,7 @@ const getPasswordResetEmailTemplate = (resetUrl, userName) => {
     <body>
       <div class="container">
         <div class="header">
-          <div class="logo">A</div>
+          <img src="${process.env.LOGO_URL || 'https://via.placeholder.com/80'}" alt="Atlas Logo" style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
           <h1>Atlas</h1>
           <p>Navigate Your Work, Conquer Your Goals</p>
         </div>
@@ -325,7 +297,7 @@ const getPasswordResetEmailTemplate = (resetUrl, userName) => {
           <p>We received a request to reset your password. Click the button below to create a new password:</p>
 
           <div class="button-container">
-            <a href="${resetUrl}" class="button">Reset Password</a>
+            <a href="${resetUrl}" class="button" style="color: #ffffff !important;">Reset Password</a>
           </div>
 
           <p style="text-align: center; color: #546e7a; font-size: 14px;">Or copy and paste this link into your browser:</p>
@@ -402,9 +374,197 @@ export const sendPasswordResetEmail = async ({ to, userName, resetToken }) => {
   }
 };
 
+/**
+ * Generate HTML email template for project invitation
+ * @param {string} projectName - The name of the project
+ * @param {string} inviterName - Name of the person sending the invite
+ * @param {string} recipientName - Name of the person being invited
+ * @returns {string} HTML email content
+ */
+const getProjectInvitationEmailTemplate = (projectName, inviterName, recipientName) => {
+  const loginUrl = `${process.env.CLIENT_URL}/login`;
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Project Invitation - Atlas</title>
+      <style>
+        body {
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          line-height: 1.6;
+          color: #0a1929;
+          background: linear-gradient(135deg, #f0f8ff 0%, #ffffff 50%, #e3f2fd 100%);
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          max-width: 600px;
+          margin: 40px auto;
+          background-color: #ffffff;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 10px 30px rgba(11, 128, 195, 0.1);
+        }
+        .header {
+          background: linear-gradient(135deg, #0b80c3 0%, #0d9ae6 100%);
+          color: #ffffff;
+          padding: 40px 20px;
+          text-align: center;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 32px;
+          font-weight: bold;
+        }
+        .header p {
+          margin: 8px 0 0 0;
+          font-size: 14px;
+          opacity: 0.9;
+        }
+        .content {
+          padding: 40px 30px;
+        }
+        .content h2 {
+          color: #0b80c3;
+          margin-top: 0;
+          font-size: 24px;
+        }
+        .content p {
+          color: #546e7a;
+          font-size: 16px;
+        }
+        .project-box {
+          background: linear-gradient(135deg, #f0f8ff 0%, #e3f2fd 100%);
+          border: 2px solid #bbdefb;
+          border-radius: 12px;
+          padding: 20px;
+          margin: 25px 0;
+          text-align: center;
+        }
+        .project-name {
+          font-size: 20px;
+          font-weight: bold;
+          color: #0b80c3;
+          margin: 0;
+        }
+        .inviter-name {
+          font-size: 14px;
+          color: #546e7a;
+          margin-top: 8px;
+        }
+        .button-container {
+          text-align: center;
+          margin: 30px 0;
+        }
+        .button {
+          display: inline-block;
+          padding: 16px 40px;
+          background: linear-gradient(135deg, #0b80c3 0%, #0d9ae6 100%);
+          color: #ffffff;
+          text-decoration: none;
+          border-radius: 50px;
+          font-weight: 600;
+          font-size: 16px;
+          box-shadow: 0 4px 15px rgba(11, 128, 195, 0.3);
+          transition: transform 0.2s;
+        }
+        .button:hover {
+          transform: scale(1.05);
+        }
+        .info-box {
+          background-color: #e3f2fd;
+          border-left: 4px solid #0b80c3;
+          padding: 15px;
+          margin: 25px 0;
+          font-size: 14px;
+          border-radius: 4px;
+        }
+        .footer {
+          background-color: #f0f8ff;
+          padding: 30px 20px;
+          text-align: center;
+          font-size: 13px;
+          color: #546e7a;
+          border-top: 1px solid #bbdefb;
+        }
+        .footer p {
+          margin: 5px 0;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <img src="${process.env.LOGO_URL || 'https://via.placeholder.com/80'}" alt="Atlas Logo" style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
+          <h1>Atlas</h1>
+          <p>Navigate Your Work, Conquer Your Goals</p>
+        </div>
+        <div class="content">
+          <h2>You've Been Invited!</h2>
+          <p>Hi ${recipientName},</p>
+          <p><strong>${inviterName}</strong> has invited you to collaborate on a project:</p>
+
+          <div class="project-box">
+            <p class="project-name">${projectName}</p>
+            <p class="inviter-name">Invited by ${inviterName}</p>
+          </div>
+
+          <p>Join the team to start collaborating on tasks, tracking progress, and achieving goals together.</p>
+
+          <div class="button-container">
+            <a href="${loginUrl}" class="button" style="color: #ffffff !important;">View Invitation</a>
+          </div>
+
+          <div class="info-box">
+            <strong style="color: #0b80c3;">Next Steps:</strong> Log in to your Atlas account to accept or decline this invitation. You'll find it in your notifications.
+          </div>
+        </div>
+        <div class="footer">
+          <p><strong>Atlas by TDA Consulting</strong></p>
+          <p>&copy; ${new Date().getFullYear()} Atlas. All rights reserved.</p>
+          <p style="margin-top: 15px; font-size: 12px;">This is an automated message, please do not reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+/**
+ * Send project invitation email to user
+ * @param {Object} params
+ * @param {string} params.to - Recipient email
+ * @param {string} params.recipientName - Recipient's first name
+ * @param {string} params.inviterName - Inviter's full name
+ * @param {string} params.projectName - Project name
+ * @returns {Promise<Object>} Resend API response
+ */
+export const sendProjectInvitationEmail = async ({ to, recipientName, inviterName, projectName }) => {
+  const resendClient = getResendClient();
+
+  try {
+    const data = await resendClient.emails.send({
+      from: process.env.EMAIL_FROM || 'Atlas <onboarding@resend.dev>',
+      to: [to],
+      subject: `${inviterName} invited you to ${projectName} - Atlas`,
+      html: getProjectInvitationEmailTemplate(projectName, inviterName, recipientName),
+    });
+
+    console.log('Project invitation email sent:', data);
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error sending project invitation email:', error);
+    throw new Error('Failed to send project invitation email');
+  }
+};
+
 export default {
   sendVerificationEmail,
   sendPasswordResetEmail,
+  sendProjectInvitationEmail,
   generateVerificationToken,
   hashToken,
 };

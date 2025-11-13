@@ -3,6 +3,7 @@ import UserModel from "../models/UserModel.js";
 import Column from  "../models/ColumnModel.js"
 import Task from "../models/TaskModel.js";
 import NotificationModel from "../models/notificationModel.js";
+import { sendProjectInvitationEmail } from "../utils/emailService.js";
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
@@ -269,14 +270,14 @@ export const inviteUserToProject = async (req, res) => {
 
     console.log("req.param when invite user:", req.params);
     console.log("req.param when invite user:", projectId);
-    // 
-    const userInviteProject = await Project.findById(projectId);
 
+    // Fetch project details
+    const userInviteProject = await Project.findById(projectId);
     if (!userInviteProject) {
       return res.status(404).json({message: "Project not found in inviteUserToProject"});
     }
 
-
+    // Validate recipient
     if (!recipientId) {
       return res.status(404).json({message: "UserId not provided in inviteUserToProject"});
     }
@@ -286,6 +287,13 @@ export const inviteUserToProject = async (req, res) => {
       return res.status(404).json({message: "User not found in inviteUserToProject"});
     }
 
+    // Fetch sender details for email
+    const senderUser = await UserModel.findById(senderId);
+    if (!senderUser) {
+      return res.status(404).json({message: "Sender not found in inviteUserToProject"});
+    }
+
+    // Create notification in database
     const timeSentToUse = timeSent || Date.now();
     const inviteNotification = await NotificationModel.create({
       senderId,
@@ -296,6 +304,21 @@ export const inviteUserToProject = async (req, res) => {
 
     recipientUser.notifications.push(inviteNotification._id);
     await recipientUser.save();
+
+    // Send email notification
+    try {
+      await sendProjectInvitationEmail({
+        to: recipientUser.email,
+        recipientName: recipientUser.firstName,
+        inviterName: `${senderUser.firstName} ${senderUser.lastName}`,
+        projectName: userInviteProject.title,
+      });
+      console.log(`Invitation email sent to ${recipientUser.email}`);
+    } catch (emailError) {
+      // Log email error but don't fail the invitation
+      console.error("Failed to send invitation email:", emailError);
+      // Invitation still created in database, just email failed
+    }
 
     return res.status(200).json({message: "Invite sent successfully."});
 
