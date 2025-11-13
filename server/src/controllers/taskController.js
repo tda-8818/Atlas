@@ -23,8 +23,9 @@ export const getTasksByProject = async (req, res) => {
   
       // Fetch tasks for the given project ID
       const tasks = await Task.find({ projectId })
-        .populate('assignedTo', 'firstName lastName')
-        .populate('projectId', 'title');
+        .populate('assignedTo', 'firstName lastName profilePic')
+        .populate('projectId', 'title')
+        .populate('labels');
       
       //console.log("SENDING TASKS:", tasks);
       console.log("SENDING TASKS:", tasks);
@@ -58,7 +59,10 @@ export const createTask = async (req, res) => {
             columnId,
             assignedTo,
             priority,
-            status
+            status,
+            taskType,
+            storyPoints,
+            labels
         } = req.body;
 
         if (!projectId) {
@@ -81,7 +85,10 @@ export const createTask = async (req, res) => {
             columnId,
             assignedTo,
             priority,
-            status
+            status,
+            taskType: taskType || 'task',
+            storyPoints: storyPoints || 0,
+            labels: labels || []
         };
 
         const newTask = new Task(taskData);
@@ -127,7 +134,10 @@ export const updateTask = async (req, res) => {
         priority,
         assignedTo,
         dueDate,
-        startDate
+        startDate,
+        taskType,
+        storyPoints,
+        labels
     } = req.body;
     console.log("id: ",id);
     try {
@@ -140,10 +150,13 @@ export const updateTask = async (req, res) => {
                 priority,
                 assignedTo,
                 dueDate,
-                startDate
+                startDate,
+                ...(taskType !== undefined && { taskType }),
+                ...(storyPoints !== undefined && { storyPoints }),
+                ...(labels !== undefined && { labels })
             },
-            { new: true } 
-        );
+            { new: true }
+        ).populate('labels').populate('assignedTo', 'firstName lastName profilePic');
         console.log("updated task: ", updatedTask);
         if (!updatedTask) {
             return res.status(404).json({ message: "Task not found" });

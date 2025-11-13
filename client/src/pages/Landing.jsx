@@ -10,7 +10,7 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f0f8ff] via-white to-[#e3f2fd] overflow-x-hidden">
       {/* Navigation Header */}
-      <header className="backdrop-blur-md bg-white/70 border-b border-[#bbdefb]/50 sticky top-0 z-50">
+      <header className="backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img src={logo} alt="Atlas" className="h-12 w-12 rounded-full shadow-lg" />

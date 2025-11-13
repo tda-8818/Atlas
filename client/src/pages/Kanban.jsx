@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AddTaskModal from '../components/modals/AddTaskModal';
 import { useOutletContext } from "react-router-dom";
-import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation } from "../redux/slices/taskSlice";
+import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation, useCreateSubTaskMutation } from "../redux/slices/taskSlice";
 import { useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation, useGetProjectUsersQuery } from "../redux/slices/projectSlice";
+import { TaskTypeIcon, getTaskTypeConfig } from '../utils/taskTypeUtils';
 
 // Define priority levels
 const priorityLevels = ['none', '!', '!!', '!!!'];
@@ -84,6 +85,7 @@ const Kanban = () => {
   const [addTask] = useAddTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
   const [editTask] = useUpdateTaskMutation();
+  const [createSubTask] = useCreateSubTaskMutation();
 
   const [createColumn] = useCreateColumnMutation();
   const [updateColumn] = useUpdateColumnMutation();
@@ -302,8 +304,11 @@ const Kanban = () => {
     console.log("CardData:", cardData);
 
     try {
+      // Extract subtasks from cardData before creating task
+      const { subtasks, ...taskDataWithoutSubtasks } = cardData;
+
       const response = await addTask({
-        ...cardData,
+        ...taskDataWithoutSubtasks,
         columnId,
         projectId: currentProject._id,
         startDate: cardData.startDate ? new Date(cardData.startDate) : undefined,
@@ -312,6 +317,25 @@ const Kanban = () => {
 
       console.log("Received response after creating task", response);
 
+      // Create subtasks if any were provided
+      if (subtasks && subtasks.length > 0) {
+        console.log("Creating subtasks for new task:", subtasks);
+        for (const subtask of subtasks) {
+          try {
+            await createSubTask({
+              taskId: response._id,
+              subtask: {
+                title: subtask.title,
+                priority: subtask.priority || 'none',
+                status: subtask.status || false
+              }
+            }).unwrap();
+          } catch (subtaskError) {
+            console.error("Failed to create subtask:", subtaskError);
+          }
+        }
+      }
+
       const updated = [...columns];
       updated[addTaskColumnIndex].cards.push({
         ...response,
@@ -319,7 +343,7 @@ const Kanban = () => {
       });
       setColumns(updated);
     } catch (error) {
-      console.error("Failed to create task:", err);
+      console.error("Failed to create task:", error);
     }
 
     setShowAddTaskModal(false);
@@ -745,24 +769,53 @@ const Kanban = () => {
                                         }`}
                                       onClick={() => openCardDetails(columnIndex, cardIndex)}
                                     >
+                                      {/* Header with Task Type Icon and Story Points */}
                                       <div className="flex justify-between items-start mb-2">
-                                        <div className="flex-1">
-                                          {card.tag && (
-                                            <div className="text-xs bg-blue-200 text-blue-800 rounded px-2 py-1 inline-block mb-2 self-start">
-                                              {card.tag}
+                                        <div className="flex items-center gap-2 flex-1">
+                                          {/* Task Type Icon */}
+                                          <TaskTypeIcon type={card.taskType || 'task'} size="md" />
+
+                                          <div className="flex-1">
+                                            <div className="text-sm font-medium flex items-center">
+                                              {/* Display Priority in front of task name */}
+                                              {card.priority && card.priority !== 'none' && (
+                                                <span className="mr-1 text-xs font-bold text-red-500">
+                                                  {card.priority}
+                                                </span>
+                                              )}
+                                              {card.title}
                                             </div>
-                                          )}
-                                          <div className="text-sm font-medium flex items-center">
-                                            {/* Display Priority in front of task name */}
-                                            {card.priority && card.priority !== 'none' && (
-                                              <span className="mr-1 text-xs font-bold text-red-500">
-                                                {card.priority}
-                                              </span>
-                                            )}
-                                            {card.title}
                                           </div>
                                         </div>
+
+                                        {/* Story Points Badge */}
+                                        {card.storyPoints > 0 && (
+                                          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 text-[var(--color-primary)] text-xs font-semibold ml-2 flex-shrink-0">
+                                            {card.storyPoints}
+                                          </div>
+                                        )}
                                       </div>
+
+                                      {/* Labels */}
+                                      {card.labels && card.labels.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mb-2">
+                                          {card.labels.slice(0, 3).map((label) => (
+                                            <span
+                                              key={label._id}
+                                              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white"
+                                              style={{ backgroundColor: label.color }}
+                                              title={label.name}
+                                            >
+                                              {label.name}
+                                            </span>
+                                          ))}
+                                          {card.labels.length > 3 && (
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-700">
+                                              +{card.labels.length - 3}
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
 
                                       {card.description && (
                                         <div className="text-xs text-gray-600 mb-2 truncate">
@@ -871,6 +924,7 @@ const Kanban = () => {
           onDelete={handleDeleteCard}
           teamMembers={teamMembers}
           initialValues={selectedCard}
+          projectId={currentProject._id}
         />
 
     </div>

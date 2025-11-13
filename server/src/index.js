@@ -7,6 +7,7 @@ import cors from 'cors'; // Middleware to handle CORS (Cross-Origin Resource Sha
 import userRoutes from './routes/userRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
+import labelRoutes from './routes/labelRoutes.js';
 import mongoose from 'mongoose'; // Mongoose for connecting to MongoDB
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -82,6 +83,7 @@ app.use('/api/users', userRoutes);
 app.use('/settings', userRoutes); // Note: /settings path, ensure this is intended for user routes
 app.use('/api/tasks', taskRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/labels', labelRoutes);
 
 // Global error handler middleware
 app.use((err, req, res, next) => {

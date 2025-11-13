@@ -8,13 +8,13 @@ A modern task management application built with the MERN stack, featuring real-t
 
 ## ✨ Features
 
-- 📝 **Task Management** - Create, organize, and track tasks with an intuitive interface
+- 📝 **Task Management** - Create, organise, and track tasks with an intuitive interface
 - 👥 **User Authentication** - Secure login with email/password or OAuth (Google & GitHub)
 - ✉️ **Email Verification** - Email verification system with Resend integration
 - 🎨 **Modern UI** - Beautiful, responsive design with Tailwind CSS
 - 🔄 **Real-time Updates** - Dynamic task updates and collaboration
 - 📱 **Mobile Responsive** - Works seamlessly across all devices
-- 🎯 **Project Organization** - Organize tasks into projects with custom columns
+- 🎯 **Project Organization** - Organise tasks into projects with custom columns
 - 🔒 **Secure** - JWT authentication, password hashing, and OAuth integration
 
 ---

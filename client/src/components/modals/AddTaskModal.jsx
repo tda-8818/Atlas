@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useGetSubTasksQuery, useCreateSubTaskMutation, useDeleteSubTaskMutation, useUpdateSubTaskMutation } from '../../redux/slices/taskSlice';
 import Modal from './Modal';
+import LabelPicker from '../LabelPicker';
+import { TASK_TYPES, STORY_POINTS_OPTIONS, TaskTypeIcon } from '../../utils/taskTypeUtils';
 
 // Define priority levels
 const priorityLevels = ['none', '!', '!!', '!!!'];
 
-const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers = [], initialValues = null }) => {
+const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers = [], initialValues = null, projectId }) => {
   const [title, setTitle] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);
   const [startDate, setStartDate] = useState('');
@@ -17,6 +19,11 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
   const [priority, setPriority] = useState('none');
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [touched, setTouched] = useState(false);
+
+  // Phase 1: Jira-inspired fields
+  const [taskType, setTaskType] = useState('task');
+  const [storyPoints, setStoryPoints] = useState(0);
+  const [labels, setLabels] = useState([]);
 
   const [showMemberSearch, setShowMemberSearch] = useState(false);
   const [searchMember, setSearchMember] = useState("");
@@ -51,6 +58,9 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
         setDescription(initialValues.description || '');
         setSubtaskIds(initialValues.subtasks || []);
         setPriority(initialValues.priority || 'none');
+        setTaskType(initialValues.taskType || 'task');
+        setStoryPoints(initialValues.storyPoints || 0);
+        setLabels(initialValues.labels || []);
         setIsEditing(true);
         setIsDescriptionCollapsed(!initialValues.description);
         setIsSubtasksCollapsed(!initialValues.subtasks?.length);
@@ -64,6 +74,9 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
         setDescription('');
         setSubtaskIds([]);
         setPriority('none');
+        setTaskType('task');
+        setStoryPoints(0);
+        setLabels([]);
         setIsEditing(false);
         setIsDescriptionCollapsed(true);
         setIsSubtasksCollapsed(true);
@@ -144,7 +157,10 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
       assignedTo: assignedTo,
       description: description.trim(),
       subtasks: subtasks,
-      priority: priority
+      priority: priority,
+      taskType: taskType,
+      storyPoints: storyPoints,
+      labels: labels.map(l => l._id || l)
     };
 
     onAddTask(taskData);
@@ -160,74 +176,105 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
       assignedTo: assignedTo,
       description: description.trim(),
       subtasks: subtasks,
-      priority: priority
+      priority: priority,
+      taskType: taskType,
+      storyPoints: storyPoints,
+      labels: labels.map(l => l._id || l)
     };
     onEdit(taskData);
   };
 
   const addSubtask = async () => {
     if (!newSubtaskTitle.trim()) return;
-    try {
-      console.log("Adding subtask:", newSubtaskTitle.trim());
-      const newSubtask = {
-        title: newSubtaskTitle.trim(),
-        priority: 'none'
-      };
-      console.log("Subtask data:", newSubtask);
-      await createSubTask({ taskId: initialValues.id, subtask: newSubtask }).unwrap();
-      setSubtasks([...subtasks, newSubtask]);
-    } catch (error) {
-      console.error("Error adding subtask:", error);
+
+    const newSubtask = {
+      title: newSubtaskTitle.trim(),
+      priority: 'none',
+      status: false
+    };
+
+    // If editing existing task, create subtask in DB
+    if (isEditing && initialValues?.id) {
+      try {
+        console.log("Adding subtask to existing task:", newSubtaskTitle.trim());
+        console.log("Subtask data:", newSubtask);
+        await createSubTask({ taskId: initialValues.id, subtask: newSubtask }).unwrap();
+      } catch (error) {
+        console.error("Error adding subtask:", error);
+        return;
+      }
     }
 
+    // Add to local state (for both new and existing tasks)
+    setSubtasks([...subtasks, { ...newSubtask, id: Date.now() }]); // Temporary ID for new tasks
     setNewSubtaskTitle('');
     setIsSubtasksCollapsed(false);
   };
 
   const deleteSubtask = async (subtaskId) => {
-    try {
-      await deleteSubTask({ taskId: initialValues.id, subtaskId }).unwrap();
-      console.log("Subtask deleted successfully");
-      setSubtasks(subtasks.filter(st => st.id !== subtaskId));
-    } catch (error) {
-      console.error("Error deleting subtask:", error);
+    // If editing existing task, delete from DB
+    if (isEditing && initialValues?.id) {
+      try {
+        await deleteSubTask({ taskId: initialValues.id, subtaskId }).unwrap();
+        console.log("Subtask deleted successfully");
+      } catch (error) {
+        console.error("Error deleting subtask:", error);
+        return;
+      }
     }
+
+    // Remove from local state
+    setSubtasks(subtasks.filter(st => st.id !== subtaskId));
   };
 
   const toggleSubtask = async (subtaskId) => {
-    try {
-      const subtaskToUpdate = subtasks.find(st => st.id === subtaskId);
-      if (!subtaskToUpdate) return;
-      const updatedSubtask = {
-        ...subtaskToUpdate,
-        status: !subtaskToUpdate.status
-      };
-      await updateSubTask({ taskId: initialValues.id, subtaskId, subtask: updatedSubtask }).unwrap();
-      setSubtasks(prev =>
-        prev.map(st =>
-          st.id === subtaskId ? { ...st, status: !st.status } : st
-        )
-      );
-    } catch (error) {
-      console.error("Error updating subtask:", error);
+    const subtaskToUpdate = subtasks.find(st => st.id === subtaskId);
+    if (!subtaskToUpdate) return;
+
+    // If editing existing task, update in DB
+    if (isEditing && initialValues?.id) {
+      try {
+        const updatedSubtask = {
+          ...subtaskToUpdate,
+          status: !subtaskToUpdate.status
+        };
+        await updateSubTask({ taskId: initialValues.id, subtaskId, subtask: updatedSubtask }).unwrap();
+      } catch (error) {
+        console.error("Error updating subtask:", error);
+        return;
+      }
     }
+
+    // Update local state
+    setSubtasks(prev =>
+      prev.map(st =>
+        st.id === subtaskId ? { ...st, status: !st.status } : st
+      )
+    );
   };
 
   const handleUpdateSubtaskPriority = async (subtaskId, newPriority) => {
-    try {
-      const subtaskToUpdate = subtasks.find(st => st.id === subtaskId);
-      if (!subtaskToUpdate) return;
-      const updatedSubtask = {
-        ...subtaskToUpdate,
-        priority: newPriority
-      };
-      await updateSubTask({ taskId: initialValues.id, subtaskId, subtask: updatedSubtask }).unwrap();
-      setSubtasks(subtasks.map(st =>
-        st.id === subtaskId ? { ...st, priority: newPriority } : st
-      ));
-    } catch (error) {
-      console.error("Error updating subtask priority:", error);
+    const subtaskToUpdate = subtasks.find(st => st.id === subtaskId);
+    if (!subtaskToUpdate) return;
+
+    // If editing existing task, update in DB
+    if (isEditing && initialValues?.id) {
+      try {
+        const updatedSubtask = {
+          ...subtaskToUpdate,
+          priority: newPriority
+        };
+        await updateSubTask({ taskId: initialValues.id, subtaskId, subtask: updatedSubtask }).unwrap();
+      } catch (error) {
+        console.error("Error updating subtask priority:", error);
+        return;
+      }
     }
+
+    // Update local state
+    setSubtasks(subtasks.map(st =>
+      st.id === subtaskId ? { ...st, priority: newPriority } : st
+    ));
   };
 
   const toggleUserAssignment = (member) => {
@@ -273,6 +320,45 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
             Task title is required
           </p>
         )}
+      </div>
+
+      {/* Task Type and Story Points Row */}
+      <div className="mb-6 grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="taskType" className="block text-sm font-medium text-[var(--text)] mb-2">
+            Type
+          </label>
+          <select
+            id="taskType"
+            value={taskType}
+            onChange={(e) => setTaskType(e.target.value)}
+            className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
+          >
+            {Object.values(TASK_TYPES).map(type => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="storyPoints" className="block text-sm font-medium text-[var(--text)] mb-2">
+            Story Points
+          </label>
+          <select
+            id="storyPoints"
+            value={storyPoints}
+            onChange={(e) => setStoryPoints(Number(e.target.value))}
+            className="w-full px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all duration-200"
+          >
+            {STORY_POINTS_OPTIONS.map(points => (
+              <option key={points} value={points}>
+                {points === 0 ? 'None' : points}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Priority and Completion Row */}
@@ -415,6 +501,20 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
         )}
       </div>
 
+      {/* Labels */}
+      {projectId && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-[var(--text)] mb-2">
+            Labels
+          </label>
+          <LabelPicker
+            projectId={projectId}
+            selectedLabels={labels}
+            onChange={setLabels}
+          />
+        </div>
+      )}
+
       {/* Description Section (Collapsible) */}
       <div className="mb-6">
         <button
@@ -449,21 +549,18 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
           className="flex items-center justify-between w-full py-2 text-sm font-medium text-left text-[var(--text)] hover:text-[var(--color-primary)] focus:outline-none transition-colors"
           onClick={() => setIsSubtasksCollapsed(!isSubtasksCollapsed)}
         >
-          <span>Subtasks {isEditing && `(${subtasks.length})`}</span>
-          {isEditing && (
-            <svg
-              className={`w-5 h-5 transform transition-transform duration-200 ${isSubtasksCollapsed ? '' : 'rotate-180'}`}
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          )}
+          <span>Subtasks {subtasks.length > 0 && `(${subtasks.length})`}</span>
+          <svg
+            className={`w-5 h-5 transform transition-transform duration-200 ${isSubtasksCollapsed ? '' : 'rotate-180'}`}
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
         </button>
 
-        {isEditing ? (
-          <div className={`mt-3 ${isSubtasksCollapsed ? 'hidden' : ''}`}>
+        <div className={`mt-3 ${isSubtasksCollapsed ? 'hidden' : ''}`}>
             {(subtasks || []).length > 0 && (
               <div className="space-y-2 mb-3">
                 {(subtasks || []).map((subtask) => (
@@ -532,9 +629,6 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
               </button>
             </div>
           </div>
-        ) : (
-          <p className="mt-2 text-xs text-[var(--text-muted)]">Save the task first to add subtasks</p>
-        )}
       </div>
     </Modal>
   );
