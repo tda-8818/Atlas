@@ -33,22 +33,6 @@ const defaultColumns = [
   }
 ];
 
-// Generate a color based on a string (name)
-const stringToColor = (str) => {
-  if (!str) return '#000000';
-
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  let color = '#';
-  for (let i = 0; i < 3; i++) {
-    const value = (hash >> (i * 8)) & 0xFF;
-    color += ('00' + value.toString(16)).substr(-2);
-  }
-  return color;
-};
-
 // Avatar component with fallback to initials
 const Avatar = ({ user, size = "small" }) => {
   if (!user) return null;
@@ -56,24 +40,18 @@ const Avatar = ({ user, size = "small" }) => {
   const sizeClass = size === "small" ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm";
 
   return (
-    <div className={`relative rounded-full overflow-hidden ${sizeClass} flex items-center justify-center`}>
-      {user.avatar ? (
+    <div className={`relative rounded-full overflow-hidden shadow-sm ${sizeClass} flex items-center justify-center`}>
+      {user.avatar || user.profilePic ? (
         <img
-          src={user.avatar}
-          alt={user.name}
+          src={user.avatar || user.profilePic}
+          alt={user.name || `${user.firstName} ${user.lastName}`}
           className="w-full h-full object-cover"
-          onError={(e) => {
-            e.target.style.display = 'none';
-            e.target.nextSibling.style.display = 'flex';
-          }}
         />
-      ) : null}
-      <div
-        className={`absolute inset-0 bg-blue-500 text-white flex items-center justify-center ${user.avatar ? 'hidden' : ''}`}
-        style={{ backgroundColor: stringToColor(user.name) }}
-      >
-        {user.initials}
-      </div>
+      ) : (
+        <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center text-white font-semibold">
+          {user.initials || `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()}
+        </div>
+      )}
     </div>
   );
 };

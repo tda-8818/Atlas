@@ -155,7 +155,7 @@ const ProjectUsersModal = ({
             {selectedUsersToAdd.map((user) => (
               <div key={user._id} className="flex items-center justify-between p-2 bg-[var(--background-primary)] rounded-lg hover:bg-[var(--background)] transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[var(--color-primary)] text-white rounded-full flex items-center justify-center font-medium text-sm">
+                  <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] text-white rounded-full flex items-center justify-center font-medium text-sm shadow-sm">
                     {user.firstName[0]}{user.lastName[0]}
                   </div>
                   <div>

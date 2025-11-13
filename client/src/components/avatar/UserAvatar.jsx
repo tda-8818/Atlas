@@ -18,9 +18,8 @@ const UserAvatar = ({ user, size=8 }) => {
   return (
     <div
       className={`
-        w-${size} h-${size} rounded-full border border-gray-300
-        bg-[var(--background-secondary)] text-[var(--text)]
-        flex items-center justify-center overflow-hidden
+        w-${size} h-${size} rounded-full
+        flex items-center justify-center overflow-hidden shadow-sm
       `}
 
     >
@@ -32,9 +31,11 @@ const UserAvatar = ({ user, size=8 }) => {
           className="w-full h-full object-cover rounded-full"
         />
       ) : (
-        <span className="text-xs font-semibold">
-          {initials}
-        </span>
+        <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center">
+          <span className="text-xs font-semibold text-white">
+            {initials}
+          </span>
+        </div>
       )}
     </div>
   );

@@ -185,7 +185,7 @@ const Settings = ({ setTheme }) => {
           {/* Profile Picture */}
           <div className="flex items-start gap-6 mb-6 pb-6 border-b border-[var(--border-color)]">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-[var(--background-secondary)] border-2 border-[var(--border-color)]">
+              <div className="w-24 h-24 rounded-full overflow-hidden shadow-md">
                 {profileImagePreview ? (
                   <img
                     src={profileImagePreview}
@@ -193,7 +193,7 @@ const Settings = ({ setTheme }) => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-[var(--color-primary)]">
+                  <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center text-3xl font-bold text-white">
                     {firstName.charAt(0).toUpperCase()}
                   </div>
                 )}
