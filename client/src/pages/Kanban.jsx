@@ -10,65 +10,18 @@ import { useGetProjectSprintsQuery } from '../redux/slices/sprintSlice';
 import { TaskTypeIcon, getTaskTypeConfig } from '../utils/taskTypeUtils';
 import UserAvatar from '../components/avatar/UserAvatar';
 
-// Define priority levels
+// Priority levels used in the app
 const priorityLevels = ['none', '!', '!!', '!!!'];
-
-// Define sample tags (no longer used for dropdown, but kept for reference/initial data)
-const sampleTags = ['Design', 'Development', 'Marketing', 'Research', 'Bug'];
-
-const defaultColumns = [
-  {
-    id: "6820365eb1d5ba37bb22848a",
-    title: "Unsorted Tasks",
-    cards: [
-      {
-        id: "card-1",
-        title: "Example Task",
-        tag: "Design", // Initial tag
-        dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(), // 7 days from now
-        assignedTo: ["user-1"], // Changed to array for multiple assignments
-        description: "This is an example task description.",
-        subtasks: [
-          { id: "subtask-1", title: "Research component libraries", completed: false, priority: '!' }, // Changed importance to priority
-          { id: "subtask-2", title: "Sketch initial UI", completed: true, priority: '!!' }, // Changed importance to priority
-        ],
-        priority: '!!' // Changed importance to priority
-      }
-    ]
-  }
-];
-
-// Avatar component with fallback to initials
-const Avatar = ({ user, size = "small" }) => {
-  if (!user) return null;
-
-  const sizeClass = size === "small" ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm";
-
-  return (
-    <div className={`relative rounded-full overflow-hidden shadow-sm ${sizeClass} flex items-center justify-center`}>
-      {user.avatar || user.profilePic ? (
-        <img
-          src={user.avatar || user.profilePic}
-          alt={user.name || `${user.firstName} ${user.lastName}`}
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center text-white font-semibold">
-          {user.initials || `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()}
-        </div>
-      )}
-    </div>
-  );
-};
 
 
 const Kanban = () => {
-  const [columns, setColumns] = useState(defaultColumns);
+  const [columns, setColumns] = useState([]);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [addTaskColumnIndex, setAddTaskColumnIndex] = useState(null);
 
   const [newColumnName, setNewColumnName] = useState("");
-  const [selectedCard, setSelectedCard] = useState(null); // Temporary state for editing
+  const [showAddColumn, setShowAddColumn] = useState(false);
+  const [selectedCard, setSelectedCard] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   const [editingColumnIndex, setEditingColumnIndex] = useState(null);
@@ -172,17 +125,15 @@ const Kanban = () => {
     return true;
   };
 
-  //
   const mapTasksToColumns = () => {
     if (!columnData || !projectTasks) return [];
-    console.log("project tasks: ", projectTasks);
 
     return columnData.map(column => ({
       id: column._id,
       title: column.title,
       cards: projectTasks
         .filter(task => task.columnId === column._id)
-        .filter(applyFilters) // Apply filters
+        .filter(applyFilters)
         .map(task => ({
           ...task,
           id: String(task._id),
@@ -190,21 +141,13 @@ const Kanban = () => {
     }));
   }
 
-  // Effect to handle click outside and keydown for the card detail modal
+  // Update columns when project data changes
   useEffect(() => {
     refetch();
     if (!currentProject || !projectTasks) return;
 
-    // console.log("current Project", currentProject);
-    // console.log("Got tasks in Kanban:", projectTasks);
-    // console.log("Got columns from project:", columnData);
-    console.log('projectTasks changed:', projectTasks);
     const formatted = mapTasksToColumns();
-
-    //console.log("FORMATTED COLUMN OBJECTS:", formatted);
     setColumns(formatted);
-
-    console.log("formatted columns", formatted);
 
     if (selectedCard) {
       const handleClickOutside = (event) => {
@@ -333,26 +276,32 @@ const Kanban = () => {
 
   const addColumn = async () => {
     if (!newColumnName.trim()) return;
-    //const columnId = generateId("column")
 
-    const newColumn = {
-      title: newColumnName,
-      index: columns.length,
+    try {
+      const newColumn = {
+        title: newColumnName,
+        index: columns.length,
+      };
+
+      const response = await createColumn({
+        projectId: currentProject._id,
+        columnData: newColumn
+      }).unwrap();
+
+      setColumns([
+        ...columns,
+        {
+          id: response._id,
+          title: response.title,
+          cards: [],
+        },
+      ]);
+
+      setNewColumnName("");
+      setShowAddColumn(false);
+    } catch (error) {
+      console.error("Failed to create column:", error);
     }
-    console.log("Attempting to create new column: ", currentProject._id, newColumn);
-    const response = await createColumn({ projectId: currentProject._id, columnData: newColumn }).unwrap();
-    console.log("RESPONSE FROM CREATING A COLUMN", response);
-
-    setColumns([
-      ...columns,
-      {
-        id: response._id,
-        title: response.title,
-        cards: [],
-      },
-    ]);
-    //console.log(columnId, typeof(columnId));
-    setNewColumnName("");
   };
 
 
@@ -362,7 +311,7 @@ const Kanban = () => {
       console.warn("Missing task title!")
       return;
     }
-    console.log("Prepared Task Data:", cardData);
+
     if (
       addTaskColumnIndex === null ||
       addTaskColumnIndex < 0 ||
@@ -376,8 +325,6 @@ const Kanban = () => {
 
     const columnId = columns[addTaskColumnIndex].id;
 
-    console.log("Attempting to addTask to: ", columnId);
-    console.log("CardData:", cardData);
 
     try {
       // Extract subtasks from cardData before creating task
@@ -391,11 +338,9 @@ const Kanban = () => {
         dueDate: cardData.dueDate ? new Date(cardData.dueDate) : undefined,
       }).unwrap();
 
-      console.log("Received response after creating task", response);
 
       // Create subtasks if any were provided
       if (subtasks && subtasks.length > 0) {
-        console.log("Creating subtasks for new task:", subtasks);
         for (const subtask of subtasks) {
           try {
             await createSubTask({
@@ -452,7 +397,6 @@ const Kanban = () => {
 
     // columnIndex is the index of the column you want to delete.  
     const columnToDelete = columns[columnIndex];
-    console.log("Trying to delete column with ID:", columnToDelete.id);
     try {
       await deleteColumn({ projectId: currentProject._id, columnId: columnToDelete.id }).unwrap();
 
@@ -480,7 +424,6 @@ const Kanban = () => {
 
     const cardToDelete = columns[columnIndex].cards[cardIndex];
     //const columnId = columns[columnIndex].id;
-    console.log("Attempting to delete:", cardToDelete._id);
     try {
       await deleteTask(
         cardToDelete._id,
@@ -515,7 +458,6 @@ const Kanban = () => {
     // which might lead to unexpected behavior, but fulfills the "save even if no changes"
     // and "save on enter" requirements, including when only assignment changed.
     // Consider adding a more robust check here if saving an empty title is problematic.
-    console.log("Saving changes for card:", cardData);
 
     const { columnIndex, cardIndex, ...cardDataToSave } = selectedCard;
     const newCardData = {
@@ -541,7 +483,6 @@ const Kanban = () => {
     try {
       // Send data to backend to edit task
       const response = await editTask(newCardData).unwrap();
-      console.log("Task successfully updated:", response);
 
 
       const updatedColumns = [...columns];
@@ -551,7 +492,6 @@ const Kanban = () => {
         ...response, // Overwrite with fresh backend data
       };
 
-      console.log("updated card", updatedColumns[columnIndex].cards[cardIndex]);
 
       // Set selectedCard to null AFTER the state update to close the modal
       setColumns(updatedColumns);
@@ -586,7 +526,6 @@ const Kanban = () => {
     const { source, destination, type } = result;
     const columnsCopy = [...columns];
 
-    console.log("drag detected");
 
     // If we're dragging columns
     if (type === "column") {
@@ -693,7 +632,6 @@ const Kanban = () => {
   const openCardDetails = (columnIndex, cardIndex) => {
     if (columnIndex < 0 || columnIndex >= columns.length) return;
     if (cardIndex < 0 || cardIndex >= columns[columnIndex].cards.length) return;
-    console.log("team members: ", teamMembers);
  
     const card = columns[columnIndex].cards[cardIndex];
     setSelectedCard({
@@ -706,7 +644,6 @@ const Kanban = () => {
       subtasks: card.subtasks || [],
     });
 
-    console.log("Selected card for details:", card);
 
     setCurrentCardIndex(cardIndex);
     setCurrentColumnIndex(columnIndex);
@@ -781,53 +718,74 @@ const Kanban = () => {
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className="kanban-column bg-[var(--background)] rounded-lg shadow p-3 flex flex-col"
+                        className="kanban-column bg-[var(--background)] rounded-xl border border-gray-200/50 flex flex-col"
                         style={{
                           ...provided.draggableProps.style,
-                          width: "270px",
-                          minWidth: "270px",
+                          width: "300px",
+                          minWidth: "300px",
                           marginRight: "16px",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)",
                         }}
                       >
                         {/* Column Header */}
                         <div
                           {...provided.dragHandleProps}
-                          className="flex justify-between items-center mb-3 p-2 bg-[var(--background-secondary)] rounded-t"
+                          className="flex flex-col mb-2 p-4 pb-3 border-b border-gray-100"
                         >
-                          {editingColumnIndex === columnIndex ? (
-                            <div className="flex-1">
-                              <input
-                                value={editColumnName}
-                                onChange={(e) => setEditColumnName(e.target.value)}
-                                className="border rounded px-2 py-1 text-sm w-full text-gray-800"
-                                autoFocus
-                                onBlur={saveColumnName}
-                                onKeyDown={handleColumnNameKeyDown}
-                              />
-                            </div>
-                          ) : (
-                            <h2
-                              className="font-bold text-[var(--text)] text-sm uppercase cursor-pointer hover:text-blue-600"
-                              onDoubleClick={() => startEditingColumnName(columnIndex)}
-                            >
-                              {column.title} ({column.cards.length})
-                            </h2>
-                          )}
+                          <div className="flex justify-between items-center mb-2">
+                            {editingColumnIndex === columnIndex ? (
+                              <div className="flex-1">
+                                <input
+                                  value={editColumnName}
+                                  onChange={(e) => setEditColumnName(e.target.value)}
+                                  className="border-2 border-blue-500 rounded-lg px-3 py-2 text-sm w-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                  autoFocus
+                                  onBlur={saveColumnName}
+                                  onKeyDown={handleColumnNameKeyDown}
+                                />
+                              </div>
+                            ) : (
+                              <h2
+                                className="font-semibold text-[var(--text)] text-base cursor-pointer hover:text-blue-600 transition-colors flex-1"
+                                onDoubleClick={() => startEditingColumnName(columnIndex)}
+                              >
+                                {column.title}
+                              </h2>
+                            )}
 
-                          {editingColumnIndex !== columnIndex && (
-                            <button
-                              onClick={()=>{ setConfirmDelete({
-                                type: 'column',
-                                index: columnIndex
-                              }); removeColumn();}}
-                              className="text-gray-400 hover:text-red-500 transition-colors"
-                              disabled={columns.length <= 1}
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            {editingColumnIndex !== columnIndex && (
+                              <button
+                                onClick={()=>{ setConfirmDelete({
+                                  type: 'column',
+                                  index: columnIndex
+                                }); removeColumn();}}
+                                className="text-gray-400 hover:text-red-500 transition-colors ml-2 p-1 hover:bg-red-50 rounded"
+                                disabled={columns.length <= 1}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Column Stats */}
+                          <div className="flex items-center gap-3 text-xs text-gray-500">
+                            <span className="flex items-center gap-1">
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                               </svg>
-                            </button>
-                          )}
+                              {column.cards.length} {column.cards.length === 1 ? 'task' : 'tasks'}
+                            </span>
+                            {column.cards.reduce((sum, card) => sum + (card.storyPoints || 0), 0) > 0 && (
+                              <span className="flex items-center gap-1">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                </svg>
+                                {column.cards.reduce((sum, card) => sum + (card.storyPoints || 0), 0)} pts
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         {/* Cards Container */}
@@ -836,7 +794,7 @@ const Kanban = () => {
                             <div
                               ref={provided.innerRef}
                               {...provided.droppableProps}
-                              className={`flex-1 p-1 rounded min-h-[150px] transition-colors ${snapshot.isDraggingOver ? "bg-blue-50" : ""
+                              className={`flex-1 px-3 pb-2 rounded min-h-[150px] transition-all duration-200 ${snapshot.isDraggingOver ? "bg-blue-50/50" : ""
                                 }`}
                             >
                               {column.cards.map((card, cardIndex) => (
@@ -980,9 +938,12 @@ const Kanban = () => {
                         {/* Button to open the AddTaskModal */}
                         <button
                           onClick={() => openAddTaskModal(columnIndex)}
-                          className="mt-2 text-sm text-gray-500 hover:text-blue-600 w-full py-1 bg-[var(--background-secondary)] rounded"
+                          className="mx-3 mb-3 mt-1 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 w-auto px-3 py-2 bg-transparent rounded-lg transition-all duration-200 flex items-center gap-2 font-medium group"
                         >
-                          + Add Task
+                          <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add Task
                         </button>
                       </div>
                     )}
@@ -991,23 +952,54 @@ const Kanban = () => {
                 {provided.placeholder}
 
                 {/* Add Column UI */}
-                <div className="add-column bg-[var(--background)] rounded-lg shadow p-3" style={{
-                  width: "270px",
-                  minWidth: "270px"
-                }}>
-                  <input
-                    value={newColumnName}
-                    onChange={(e) => setNewColumnName(e.target.value)}
-                    placeholder="New Column Title"
-                    className="font-bold text-[var(--text)] text-sm uppercase mb-3 p-2 bg-[var(--background-secondary)] rounded-t border-none focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                  <button
-                    onClick={addColumn}
-                    className="w-full py-1 bg-[var(--background-secondary)] rounded text-sm text-gray-700 hover:text-black"
+                {showAddColumn ? (
+                  <div
+                    className="bg-[var(--background)] rounded-xl border border-gray-200/50 p-4"
+                    style={{
+                      width: "300px",
+                      minWidth: "300px",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)",
+                    }}
                   >
-                    Save
+                    <input
+                      value={newColumnName}
+                      onChange={(e) => setNewColumnName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newColumnName.trim()) {
+                          addColumn();
+                        }
+                        if (e.key === 'Escape') {
+                          setShowAddColumn(false);
+                          setNewColumnName("");
+                        }
+                      }}
+                      onBlur={() => {
+                        if (newColumnName.trim()) {
+                          addColumn();
+                        } else {
+                          setShowAddColumn(false);
+                          setNewColumnName("");
+                        }
+                      }}
+                      placeholder="Column name"
+                      className="w-full text-sm px-3 py-2.5 bg-white border-2 border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium text-gray-800 placeholder-gray-400"
+                      autoFocus
+                    />
+                    <div className="mt-2 text-xs text-gray-500 px-1">
+                      Press <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-gray-600 font-mono">Enter</kbd> to save • <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-gray-600 font-mono">Esc</kbd> to cancel
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowAddColumn(true)}
+                    className="flex items-center gap-2 px-4 py-3 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-all group"
+                  >
+                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span className="text-sm font-medium">Add Column</span>
                   </button>
-                </div>
+                )}
               </div>
             )}
           </Droppable>
