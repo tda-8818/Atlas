@@ -9,6 +9,7 @@ const FilterBar = ({
   onFilterChange,
   teamMembers = [],
   availableLabels = [],
+  availableSprints = [],
   currentUserId
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,6 +18,7 @@ const FilterBar = ({
   const [selectedLabels, setSelectedLabels] = useState([]);
   const [selectedAssignees, setSelectedAssignees] = useState([]);
   const [selectedTaskTypes, setSelectedTaskTypes] = useState([]);
+  const [selectedSprint, setSelectedSprint] = useState('all');
   const [showCompleted, setShowCompleted] = useState(true);
   const [quickFilter, setQuickFilter] = useState(null);
 
@@ -42,11 +44,12 @@ const FilterBar = ({
       labels: selectedLabels,
       assignees: selectedAssignees,
       taskTypes: selectedTaskTypes,
+      sprint: selectedSprint,
       showCompleted,
       quickFilter
     };
     onFilterChange(filters);
-  }, [searchQuery, selectedPriorities, selectedLabels, selectedAssignees, selectedTaskTypes, showCompleted, quickFilter]);
+  }, [searchQuery, selectedPriorities, selectedLabels, selectedAssignees, selectedTaskTypes, selectedSprint, showCompleted, quickFilter]);
 
   const togglePriority = (priority) => {
     setQuickFilter(null);
@@ -90,6 +93,7 @@ const FilterBar = ({
     setSelectedLabels([]);
     setSelectedAssignees([]);
     setSelectedTaskTypes([]);
+    setSelectedSprint('all');
     setShowCompleted(true);
     setQuickFilter(null);
   };
@@ -155,7 +159,7 @@ const FilterBar = ({
         </button>
       </div>
 
-      {/* Quick Filter Buttons */}
+      {/* Quick Filter Buttons and Sprint Selector */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-sm text-[var(--text-muted)] mr-2">Quick filters:</span>
         <button
@@ -188,6 +192,46 @@ const FilterBar = ({
         >
           Unassigned
         </button>
+
+        {/* Sprint Selector */}
+        {availableSprints && availableSprints.length > 0 && (
+          <>
+            <span className="text-sm text-[var(--text-muted)] ml-4 mr-2">Sprint:</span>
+            <select
+              value={selectedSprint}
+              onChange={(e) => setSelectedSprint(e.target.value)}
+              className="px-3 py-1.5 text-sm bg-[var(--background-primary)] text-[var(--text)] border border-[var(--border-color-accent)] rounded-lg hover:bg-[var(--background-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition-all duration-200"
+            >
+              <option value="all">All Tasks</option>
+              <option value="backlog">Backlog (No Sprint)</option>
+              {availableSprints
+                .filter(sprint => sprint.status === 'active')
+                .map(sprint => (
+                  <option key={sprint._id} value={sprint._id}>
+                    🟢 {sprint.name} (Active)
+                  </option>
+                ))
+              }
+              {availableSprints
+                .filter(sprint => sprint.status === 'planned')
+                .map(sprint => (
+                  <option key={sprint._id} value={sprint._id}>
+                    ⚪ {sprint.name}
+                  </option>
+                ))
+              }
+              {availableSprints
+                .filter(sprint => sprint.status === 'completed')
+                .map(sprint => (
+                  <option key={sprint._id} value={sprint._id}>
+                    ✅ {sprint.name}
+                  </option>
+                ))
+              }
+            </select>
+          </>
+        )}
+
         {activeFilterCount > 0 && (
           <button
             onClick={clearAllFilters}

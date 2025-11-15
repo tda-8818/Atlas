@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Calendar from "./pages/Calendar";
 import Kanban from "./pages/Kanban";
 import Gantt from "./pages/Gantt";
+import Backlog from "./pages/Backlog";
 import Settings from "./pages/Settings";
 import ProjectLayout from "./layouts/ProjectLayout.jsx";
 import { useEffect, useState, useRef } from "react";
@@ -101,6 +102,7 @@ function App() {
               <Route index element={<Navigate to="dashboard" replace />} /> {/* Default project page */}
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="kanban" element={<Kanban />} />
+              <Route path="backlog" element={<Backlog />} />
               <Route path="calendar" element={<Calendar />} />
               <Route path="gantt" element={<Gantt />} />
             </Route>

@@ -8,6 +8,7 @@ import userRoutes from './routes/userRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
 import labelRoutes from './routes/labelRoutes.js';
+import sprintRoutes from './routes/sprintRoutes.js';
 import mongoose from 'mongoose'; // Mongoose for connecting to MongoDB
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -84,6 +85,7 @@ app.use('/settings', userRoutes); // Note: /settings path, ensure this is intend
 app.use('/api/tasks', taskRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/labels', labelRoutes);
+app.use('/api/sprints', sprintRoutes);
 
 // Global error handler middleware
 app.use((err, req, res, next) => {

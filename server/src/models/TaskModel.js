@@ -20,6 +20,8 @@ const taskSchema = new mongoose.Schema(
        },
        storyPoints: {type: Number, default: 0, min: 0},
        labels: [{type: mongoose.Schema.Types.ObjectId, ref: 'label', default: []}],
+       // Phase 2: Sprint management
+       sprintId: {type: mongoose.Schema.Types.ObjectId, ref: 'sprint', default: null},
     }, {timestamps: true}
 );
 

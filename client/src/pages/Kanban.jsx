@@ -6,6 +6,7 @@ import { useOutletContext } from "react-router-dom";
 import { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation, useCreateSubTaskMutation } from "../redux/slices/taskSlice";
 import { useCreateColumnMutation, useDeleteColumnMutation, useGetProjectColumnsQuery, useGetProjectTasksQuery, useUpdateColumnMutation, useGetProjectUsersQuery } from "../redux/slices/projectSlice";
 import { useGetProjectLabelsQuery } from '../redux/slices/labelSlice';
+import { useGetProjectSprintsQuery } from '../redux/slices/sprintSlice';
 import { TaskTypeIcon, getTaskTypeConfig } from '../utils/taskTypeUtils';
 import UserAvatar from '../components/avatar/UserAvatar';
 
@@ -109,6 +110,7 @@ const Kanban = () => {
   const { data: columnData} = useGetProjectColumnsQuery(currentProject._id);
   const { data: teamMembers } = useGetProjectUsersQuery(currentProject._id);
   const { data: projectLabels } = useGetProjectLabelsQuery(currentProject._id);
+  const { data: projectSprints } = useGetProjectSprintsQuery(currentProject._id);
   
 
   // Filter function to apply all active filters
@@ -149,6 +151,17 @@ const Kanban = () => {
     // Task type filter
     if (filters.taskTypes.length > 0) {
       if (!filters.taskTypes.includes(task.taskType || 'task')) return false;
+    }
+
+    // Sprint filter
+    if (filters.sprint && filters.sprint !== 'all') {
+      if (filters.sprint === 'backlog') {
+        // Show only tasks without a sprint
+        if (task.sprintId) return false;
+      } else {
+        // Show only tasks in the selected sprint
+        if (task.sprintId !== filters.sprint) return false;
+      }
     }
 
     // Completed filter
@@ -741,6 +754,7 @@ const Kanban = () => {
         onFilterChange={setFilters}
         teamMembers={teamMembers || []}
         availableLabels={projectLabels || []}
+        availableSprints={projectSprints || []}
         currentUserId={user?._id}
       />
 
@@ -836,10 +850,22 @@ const Kanban = () => {
                                       ref={provided.innerRef}
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
-                                      className={`kanban-card p-3 rounded shadow mb-2 flex flex-col cursor-pointer hover:shadow-md transition-shadow relative ${snapshot.isDragging ? "shadow-lg" : ""
-                                        }`}
+                                      className={`kanban-card p-3 rounded shadow mb-2 flex flex-col cursor-pointer hover:shadow-md transition-all relative ${
+                                        snapshot.isDragging ? "shadow-lg" : ""
+                                      } ${
+                                        card.status ? "border-2 border-gray-300" : ""
+                                      }`}
                                       onClick={() => openCardDetails(columnIndex, cardIndex)}
                                     >
+                                      {/* Completed Badge */}
+                                      {card.status && (
+                                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-md z-10 border-2 border-white">
+                                          <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                          </svg>
+                                        </div>
+                                      )}
+
                                       {/* Header with Task Type Icon and Story Points */}
                                       <div className="flex justify-between items-start mb-2">
                                         <div className="flex items-center gap-2 flex-1">
@@ -847,10 +873,10 @@ const Kanban = () => {
                                           <TaskTypeIcon type={card.taskType || 'task'} size="md" />
 
                                           <div className="flex-1">
-                                            <div className="text-sm font-medium flex items-center">
+                                            <div className={`text-sm font-medium flex items-center ${card.status ? "line-through text-gray-400" : ""}`}>
                                               {/* Display Priority in front of task name */}
                                               {card.priority && card.priority !== 'none' && (
-                                                <span className="mr-1 text-xs font-bold text-red-500">
+                                                <span className={`mr-1 text-xs font-bold ${card.status ? "text-gray-400" : "text-red-500"}`}>
                                                   {card.priority}
                                                 </span>
                                               )}
@@ -889,7 +915,7 @@ const Kanban = () => {
                                       )}
 
                                       {card.description && (
-                                        <div className="text-xs text-gray-600 mb-2 truncate">
+                                        <div className={`text-xs mb-2 truncate ${card.status ? "text-gray-400 line-through" : "text-gray-600"}`}>
                                           {card.description.substring(0, 60)}
                                           {card.description.length > 60 ? "..." : ""}
                                         </div>

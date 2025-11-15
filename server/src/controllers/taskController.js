@@ -62,7 +62,8 @@ export const createTask = async (req, res) => {
             status,
             taskType,
             storyPoints,
-            labels
+            labels,
+            sprintId
         } = req.body;
 
         if (!projectId) {
@@ -88,7 +89,8 @@ export const createTask = async (req, res) => {
             status,
             taskType: taskType || 'task',
             storyPoints: storyPoints || 0,
-            labels: labels || []
+            labels: labels || [],
+            sprintId: sprintId || null
         };
 
         const newTask = new Task(taskData);
@@ -137,7 +139,8 @@ export const updateTask = async (req, res) => {
         startDate,
         taskType,
         storyPoints,
-        labels
+        labels,
+        sprintId
     } = req.body;
     console.log("id: ",id);
     try {
@@ -153,7 +156,8 @@ export const updateTask = async (req, res) => {
                 startDate,
                 ...(taskType !== undefined && { taskType }),
                 ...(storyPoints !== undefined && { storyPoints }),
-                ...(labels !== undefined && { labels })
+                ...(labels !== undefined && { labels }),
+                ...(sprintId !== undefined && { sprintId })
             },
             { new: true }
         ).populate('labels').populate('assignedTo', 'firstName lastName profilePic');

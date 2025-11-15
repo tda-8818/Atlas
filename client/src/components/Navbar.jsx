@@ -1,6 +1,7 @@
 import React from 'react';
 import { RxDashboard, RxCalendar } from "react-icons/rx";
 import { LuChartGantt, LuSquareKanban } from "react-icons/lu";
+import { FaList } from "react-icons/fa";
 import { useLocation, useNavigate } from 'react-router-dom';
 import CurrentUserAvatar from './avatar/CurrentUserAvatar'; 
 
@@ -17,6 +18,7 @@ const Navbar = ({ project }) => {
   const navLinks = [
     { label: 'Dashboard', icon: <RxDashboard />, href: `/projects/${_id}/dashboard` },
     { label: 'Kanban Board', icon: <LuSquareKanban />, href: `/projects/${_id}/kanban` },
+    { label: 'Backlog', icon: <FaList />, href: `/projects/${_id}/backlog` },
     { label: 'Calendar', icon: <RxCalendar />, href: `/projects/${_id}/calendar` },
     { label: 'Gantt Chart', icon: <LuChartGantt />, href: `/projects/${_id}/gantt` },
   ];
