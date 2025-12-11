@@ -8,7 +8,7 @@ import Projects from "./pages/Projects.jsx";
 import Dashboard from "./pages/Dashboard";
 import Calendar from "./pages/Calendar";
 import Kanban from "./pages/Kanban";
-import Gantt from "./pages/Gantt";
+import GanttNew from "./pages/GanttNew";
 import Backlog from "./pages/Backlog";
 import Settings from "./pages/Settings";
 import ProjectLayout from "./layouts/ProjectLayout.jsx";
@@ -104,7 +104,7 @@ function App() {
               <Route path="kanban" element={<Kanban />} />
               <Route path="backlog" element={<Backlog />} />
               <Route path="calendar" element={<Calendar />} />
-              <Route path="gantt" element={<Gantt />} />
+              <Route path="gantt" element={<GanttNew />} />
             </Route>
 
             {/* Catch-All Route (404 equivalent) */}

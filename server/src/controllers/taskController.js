@@ -1,7 +1,6 @@
 import Project from '../models/ProjectModel.js';
 import Task from '../models/TaskModel.js';
 import Column from '../models/ColumnModel.js';
-import Subtask from '../models/subtaskModel.js';
 /**
  * Gets task details based on the projectId query parameter.
  * If no projectId is provided, it fetches all tasks.
@@ -278,7 +277,7 @@ export const assignUsersToTask = async (req, res) => {
         if (!task) {
             return res.status(404).json({ message: "Task not found"});
         }
-        const subtasks = await Subtask.find({ parentTaskId: taskId });
+        const subtasks = await Task.find({ parentTaskId: taskId }).populate('assignedTo').populate('labels');
         console.log("subtasks: ", subtasks);
         res.status(200).json(subtasks);
     } catch (error) {
@@ -290,10 +289,11 @@ export const assignUsersToTask = async (req, res) => {
   export const createSubTask = async(req, res) => {
     try {
         const { taskId } = req.params
-        const { title, priority } = req.body;
+        const { title, priority, status } = req.body;
         console.log('createSubTask has been executed received taskId', taskId);
         console.log('createSubTask has been executed received title', title);
         console.log('createSubTask has been executed received priority', priority);
+        console.log('createSubTask has been executed received status', status);
         console.log('createSubTask has been executed received body', req.body);
 
         if (!taskId){
@@ -305,20 +305,31 @@ export const assignUsersToTask = async (req, res) => {
         if (!mainTask) {
             return res.status(400).json({message: "Error in createSubTask. Cannot find task to insert!"})
         }
-        
-        // Create a new subtask with a reference to the parent task
-        const newSubtask = await Subtask.create({
+
+        // Create a new subtask as a full Task with a reference to the parent task
+        const newSubtask = await Task.create({
             title,
-            priority,
-            parentTaskId: taskId
+            priority: priority || 'None',
+            status: status || false,
+            parentTaskId: taskId,
+            projectId: mainTask.projectId,
+            columnId: mainTask.columnId,
+            description: req.body.description || '',
+            assignedTo: req.body.assignedTo || [],
+            startDate: req.body.startDate || null,
+            dueDate: req.body.dueDate || null,
+            taskType: req.body.taskType || 'task',
+            storyPoints: req.body.storyPoints || 0,
+            labels: req.body.labels || [],
+            sprintId: mainTask.sprintId
         });
-        
+
         // insert subtask into mainTask
         mainTask.subtasks.push(newSubtask._id);
         await mainTask.save();
 
         console.log(`Subtask ${title} inserted into ${mainTask.title}!`);
-        
+
         return res.status(201).json(newSubtask);
 
     } catch (error) {
@@ -339,8 +350,8 @@ export const assignUsersToTask = async (req, res) => {
         const { subtaskId } = req.params
         console.log('deleteSubTasks has been executed received taskId', subtaskId);
 
-        const task_to_delete = await Subtask.findById(subtaskId);
-    
+        const task_to_delete = await Task.findById(subtaskId);
+
         if (!task_to_delete) {
             return res.status(404).json({ message: "Task not found"});
         }
@@ -351,8 +362,8 @@ export const assignUsersToTask = async (req, res) => {
           { $pull: { subtasks: task_to_delete._id}}
         );
 
-        // remove subtask from Subtask database
-        await Subtask.findByIdAndDelete(subtaskId);
+        // remove subtask from Task database
+        await Task.findByIdAndDelete(subtaskId);
 
         res.status(200).json({ message: "Task deleted successfully", deletedTask: task_to_delete });
     } catch (error) {
@@ -390,11 +401,11 @@ export const assignUsersToTask = async (req, res) => {
         if (status !== undefined) updatedFields.status = status;
         if (priority !== undefined) updatedFields.priority = priority;
 
-        const updatedSubtask = await Subtask.findByIdAndUpdate(
-            subtaskId, 
+        const updatedSubtask = await Task.findByIdAndUpdate(
+            subtaskId,
             {$set: updatedFields},
             {new: true},
-        );
+        ).populate('assignedTo').populate('labels');
         if (!updatedSubtask) {
             return res.status(404).json({message: "Subtask not found"});
         }

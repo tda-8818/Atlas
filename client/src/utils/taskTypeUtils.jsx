@@ -1,4 +1,4 @@
-import { FaCheckCircle, FaBug, FaBook, FaBolt } from 'react-icons/fa';
+import { FaCheckCircle, FaBug, FaBook, FaFlag } from 'react-icons/fa';
 
 // Task type configurations
 export const TASK_TYPES = {
@@ -26,13 +26,13 @@ export const TASK_TYPES = {
     bgColor: '#FEF2F2',
     description: 'Issue that needs to be fixed'
   },
-  epic: {
-    value: 'epic',
-    label: 'Epic',
-    icon: FaBolt,
+  milestone: {
+    value: 'milestone',
+    label: 'Milestone',
+    icon: FaFlag,
     color: '#8B5CF6', // Purple
     bgColor: '#F5F3FF',
-    description: 'Large body of work containing multiple tasks'
+    description: 'Significant checkpoint or major deliverable'
   }
 };
 

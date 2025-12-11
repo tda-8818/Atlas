@@ -5,24 +5,32 @@
  */
 import React, { createContext, useContext } from 'react';
 import { useGetCurrentUserProjectsQuery, useGetCurrentUserNotificationsQuery } from '../redux/slices/projectSlice';
+import { useGetCurrentUserQuery } from '../redux/slices/userSlice';
 
 const ProjectsContext = createContext(null);
 
 export const ProjectsProvider = ({ children }) => {
-  // Fetch projects once at this level
+  // Check if user is authenticated before fetching projects
+  const { data: userData, isLoading: userLoading } = useGetCurrentUserQuery();
+
+  // Fetch projects once at this level, only if user is authenticated
   const {
     data: projectsData = [],
     isLoading: projectsLoading,
     isError: projectsError,
     error: projectsErrorData,
     refetch: refetchProjects,
-  } = useGetCurrentUserProjectsQuery();
+  } = useGetCurrentUserProjectsQuery(undefined, {
+    skip: !userData || userLoading, // Skip if no user data or user is still loading
+  });
 
-  // Fetch notifications once at this level
+  // Fetch notifications once at this level, only if user is authenticated
   const {
     data: notificationData = [],
     refetch: refetchNotifications
-  } = useGetCurrentUserNotificationsQuery();
+  } = useGetCurrentUserNotificationsQuery(undefined, {
+    skip: !userData || userLoading, // Skip if no user data or user is still loading
+  });
 
   const value = {
     projectsData,

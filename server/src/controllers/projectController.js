@@ -4,15 +4,8 @@ import Column from  "../models/ColumnModel.js"
 import Task from "../models/TaskModel.js";
 import NotificationModel from "../models/notificationModel.js";
 import { sendProjectInvitationEmail } from "../utils/emailService.js";
-const cookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-  sameSite: 'none',
-  // Set the domain only in production if needed (ensure it matches your actual production domain)
-  domain: process.env.CLIENT_URL,
-  path: '/',
-  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-};
+// This cookieOptions is not used in this file and has been removed
+// Note: Cookie options should be configured in userController.js where cookies are actually set
 
 // This function creates a new project and associates it with the user who created it
 export const createProject = async (req, res) => {

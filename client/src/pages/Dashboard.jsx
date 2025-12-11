@@ -200,9 +200,9 @@ const Dashboard = () => {
                     .filter(task => !task.status)
                     .filter(task => task.assignedTo && task.assignedTo.some(user => user._id === currentUser.user.id))
                     .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
-                    .map((task) => (
+                    .map((task, index) => (
                       <li
-                        key={task.id}
+                        key={task._id || task.id || `task-${index}`}
                         className={`
                         flex items-center justify-between 
                         p-1 rounded whitespace-nowrap overflow-hidden 

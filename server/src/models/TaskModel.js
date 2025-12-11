@@ -12,10 +12,12 @@ const taskSchema = new mongoose.Schema(
        dueDate: {type: Date},
        startDate: {type: Date},
        subtasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
+       // Parent task reference (for subtasks)
+       parentTaskId: {type: mongoose.Schema.Types.ObjectId, ref: 'task', default: null},
        // Phase 1 additions
        taskType: {
            type: String,
-           enum: ['story', 'task', 'bug', 'epic'],
+           enum: ['story', 'task', 'bug', 'milestone'],
            default: 'task'
        },
        storyPoints: {type: Number, default: 0, min: 0},
