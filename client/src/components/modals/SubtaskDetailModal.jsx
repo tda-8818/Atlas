@@ -243,7 +243,7 @@ const SubtaskDetailModal = ({ show, onCancel, onSave, teamMembers = [], initialV
           <div className="flex flex-wrap gap-2 mb-2">
             {assignedTo.map(member => (
               <div key={member._id} className="flex items-center gap-2 bg-[var(--background-primary)] border border-[var(--border-color-accent)] px-3 py-1.5 rounded-lg">
-                <UserAvatar user={member} size={5} />
+                <UserAvatar user={member} size="xs" />
                 <span className="text-sm font-medium text-[var(--text)]">{member.firstName} {member.lastName}</span>
                 <button
                   onClick={() => toggleUserAssignment(member)}
@@ -280,7 +280,7 @@ const SubtaskDetailModal = ({ show, onCancel, onSave, teamMembers = [], initialV
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2 hover:bg-[var(--background-primary)] transition-colors"
                   >
-                    <UserAvatar user={member} size={6} />
+                    <UserAvatar user={member} size="sm" />
                     <span className="text-sm font-medium text-[var(--text)]">{member.firstName} {member.lastName}</span>
                   </button>
                 ))}

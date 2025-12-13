@@ -519,7 +519,7 @@ const CustomGantt = ({ tasks = [], onTaskUpdate, onTaskClick, columns = [], spri
                     <div className="flex -space-x-1 mt-1">
                       {task.assignedTo.slice(0, 3).map((user, idx) => (
                         <div key={user._id || idx} className="relative">
-                          <UserAvatar user={user} size={5} />
+                          <UserAvatar user={user} size="xs" />
                         </div>
                       ))}
                     </div>

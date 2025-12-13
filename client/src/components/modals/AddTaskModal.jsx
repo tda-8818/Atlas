@@ -445,7 +445,7 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
         <div className="flex items-center flex-wrap gap-2 p-3 bg-[var(--background-primary)] border border-[var(--border-color-accent)] rounded-lg min-h-[48px]">
           {(assignedTo || []).map((user) => (
             <div key={user._id} className="flex items-center gap-2 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30 rounded-full pl-1 pr-3 py-1 text-sm text-[var(--text)]">
-              <UserAvatar user={user} size={6} />
+              <UserAvatar user={user} size="sm" />
               <span>{user.firstName}</span>
               <button
                 onClick={() => toggleUserAssignment(user)}
@@ -496,7 +496,7 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
                       setShowMemberSearch(false);
                     }}
                   >
-                    <UserAvatar user={member} size={8} />
+                    <UserAvatar user={member} size="md" />
                     <span className="text-sm text-[var(--text)]">{member.firstName} {member.lastName}</span>
                   </div>
                 ))}
@@ -623,7 +623,7 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
                   <div className="flex -space-x-2 flex-shrink-0">
                     {subtask.assignedTo.slice(0, 3).map((user, idx) => (
                       <div key={user._id || idx} className="relative">
-                        <UserAvatar user={user} size={6} />
+                        <UserAvatar user={user} size="sm" />
                       </div>
                     ))}
                     {subtask.assignedTo.length > 3 && (

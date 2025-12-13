@@ -10,10 +10,21 @@
   object-fit: contain;
 }
 
-/* Calendar base font size */
+/* Calendar container styling */
 .fc {
   font-size: 0.7rem !important;
 }
+
+/* Ensure calendar doesn't overflow */
+.fc .fc-daygrid {
+  overflow: hidden !important;
+}
+
+/* Main calendar view container */
+.fc .fc-view-harness {
+  overflow: hidden !important;
+}
+
 
 /* FullCalendar toolbar title */
 .fc-toolbar-title {
