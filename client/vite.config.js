@@ -7,8 +7,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   
   // Use the VITE_API_URL environment variable if available,
-  // otherwise default to your AWS EB URL.
-  const apiTarget = env.VITE_API_URL || 'http://uniflow.ap-southeast-2.elasticbeanstalk.com'
+  // otherwise default to your Render.com backend URL.
+  const apiTarget = env.VITE_API_URL || 'https://atlas-server-3ewq.onrender.com'
 
   return {
     plugins: [react(), tailwindcss()],

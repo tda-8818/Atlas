@@ -29,11 +29,11 @@ const Signup = () => {
 
     // OAuth handlers
     const handleGoogleSignup = () => {
-      window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/users/auth/google`;
+      window.location.href = `${import.meta.env.VITE_API_URL}/api/users/auth/google`;
     };
 
     const handleGithubSignup = () => {
-      window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/users/auth/github`;
+      window.location.href = `${import.meta.env.VITE_API_URL}/api/users/auth/github`;
     };
 
     // Debounced submit handler to prevent rapid submissions
