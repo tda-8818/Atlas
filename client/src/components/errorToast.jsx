@@ -10,11 +10,15 @@ import { AlertCircle } from 'lucide-react';
  */
 export const showErrorToast = (message, errorCode = '404', options = {}) => {
   // Determine error title based on code
-  const errorTitle = errorCode === 404 || errorCode === '404' 
-    ? 'Not Found' 
+  // Determine error title based on code
+  const networkStatuses = ['FETCH_ERROR', 'PARSING_ERROR', 'TIMEOUT_ERROR'];
+  const errorTitle = errorCode === 404 || errorCode === '404'
+    ? 'Not Found'
     : errorCode === 400 || errorCode === '400'
       ? 'Bad Request'
-      : 'Error';
+      : networkStatuses.includes(String(errorCode))
+        ? 'Cannot reach API'
+        : 'Error';
 
   // Create styled toast
   return toast.error(
@@ -56,7 +60,7 @@ export const handleApiError = (error) => {
   if (!error) return;
   
   const statusCode = error?.status || error?.statusCode;
-  const message = error?.data?.message || error?.message || 'An error occurred';
+  const message = error?.data?.message || error?.error || error?.message || 'An error occurred';
   
   if (statusCode === 404) {
     showErrorToast(message, '404');

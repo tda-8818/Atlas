@@ -3,7 +3,7 @@ import UserModel from "../models/UserModel.js";
 import Column from  "../models/ColumnModel.js"
 import Task from "../models/TaskModel.js";
 import NotificationModel from "../models/notificationModel.js";
-import { sendProjectInvitationEmail } from "../utils/emailService.js";
+import Comment from "../models/CommentModel.js";
 // This cookieOptions is not used in this file and has been removed
 // Note: Cookie options should be configured in userController.js where cookies are actually set
 
@@ -86,6 +86,7 @@ export const deleteProject = async (req, res) => {
 
         await Column.deleteMany({projectId});
         await Task.deleteMany({ projectId });
+        await Comment.deleteMany({ projectId });
         await NotificationModel.deleteMany({ projectId });
         const columnDeleteOperation = await Column.deleteMany({projectId:projectId});
         console.log(`Deleted ${columnDeleteOperation.deletedCount} columns related to project`);

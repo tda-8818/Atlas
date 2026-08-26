@@ -3,10 +3,24 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import {
   sendVerificationEmail,
+  sendPasswordResetEmail,
   generateVerificationToken,
   hashToken
 } from '../utils/emailService.js';
 import passport from '../config/passport.js';
+
+function isDatabaseError(error) {
+  const message = error?.message || '';
+  return (
+    error?.name === 'MongooseError' ||
+    error?.name === 'MongoNetworkError' ||
+    error?.name === 'MongoServerSelectionError' ||
+    message.includes('buffering timed out') ||
+    message.includes('ECONNREFUSED') ||
+    message.includes('ENOTFOUND') ||
+    message.includes('querySrv')
+  );
+}
 
 const cookieOptions = {
   httpOnly: true,
@@ -39,6 +53,10 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    if (!user.password) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
     // 2. Compare passwords
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
@@ -68,6 +86,11 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error.message);
+    if (isDatabaseError(error)) {
+      return res.status(503).json({
+        message: 'Database is unavailable. Resume the MongoDB Atlas cluster and allow network access from 0.0.0.0/0.',
+      });
+    }
     res.status(500).json({ message: 'An error occurred during login' });
   }
 };
@@ -182,6 +205,12 @@ export const signup = async (req, res) => {
 
   } catch (error) {
     console.error('Signup error:', error);
+    if (isDatabaseError(error)) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database is unavailable. Resume the MongoDB Atlas cluster and allow network access from 0.0.0.0/0.',
+      });
+    }
     res.status(400).json({
       success: false,
       message: error.message || 'An error occurred during signup',
@@ -543,6 +572,113 @@ export const githubAuthCallback = (req, res, next) => {
   })(req, res, next);
 };
 
+export const forgotPassword = async (req, res) => {
+  const genericMessage = {
+    message: 'If that email is in Atlas, we sent a password reset link. Check your inbox.',
+  };
+
+  try {
+    const email = (req.body?.email || '').trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(200).json(genericMessage);
+    }
+
+    const { token, hashedToken } = generateVerificationToken();
+    user.passwordResetToken = hashedToken;
+    user.passwordResetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000);
+    await user.save();
+
+    try {
+      await sendPasswordResetEmail({
+        to: user.email,
+        userName: user.firstName || 'there',
+        resetToken: token,
+      });
+    } catch (emailError) {
+      console.error('Failed to send password reset email:', emailError.message);
+      return res.status(500).json({ message: 'Could not send reset email. Try again later.' });
+    }
+
+    res.status(200).json(genericMessage);
+  } catch (error) {
+    console.error('Forgot password error:', error.message);
+    if (isDatabaseError(error)) {
+      return res.status(503).json({
+        message: 'Database is unavailable. Check MONGO_URI and MongoDB Atlas network access (allow 0.0.0.0/0).',
+      });
+    }
+    res.status(500).json({ message: 'Could not start password reset' });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: 'Reset token is required' });
+    }
+    if (!password) {
+      return res.status(400).json({ message: 'New password is required' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+    }
+    if (!/(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      return res.status(400).json({
+        message: 'Password must contain at least one uppercase letter and one number',
+      });
+    }
+
+    const hashedToken = hashToken(token);
+    const user = await UserModel.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetTokenExpiry: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Reset link is invalid or has expired' });
+    }
+
+    user.password = await bcrypt.hash(password, 12);
+    user.passwordResetToken = null;
+    user.passwordResetTokenExpiry = null;
+    await user.save();
+
+    const authToken = jwt.sign(
+      { id: user._id.toString() },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    res.cookie('token', authToken, cookieOptions);
+
+    res.status(200).json({
+      message: 'Password updated. You are now logged in.',
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        profilePic: user.profilePic,
+      },
+    });
+  } catch (error) {
+    console.error('Reset password error:', error.message);
+    if (isDatabaseError(error)) {
+      return res.status(503).json({
+        message: 'Database is unavailable. Check MONGO_URI and MongoDB Atlas network access (allow 0.0.0.0/0).',
+      });
+    }
+    res.status(500).json({ message: 'Could not reset password' });
+  }
+};
+
 export default {
   login,
   signup,
@@ -557,5 +693,8 @@ export default {
   googleAuth,
   googleAuthCallback,
   githubAuth,
-  githubAuthCallback
+  githubAuthCallback,
+  forgotPassword,
+  resetPassword
 };
+

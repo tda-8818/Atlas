@@ -58,10 +58,14 @@ const Login = () => {
     } catch (err) {
       console.error('Login failed:', err);
 
-      // Use generic error message for all authentication failures
-      showErrorToast("Invalid credentials", "error");
+      const status = err?.status;
+      const apiMessage = err?.data?.message;
+      if (status === 'FETCH_ERROR' || status === 'PARSING_ERROR' || status === 'TIMEOUT_ERROR') {
+        showErrorToast('Cannot reach the Atlas API. The backend may be asleep or the database is down.', status);
+      } else {
+        showErrorToast(apiMessage || 'Invalid credentials', status || 'error');
+      }
     } finally {
-      // Re-enable form after 1 second to prevent spam
       setTimeout(() => setIsSubmitting(false), 1000);
     }
   }, [isSubmitting, login, navigate]);
@@ -150,6 +154,14 @@ const Login = () => {
                   })}
                   error={errors.password ? errors.password.message : ""}
                 />
+                <div className="text-right -mt-2">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] font-medium hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
 
                 <Button
                   type='submit'

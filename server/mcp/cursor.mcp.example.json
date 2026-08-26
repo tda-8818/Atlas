@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "atlas": {
+      "command": "node",
+      "args": ["/absolute/path/to/Atlas/server/mcp/index.js"],
+      "env": {
+        "ATLAS_API_URL": "http://localhost:5001",
+        "ATLAS_API_KEY": "atk_paste_key_from_settings"
+      }
+    }
+  }
+}

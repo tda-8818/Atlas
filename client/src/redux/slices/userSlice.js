@@ -15,7 +15,7 @@ export const userApiSlice = createApi({
         headers.set('Accept', 'application/json');
         return headers;
     },
-    tagTypes: ['User'],
+    tagTypes: ['User', 'ApiKey'],
     endpoints: (builder) => ({
         // User endpoints
         signup: builder.mutation({ // Add the signup mutation
@@ -100,6 +100,45 @@ export const userApiSlice = createApi({
             }),
         }),
 
+        getApiKeys: builder.query({
+            query: () => 'api/users/api-keys',
+            providesTags: ['ApiKey'],
+        }),
+
+        createApiKey: builder.mutation({
+            query: (body) => ({
+                url: 'api/users/api-keys',
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['ApiKey'],
+        }),
+
+        revokeApiKey: builder.mutation({
+            query: (keyId) => ({
+                url: `api/users/api-keys/${keyId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['ApiKey'],
+        }),
+
+        forgotPassword: builder.mutation({
+            query: (body) => ({
+                url: 'api/users/forgot-password',
+                method: 'POST',
+                body,
+            }),
+        }),
+
+        resetPassword: builder.mutation({
+            query: ({ token, password }) => ({
+                url: `api/users/reset-password/${token}`,
+                method: 'POST',
+                body: { password },
+            }),
+            invalidatesTags: ['User'],
+        }),
+
     }),
 });
 
@@ -112,7 +151,12 @@ export const {
     useUpdatePasswordMutation,
     useUpdateProfilePicMutation,
     useUpdateMeMutation,
-    useResendVerificationEmailMutation
+    useResendVerificationEmailMutation,
+    useGetApiKeysQuery,
+    useCreateApiKeyMutation,
+    useRevokeApiKeyMutation,
+    useForgotPasswordMutation,
+    useResetPasswordMutation,
 
 } = userApiSlice;
 

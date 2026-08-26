@@ -1,6 +1,7 @@
 import Column from "../models/ColumnModel.js";
 import Project from "../models/ProjectModel.js";
 import Task from "../models/TaskModel.js";
+import { getAccessibleProject } from "../utils/projectAccess.js";
 
 /**
  * Creates a NON-DEFAULT column.
@@ -59,6 +60,11 @@ export const getProjectColumns = async(req, res) => {
         const { projectId } = req.params;
         if (!projectId){ 
             return res.status(400).json({message: "Error in getProjectColumn. MISSING PROJECT ID! Did you send the projectId properly???"})
+        }
+
+        const access = await getAccessibleProject(projectId, req.user);
+        if (access.error) {
+            return res.status(access.error.status).json({ message: access.error.message });
         }
 
         const columns = await Column.find({projectId})

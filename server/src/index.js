@@ -2,6 +2,7 @@
  * index.js is the entry point of the server.
  * It creates the server, connects to the database, applies middleware, and sets up routes.
  */
+import './config/loadEnv.js';
 import express from 'express'; // Express.js for creating the server
 import cors from 'cors'; // Middleware to handle CORS (Cross-Origin Resource Sharing)
 import userRoutes from './routes/userRoutes.js';
@@ -69,32 +70,48 @@ app.use((req, res, next) => {
 });
 
 // MongoDB connection using environment variable for URI
+mongoose.set('bufferCommands', false);
 const mongoURI = process.env.MONGO_URI;
-mongoose
-  .connect(mongoURI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-  })
-  .catch((err) => {
-    console.error('MongoDB connection error:', err);
-  });
 
-// Import and use routes
+app.get('/api/health', (req, res) => {
+  const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  const mongoState = states[mongoose.connection.readyState] || 'unknown';
+  const ok = mongoose.connection.readyState === 1;
+  res.status(ok ? 200 : 503).json({
+    ok,
+    mongo: mongoState,
+  });
+});
+
 app.use('/api/users', userRoutes);
-app.use('/settings', userRoutes); // Note: /settings path, ensure this is intended for user routes
+app.use('/settings', userRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/labels', labelRoutes);
 app.use('/api/sprints', sprintRoutes);
 
-// Global error handler middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+  res.status(500).json({ message: 'Something broke!', error: err.message });
 });
 
-// Start the server on the port provided via environment variable, fallback to 5001 if not defined
-const PORT = process.env.PORT || 5001;
-server.listen(PORT, () => {
-  console.log(`Server running with WebSocket on port ${PORT}`);
-});
+async function start() {
+  if (!mongoURI) {
+    console.error('MONGO_URI is not set');
+  } else {
+    try {
+      await mongoose.connect(mongoURI, { serverSelectionTimeoutMS: 10000 });
+      console.log(`Connected to MongoDB (${mongoose.connection.name || 'default'})`);
+    } catch (err) {
+      console.error('MongoDB connection error:', err.message);
+      console.error('If this mentions IP whitelist, in Atlas go to Network Access and allow 0.0.0.0/0.');
+    }
+  }
+
+  const PORT = process.env.PORT || 5001;
+  server.listen(PORT, () => {
+    console.log(`Server running with WebSocket on port ${PORT}`);
+  });
+}
+
+start();

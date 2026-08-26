@@ -1,45 +1,28 @@
 import express from 'express';
-import { getTasksByProject, createTask, deleteTask, updateTask, createSubTask, deleteSubtask, updateSubtask, getSubTasks } from "../controllers/taskController.js";
+import { getTasksByProject, getTaskById, searchTasks, createTask, deleteTask, updateTask, createSubTask, deleteSubtask, updateSubtask, getSubTasks } from "../controllers/taskController.js";
+import { listComments, createComment, deleteComment } from "../controllers/commentController.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+router.get('/search', authMiddleware, searchTasks);
+router.get('/item/:taskId', authMiddleware, getTaskById);
 
 router.get('/:id', authMiddleware, getTasksByProject);
 
 router.post('/', authMiddleware, createTask);
 
-
 router.delete('/:taskId', authMiddleware, deleteTask);
 
 router.put('/:id', authMiddleware, updateTask);
 
-//router.put('/:id', authMiddleware, updateTask);
+router.get('/:taskId/comments', authMiddleware, listComments);
+router.post('/:taskId/comments', authMiddleware, createComment);
+router.delete('/:taskId/comments/:commentId', authMiddleware, deleteComment);
 
-
-
-// Subtask functions
-//*********************** */
 router.get('/:taskId/subtasks', authMiddleware, getSubTasks);
-
 router.post('/:taskId/subtasks', authMiddleware, createSubTask);
-
 router.delete('/:taskId/subtasks/:subtaskId', authMiddleware, deleteSubtask);
-
 router.put('/:taskId/subtasks/:subtaskId',authMiddleware, updateSubtask);
 
 export default router;
-
-/*
-a route parameter like /:id means the URL will contain a dynamic segment — a value that can change — 
-and that Express will extract it for you.
-This route matches any request that looks like:
-PUT /calendar/661234abcde12345
-OR
-DELETE /calendar/661234abcde12345
-Here, 661234abcde12345 is the taskId value created by mongo, 
-You can access the id in the controller like this:
-const { id } = req.params;
-
-On the frontend, you send a request like this:
-await axios.put(`http://localhost:5001/calendar/${taskId}`, { ...data });
-*/

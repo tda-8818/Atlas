@@ -13,8 +13,11 @@ import {
   googleAuth,
   googleAuthCallback,
   githubAuth,
-  githubAuthCallback
+  githubAuthCallback,
+  forgotPassword,
+  resetPassword
 } from "../controllers/userController.js";
+import { listApiKeys, createApiKey, revokeApiKey } from "../controllers/apiKeyController.js";
 import { uploadProfilePicture } from '../../utils/cloudinary.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import rateLimit from 'express-rate-limit';
@@ -50,10 +53,17 @@ router.put('/', authMiddleware, updatePassword);
 router.get('/verify-email/:token', verifyEmail);
 router.post('/resend-verification', authMiddleware, emailLimiter, resendVerificationEmail);
 
+router.post('/forgot-password', emailLimiter, forgotPassword);
+router.post('/reset-password/:token', authLimiter, resetPassword);
+
 // OAuth routes
 router.get('/auth/google', googleAuth);
 router.get('/auth/google/callback', googleAuthCallback);
 router.get('/auth/github', githubAuth);
 router.get('/auth/github/callback', githubAuthCallback);
+
+router.get('/api-keys', authMiddleware, listApiKeys);
+router.post('/api-keys', authMiddleware, authLimiter, createApiKey);
+router.delete('/api-keys/:keyId', authMiddleware, revokeApiKey);
 
 export default router;

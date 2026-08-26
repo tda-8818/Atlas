@@ -24,6 +24,10 @@ const taskSchema = new mongoose.Schema(
        labels: [{type: mongoose.Schema.Types.ObjectId, ref: 'label', default: []}],
        // Phase 2: Sprint management
        sprintId: {type: mongoose.Schema.Types.ObjectId, ref: 'sprint', default: null},
+       gitRepo: {type: String, default: ''},
+       gitBranch: {type: String, default: ''},
+       gitSha: {type: String, default: ''},
+       gitPrUrl: {type: String, default: ''},
     }, {timestamps: true}
 );
 

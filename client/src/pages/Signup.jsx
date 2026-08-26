@@ -75,11 +75,15 @@ const Signup = () => {
             if (error?.data) {
                 if (error.status === 409 || error.data?.message?.includes('already exists')) {
                     toast.error("An account with this email already exists.");
+                } else if (error.status === 503) {
+                    toast.error(error.data?.message || "Database is unavailable. Check MongoDB Atlas.");
                 } else if (error.status === 500) {
                     toast.error("Server error. Please try again later.");
                 } else {
                     toast.error(error.data?.message || "Registration failed. Please check your inputs.");
                 }
+            } else if (error?.status === 'FETCH_ERROR' || error?.status === 'PARSING_ERROR' || error?.status === 'TIMEOUT_ERROR') {
+                toast.error("Cannot reach the Atlas API. The backend may be asleep or the database is down.");
             } else if (error?.error) {
                 toast.error("Network error. Please check your connection.");
             } else {

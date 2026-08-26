@@ -5,6 +5,7 @@ import LabelPicker from '../LabelPicker';
 import UserAvatar from '../avatar/UserAvatar';
 import { TASK_TYPES, STORY_POINTS_OPTIONS, TaskTypeIcon } from '../../utils/taskTypeUtils';
 import SubtaskDetailModal from './SubtaskDetailModal';
+import TaskComments from '../TaskComments';
 
 // Define priority levels
 const priorityLevels = ['none', '!', '!!', '!!!'];
@@ -29,6 +30,10 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
   const [taskType, setTaskType] = useState('task');
   const [storyPoints, setStoryPoints] = useState(0);
   const [labels, setLabels] = useState([]);
+  const [gitRepo, setGitRepo] = useState('');
+  const [gitBranch, setGitBranch] = useState('');
+  const [gitSha, setGitSha] = useState('');
+  const [gitPrUrl, setGitPrUrl] = useState('');
 
   const [showMemberSearch, setShowMemberSearch] = useState(false);
   const [searchMember, setSearchMember] = useState("");
@@ -62,6 +67,10 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
         setTaskType(initialValues.taskType || 'task');
         setStoryPoints(initialValues.storyPoints || 0);
         setLabels(initialValues.labels || []);
+        setGitRepo(initialValues.gitRepo || '');
+        setGitBranch(initialValues.gitBranch || '');
+        setGitSha(initialValues.gitSha || '');
+        setGitPrUrl(initialValues.gitPrUrl || '');
         setIsEditing(true);
       } else {
         // We're creating a new task
@@ -76,6 +85,10 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
         setTaskType('task');
         setStoryPoints(0);
         setLabels([]);
+        setGitRepo('');
+        setGitBranch('');
+        setGitSha('');
+        setGitPrUrl('');
         setIsEditing(false);
       }
 
@@ -163,7 +176,11 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
       priority: priority,
       taskType: taskType,
       storyPoints: storyPoints,
-      labels: labels.map(l => l._id || l)
+      labels: labels.map(l => l._id || l),
+      gitRepo,
+      gitBranch,
+      gitSha,
+      gitPrUrl,
     };
 
     onAddTask(taskData);
@@ -182,7 +199,11 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
       priority: priority,
       taskType: taskType,
       storyPoints: storyPoints,
-      labels: labels.map(l => l._id || l)
+      labels: labels.map(l => l._id || l),
+      gitRepo,
+      gitBranch,
+      gitSha,
+      gitPrUrl,
     };
     onEdit(taskData);
   };
@@ -540,6 +561,43 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
         />
       </div>
 
+      {/* Git link */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-[var(--text)] mb-2">
+          Git
+        </label>
+        <div className="grid grid-cols-1 gap-2">
+          <input
+            type="text"
+            value={gitRepo}
+            onChange={(e) => setGitRepo(e.target.value)}
+            placeholder="Repo (owner/name)"
+            className="w-full px-4 py-2 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] placeholder:text-[var(--text-muted)]"
+          />
+          <input
+            type="text"
+            value={gitBranch}
+            onChange={(e) => setGitBranch(e.target.value)}
+            placeholder="Branch"
+            className="w-full px-4 py-2 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] placeholder:text-[var(--text-muted)]"
+          />
+          <input
+            type="text"
+            value={gitSha}
+            onChange={(e) => setGitSha(e.target.value)}
+            placeholder="Commit SHA"
+            className="w-full px-4 py-2 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] placeholder:text-[var(--text-muted)]"
+          />
+          <input
+            type="url"
+            value={gitPrUrl}
+            onChange={(e) => setGitPrUrl(e.target.value)}
+            placeholder="Pull request URL"
+            className="w-full px-4 py-2 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] placeholder:text-[var(--text-muted)]"
+          />
+        </div>
+      </div>
+
       {/* Subtasks Section */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-3">
@@ -664,6 +722,10 @@ const AddTaskModal = ({ show, onAddTask, onCancel, onDelete, onEdit, teamMembers
           </div>
         )}
       </div>
+
+      {isEditing && (initialValues?._id || initialValues?.id) && (
+        <TaskComments taskId={initialValues._id || initialValues.id} />
+      )}
     </Modal>
 
     {/* Subtask Detail Modal */}

@@ -4,6 +4,8 @@ import Landing from "./pages/Landing";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import VerifyEmail from "./pages/VerifyEmail";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Projects from "./pages/Projects.jsx";
 import Dashboard from "./pages/Dashboard";
 import Calendar from "./pages/Calendar";
@@ -64,14 +66,21 @@ function App() {
   useEffect(() => {
     if (isError && error) {
       // Don't show error toasts for auth errors when on login or Landing page or when logging out
-      const isAuthError = error?.status === 401;
+      const status = error?.status;
+      const isAuthError = status === 401;
+      const isNetworkError = status === 'FETCH_ERROR' || status === 'PARSING_ERROR' || status === 'TIMEOUT_ERROR';
       const isLoginPage = location.pathname === '/login';
       const isSignupPage = location.pathname === '/signup';
       const isLandingPage = location.pathname === '/';
+      const isForgotPage = location.pathname === '/forgot-password';
+      const isResetPage = location.pathname.startsWith('/reset-password');
+      const isPublicPage = isLoginPage || isSignupPage || isLandingPage || isForgotPage || isResetPage;
 
-      if (!(isAuthError && (isLoginPage || isSignupPage || isLandingPage || isLoggingOut.current))) {
-        handleApiError(error);
+      if (isPublicPage && (isAuthError || isNetworkError || isLoggingOut.current)) {
+        return;
       }
+
+      handleApiError(error);
     }
   }, [isError, error, location.pathname]);
 
@@ -92,6 +101,8 @@ function App() {
             <Route path="/login" element={!user ? <Login /> : <Navigate to="/projects" replace />} />
             <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/projects" replace />} />
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
 
             {/* Protected Routes (Require Authentication) */}
             <Route path="/projects" element={user ? <Projects /> : <Navigate to="/" replace />} />

@@ -5,7 +5,10 @@ import {
   useGetCurrentUserQuery,
   useUpdatePasswordMutation,
   useUpdateMeMutation,
-  useResendVerificationEmailMutation
+  useResendVerificationEmailMutation,
+  useGetApiKeysQuery,
+  useCreateApiKeyMutation,
+  useRevokeApiKeyMutation
 } from "../redux/slices/userSlice";
 import { showErrorToast } from "../components/errorToast";
 import toast from "react-hot-toast";
@@ -20,6 +23,9 @@ const Settings = ({ setTheme }) => {
   const [updateUser, { isLoading: isUpdatingUser }] = useUpdateMeMutation();
   const [updatePasswordMutation, { isLoading: isUpdatingPassword }] = useUpdatePasswordMutation();
   const [resendVerificationEmail, { isLoading: isResendingVerification }] = useResendVerificationEmailMutation();
+  const { data: apiKeys = [], isLoading: isLoadingKeys } = useGetApiKeysQuery();
+  const [createApiKey, { isLoading: isCreatingKey }] = useCreateApiKeyMutation();
+  const [revokeApiKey] = useRevokeApiKeyMutation();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -34,6 +40,9 @@ const Settings = ({ setTheme }) => {
   // Track if profile form has changed
   const [hasProfileChanges, setHasProfileChanges] = useState(false);
   const [hasPasswordChanges, setHasPasswordChanges] = useState(false);
+  const [newKeyName, setNewKeyName] = useState("");
+  const [createdKey, setCreatedKey] = useState(null);
+  const [copiedKey, setCopiedKey] = useState(false);
 
   // Load user data
   useEffect(() => {
@@ -158,6 +167,47 @@ const Settings = ({ setTheme }) => {
     } catch (err) {
       console.error('Resend verification failed:', err);
       toast.error(err?.data?.message || 'Failed to send verification email.');
+    }
+  };
+
+  const handleCreateApiKey = async () => {
+    const name = newKeyName.trim();
+    if (!name) {
+      toast.error('Give this key a name, e.g. Cursor MCP.');
+      return;
+    }
+    try {
+      const result = await createApiKey({ name }).unwrap();
+      setCreatedKey(result);
+      setNewKeyName('');
+      setCopiedKey(false);
+      toast.success('API key created. Copy it now.');
+    } catch (err) {
+      toast.error(err?.data?.message || 'Failed to create API key.');
+    }
+  };
+
+  const handleCopyApiKey = async () => {
+    if (!createdKey?.key) return;
+    try {
+      await navigator.clipboard.writeText(createdKey.key);
+      setCopiedKey(true);
+      toast.success('API key copied.');
+    } catch (err) {
+      toast.error('Could not copy key. Select it and copy manually.');
+    }
+  };
+
+  const handleRevokeApiKey = async (keyId) => {
+    if (!window.confirm('Revoke this API key? Cursor and Claude will stop working until you create a new one.')) {
+      return;
+    }
+    try {
+      await revokeApiKey(keyId).unwrap();
+      if (createdKey?.id === keyId) setCreatedKey(null);
+      toast.success('API key revoked.');
+    } catch (err) {
+      toast.error(err?.data?.message || 'Failed to revoke API key.');
     }
   };
 
@@ -404,6 +454,79 @@ const Settings = ({ setTheme }) => {
                   </>
                 )}
               </button>
+            </div>
+          )}
+        </div>
+
+        {/* API Keys */}
+        <div className="bg-[var(--background)] rounded-2xl border border-[var(--border-color)] p-6 mb-6">
+          <h2 className="text-lg font-semibold text-[var(--text)] mb-2">API keys</h2>
+          <p className="text-sm text-[var(--text-muted)] mb-6">
+            Use a key with Cursor or Claude MCP. The full key is shown only once.
+          </p>
+
+          {createdKey?.key && (
+            <div className="mb-6 p-4 rounded-lg border border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5">
+              <p className="text-sm font-medium text-[var(--text)] mb-2">
+                Copy this key now. You will not see it again.
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-xs break-all bg-[var(--background-primary)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-[var(--text)]">
+                  {createdKey.key}
+                </code>
+                <button
+                  onClick={handleCopyApiKey}
+                  className="px-3 py-2 text-sm font-medium rounded-lg border border-[var(--border-color)] hover:bg-[var(--background-primary)] text-[var(--text)]"
+                >
+                  {copiedKey ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <input
+              type="text"
+              value={newKeyName}
+              onChange={(e) => setNewKeyName(e.target.value)}
+              placeholder="Key name, e.g. Cursor MCP"
+              className="flex-1 px-4 py-2.5 bg-[var(--background-primary)] border border-[var(--border-color-accent)] text-[var(--text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] placeholder:text-[var(--text-muted)]"
+            />
+            <button
+              onClick={handleCreateApiKey}
+              disabled={isCreatingKey}
+              className="px-6 py-2.5 bg-[var(--color-primary)] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {isCreatingKey ? 'Creating...' : 'Create key'}
+            </button>
+          </div>
+
+          {isLoadingKeys ? (
+            <p className="text-sm text-[var(--text-muted)]">Loading keys...</p>
+          ) : apiKeys.length === 0 ? (
+            <p className="text-sm text-[var(--text-muted)]">No API keys yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {apiKeys.map((key) => (
+                <div
+                  key={key._id}
+                  className="flex items-center justify-between gap-4 p-3 bg-[var(--background-primary)] border border-[var(--border-color)] rounded-lg"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-[var(--text)]">{key.name}</p>
+                    <p className="text-xs text-[var(--text-muted)]">
+                      {key.prefix}… · created {key.createdAt ? new Date(key.createdAt).toLocaleDateString() : ''}
+                      {key.lastUsedAt ? ` · last used ${new Date(key.lastUsedAt).toLocaleDateString()}` : ' · never used'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleRevokeApiKey(key._id)}
+                    className="text-sm text-red-500 hover:underline"
+                  >
+                    Revoke
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>

@@ -12,7 +12,7 @@ export const taskApiSlice = createApi({
     baseUrl: TASK_API_URL,
     credentials: 'include',
   }),
-  tagTypes: ['Task'],
+  tagTypes: ['Task', 'Comment'],
   endpoints: (builder) => ({
 
     // Create a new task
@@ -116,6 +116,34 @@ export const taskApiSlice = createApi({
         { type: 'Task', id: taskId }
       ],
     }),
+
+    getTaskComments: builder.query({
+      query: (taskId) => `/api/tasks/${taskId}/comments`,
+      providesTags: (result, error, taskId) => [
+        { type: 'Comment', id: taskId }
+      ],
+    }),
+
+    addTaskComment: builder.mutation({
+      query: ({ taskId, body }) => ({
+        url: `/api/tasks/${taskId}/comments`,
+        method: 'POST',
+        body: { body },
+      }),
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: 'Comment', id: taskId }
+      ],
+    }),
+
+    deleteTaskComment: builder.mutation({
+      query: ({ taskId, commentId }) => ({
+        url: `/api/tasks/${taskId}/comments/${commentId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: 'Comment', id: taskId }
+      ],
+    }),
   }),
 });
 
@@ -131,6 +159,9 @@ export const {
   useCreateSubTaskMutation,
   useDeleteSubTaskMutation,
   useUpdateSubTaskMutation,
+  useGetTaskCommentsQuery,
+  useAddTaskCommentMutation,
+  useDeleteTaskCommentMutation,
 } = taskApiSlice;
 
 export default taskApiSlice;

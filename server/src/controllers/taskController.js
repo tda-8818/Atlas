@@ -1,6 +1,23 @@
 import Project from '../models/ProjectModel.js';
 import Task from '../models/TaskModel.js';
 import Column from '../models/ColumnModel.js';
+import Comment from '../models/CommentModel.js';
+import { getAccessibleProject } from '../utils/projectAccess.js';
+
+const TASK_POPULATE = [
+    { path: 'assignedTo', select: 'firstName lastName profilePic email' },
+    { path: 'projectId', select: 'title' },
+    { path: 'labels' },
+    { path: 'columnId', select: 'title index' },
+];
+
+function pickDefined(fields) {
+    const out = {};
+    for (const [key, value] of Object.entries(fields)) {
+        if (value !== undefined) out[key] = value;
+    }
+    return out;
+}
 /**
  * Gets task details based on the projectId query parameter.
  * If no projectId is provided, it fetches all tasks.
@@ -19,6 +36,11 @@ export const getTasksByProject = async (req, res) => {
       if (!projectId) {
         return res.status(400).json({ message: 'Project ID is required in URL params' });
       }
+
+      const access = await getAccessibleProject(projectId, req.user);
+      if (access.error) {
+        return res.status(access.error.status).json({ message: access.error.message });
+      }
   
       // Fetch tasks for the given project ID
       const tasks = await Task.find({ projectId })
@@ -32,6 +54,76 @@ export const getTasksByProject = async (req, res) => {
       res.status(200).json(tasks);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching tasks', error });
+    }
+};
+
+
+export const getTaskById = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+        const task = await Task.findById(taskId).populate(TASK_POPULATE);
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        const access = await getAccessibleProject(task.projectId?._id || task.projectId, req.user);
+        if (access.error) {
+            return res.status(access.error.status).json({ message: access.error.message });
+        }
+
+        res.status(200).json(task);
+    } catch (error) {
+        console.error('Error fetching task:', error);
+        res.status(500).json({ message: 'Error fetching task' });
+    }
+};
+
+export const searchTasks = async (req, res) => {
+    try {
+        const { q, projectId, assignedToMe, status } = req.query;
+        const filter = {};
+
+        if (projectId) {
+            const access = await getAccessibleProject(projectId, req.user);
+            if (access.error) {
+                return res.status(access.error.status).json({ message: access.error.message });
+            }
+            filter.projectId = projectId;
+        } else {
+            const accessibleIds = (req.user.projects || []).map((item) => item._id || item);
+            filter.projectId = { $in: accessibleIds };
+        }
+
+        if (q && q.trim()) {
+            const escaped = q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            filter.$or = [
+                { title: { $regex: escaped, $options: 'i' } },
+                { description: { $regex: escaped, $options: 'i' } },
+                { gitBranch: { $regex: escaped, $options: 'i' } },
+            ];
+        }
+
+        if (assignedToMe === 'true' || assignedToMe === true) {
+            filter.assignedTo = req.user._id;
+        }
+
+        if (status === 'open') {
+            filter.status = false;
+        } else if (status === 'done') {
+            filter.status = true;
+        }
+
+        const tasks = await Task.find(filter)
+            .populate('assignedTo', 'firstName lastName profilePic')
+            .populate('projectId', 'title')
+            .populate('labels')
+            .sort({ updatedAt: -1 })
+            .limit(100);
+
+        res.status(200).json(tasks);
+    } catch (error) {
+        console.error('Error searching tasks:', error);
+        res.status(500).json({ message: 'Error searching tasks' });
     }
 };
 
@@ -69,10 +161,13 @@ export const createTask = async (req, res) => {
             return res.status(400).json({ message: 'Project ID is required' });
         }
 
-        const project = await Project.findById(projectId);
-        if (!project) {
-            return res.status(404).json({ message: "Project not found" });
+        const access = await getAccessibleProject(projectId, req.user);
+        if (access.error) {
+            return res.status(access.error.status).json({ message: access.error.message });
         }
+        const project = access.project;
+
+        const { gitRepo, gitBranch, gitSha, gitPrUrl } = req.body;
 
         // Build task data conditionally including _id
         const taskData = {
@@ -89,7 +184,11 @@ export const createTask = async (req, res) => {
             taskType: taskType || 'task',
             storyPoints: storyPoints || 0,
             labels: labels || [],
-            sprintId: sprintId || null
+            sprintId: sprintId || null,
+            gitRepo: gitRepo || '',
+            gitBranch: gitBranch || '',
+            gitSha: gitSha || '',
+            gitPrUrl: gitPrUrl || '',
         };
 
         const newTask = new Task(taskData);
@@ -126,7 +225,6 @@ export const createTask = async (req, res) => {
 };
 
 export const updateTask = async (req, res) => {
-   console.log("EDIT TASK EXECUTED");
     const { id } = req.params;
     const {
         title,
@@ -139,36 +237,74 @@ export const updateTask = async (req, res) => {
         taskType,
         storyPoints,
         labels,
-        sprintId
+        sprintId,
+        columnId,
+        gitRepo,
+        gitBranch,
+        gitSha,
+        gitPrUrl,
     } = req.body;
-    console.log("id: ",id);
+
     try {
+        const task = await Task.findById(id);
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        const access = await getAccessibleProject(task.projectId, req.user);
+        if (access.error) {
+            return res.status(access.error.status).json({ message: access.error.message });
+        }
+
+        const updates = pickDefined({
+            title,
+            description,
+            status,
+            priority,
+            assignedTo,
+            dueDate,
+            startDate,
+            taskType,
+            storyPoints,
+            labels,
+            sprintId,
+            gitRepo,
+            gitBranch,
+            gitSha,
+            gitPrUrl,
+        });
+
+        if (columnId !== undefined && String(columnId) !== String(task.columnId)) {
+            const targetColumn = await Column.findOne({ _id: columnId, projectId: task.projectId });
+            if (!targetColumn) {
+                return res.status(404).json({ message: 'Target column not found in project' });
+            }
+
+            if (task.columnId) {
+                await Column.findByIdAndUpdate(task.columnId, { $pull: { tasks: task._id } });
+            }
+            targetColumn.tasks.push(task._id);
+            await targetColumn.save();
+            updates.columnId = targetColumn._id;
+        }
+
+        if (Object.keys(updates).length === 0) {
+            const current = await Task.findById(id)
+                .populate('labels')
+                .populate('assignedTo', 'firstName lastName profilePic');
+            return res.status(200).json(current);
+        }
+
         const updatedTask = await Task.findByIdAndUpdate(
             id,
-            {
-                title,
-                description,
-                status,
-                priority,
-                assignedTo,
-                dueDate,
-                startDate,
-                ...(taskType !== undefined && { taskType }),
-                ...(storyPoints !== undefined && { storyPoints }),
-                ...(labels !== undefined && { labels }),
-                ...(sprintId !== undefined && { sprintId })
-            },
+            { $set: updates },
             { new: true }
         ).populate('labels').populate('assignedTo', 'firstName lastName profilePic');
-        console.log("updated task: ", updatedTask);
-        if (!updatedTask) {
-            return res.status(404).json({ message: "Task not found" });
-        }
 
         res.status(200).json(updatedTask);
     } catch (error) {
-        console.error("Error updating task:", error);
-        res.status(500).json({ message: "Error updating task", error });
+        console.error('Error updating task:', error);
+        res.status(500).json({ message: 'Error updating task', error });
     }
 };
 
@@ -178,15 +314,16 @@ export const deleteTask = async (req, res) => {
         console.log('deleteTasks has been executed received taskId', taskId);
 
         const task_to_delete = await Task.findById(taskId);
-        
-        await Project.findByIdAndUpdate(
-          { _id: task_to_delete.projectId},
-          { $pull: { tasks: task_to_delete.id}}
-        );
         if (!task_to_delete) {
             return res.status(404).json({ message: "Task not found"});
         }
 
+        const access = await getAccessibleProject(task_to_delete.projectId, req.user);
+        if (access.error) {
+            return res.status(access.error.status).json({ message: access.error.message });
+        }
+
+        await Comment.deleteMany({ taskId });
         await Task.findByIdAndDelete(taskId);
 
         // Remove task from its column's task list (if stored there)
