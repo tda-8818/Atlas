@@ -1,38 +1,28 @@
-import mongoose from "mongoose";
+import { createModel } from '../db/pgModel.js';
 
-const taskSchema = new mongoose.Schema(
-    {
-       projectId: {type: mongoose.Schema.Types.ObjectId, ref: 'project'},
-       title: {type: String, required: true},
-       description: {type: String, default: ""},
-       status: {type: Boolean, default: false},
-       columnId: {type: mongoose.Schema.Types.ObjectId, ref: 'column'},
-       priority: {type: String, default: "None"},
-       assignedTo: [{type: mongoose.Schema.Types.ObjectId, ref: 'user', default: []}],
-       dueDate: {type: Date},
-       startDate: {type: Date},
-       subtasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
-       // Parent task reference (for subtasks)
-       parentTaskId: {type: mongoose.Schema.Types.ObjectId, ref: 'task', default: null},
-       // Phase 1 additions
-       taskType: {
-           type: String,
-           enum: ['story', 'task', 'bug', 'milestone'],
-           default: 'task'
-       },
-       storyPoints: {type: Number, default: 0, min: 0},
-       labels: [{type: mongoose.Schema.Types.ObjectId, ref: 'label', default: []}],
-       // Phase 2: Sprint management
-       sprintId: {type: mongoose.Schema.Types.ObjectId, ref: 'sprint', default: null},
-       gitRepo: {type: String, default: ''},
-       gitBranch: {type: String, default: ''},
-       gitSha: {type: String, default: ''},
-       gitPrUrl: {type: String, default: ''},
-    }, {timestamps: true}
-);
-
-
-const Task = mongoose.model('task', taskSchema);
+const Task = createModel('task', 'tasks', {
+  fields: [
+    'id',
+    'projectId',
+    'title',
+    'description',
+    'status',
+    'columnId',
+    'priority',
+    'assignedTo',
+    'dueDate',
+    'startDate',
+    'subtasks',
+    'parentTaskId',
+    'taskType',
+    'storyPoints',
+    'labels',
+    'sprintId',
+    'gitRepo',
+    'gitBranch',
+    'gitSha',
+    'gitPrUrl',
+  ],
+});
 
 export default Task;
-

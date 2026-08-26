@@ -1,20 +1,16 @@
-import mongoose from "mongoose";
+import { createModel } from '../db/pgModel.js';
 
-const sprintSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    goal: { type: String },
-    projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'project', required: true },
-    startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
-    status: {
-        type: String,
-        enum: ['planned', 'active', 'completed'],
-        default: 'planned'
-    },
-    // Track velocity and capacity
-    capacity: { type: Number, default: 0 }, // Total story points the team can handle
-}, { timestamps: true });
-
-const Sprint = mongoose.model('sprint', sprintSchema);
+const Sprint = createModel('sprint', 'sprints', {
+  fields: [
+    'id',
+    'name',
+    'goal',
+    'projectId',
+    'startDate',
+    'endDate',
+    'status',
+    'capacity',
+  ],
+});
 
 export default Sprint;

@@ -12,6 +12,7 @@ import passport from '../config/passport.js';
 function isDatabaseError(error) {
   const message = error?.message || '';
   return (
+    error?.name === 'SupabaseError' ||
     error?.name === 'MongooseError' ||
     error?.name === 'MongoNetworkError' ||
     error?.name === 'MongoServerSelectionError' ||
@@ -22,12 +23,20 @@ function isDatabaseError(error) {
   );
 }
 
+function cookieSameSite() {
+  if (process.env.NODE_ENV !== 'production') return 'lax';
+  const clientUrl = process.env.CLIENT_URL;
+  const serverUrl = process.env.SERVER_URL;
+  if (clientUrl && serverUrl && clientUrl !== serverUrl) return 'none';
+  return 'lax';
+}
+
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Use secure cookies in production
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: cookieSameSite(),
   path: '/',
-  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  maxAge: 7 * 24 * 60 * 60 * 1000
 };
 
 
@@ -88,7 +97,7 @@ export const login = async (req, res) => {
     console.error('Login error:', error.message);
     if (isDatabaseError(error)) {
       return res.status(503).json({
-        message: 'Database is unavailable. Resume the MongoDB Atlas cluster and allow network access from 0.0.0.0/0.',
+        message: 'Database is unavailable. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
       });
     }
     res.status(500).json({ message: 'An error occurred during login' });
@@ -208,7 +217,7 @@ export const signup = async (req, res) => {
     if (isDatabaseError(error)) {
       return res.status(503).json({
         success: false,
-        message: 'Database is unavailable. Resume the MongoDB Atlas cluster and allow network access from 0.0.0.0/0.',
+        message: 'Database is unavailable. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
       });
     }
     res.status(400).json({
@@ -225,7 +234,7 @@ export const logout = (req, res) => {
     res.clearCookie('token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: cookieSameSite(),
       path: '/'
     });
     res.status(200).json({ message: 'Logged out successfully' });
@@ -609,7 +618,7 @@ export const forgotPassword = async (req, res) => {
     console.error('Forgot password error:', error.message);
     if (isDatabaseError(error)) {
       return res.status(503).json({
-        message: 'Database is unavailable. Check MONGO_URI and MongoDB Atlas network access (allow 0.0.0.0/0).',
+        message: 'Database is unavailable. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
       });
     }
     res.status(500).json({ message: 'Could not start password reset' });
@@ -672,7 +681,7 @@ export const resetPassword = async (req, res) => {
     console.error('Reset password error:', error.message);
     if (isDatabaseError(error)) {
       return res.status(503).json({
-        message: 'Database is unavailable. Check MONGO_URI and MongoDB Atlas network access (allow 0.0.0.0/0).',
+        message: 'Database is unavailable. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
       });
     }
     res.status(500).json({ message: 'Could not reset password' });

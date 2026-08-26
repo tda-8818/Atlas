@@ -1,17 +1,7 @@
-import mongoose from "mongoose";
-// TODO: LEARN MONGOOSE SCHEMA 
-// https://mongoosejs.com/ READ THE DOCS
+import { createModel } from '../db/pgModel.js';
 
-
-const columnSchema = new mongoose.Schema({
-    title: {type: String, required: true},
-    projectId: {type: mongoose.Schema.Types.ObjectId, ref: 'project', required: true},
-    tasks: [{type: mongoose.Schema.Types.ObjectId, ref:'task',  default: []}],
-    index: { type: Number, required: true}, // index is the order of the column from left to right
-    isDefault: {type: Boolean, default: false}, // Columns created should not set this value.  
-}, {timestamps: true});
-
-
-const Column = mongoose.model('column', columnSchema);
+const Column = createModel('column', 'columns', {
+  fields: ['id', 'title', 'projectId', 'tasks', 'index', 'isDefault'],
+});
 
 export default Column;

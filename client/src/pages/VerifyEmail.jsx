@@ -11,7 +11,8 @@ const VerifyEmail = () => {
   useEffect(() => {
     const verifyEmail = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/verify-email/${token}`, {
+        const apiRoot = import.meta.env.VITE_API_URL || '';
+        const response = await fetch(`${apiRoot}/api/users/verify-email/${token}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

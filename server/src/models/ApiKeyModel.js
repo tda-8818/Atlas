@@ -1,36 +1,7 @@
-import mongoose from 'mongoose';
+import { createModel } from '../db/pgModel.js';
 
-const apiKeySchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'user',
-      required: true,
-      index: true,
-    },
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-      maxlength: 80,
-    },
-    hashedKey: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    prefix: {
-      type: String,
-      required: true,
-    },
-    lastUsedAt: {
-      type: Date,
-      default: null,
-    },
-  },
-  { timestamps: true }
-);
-
-const ApiKey = mongoose.model('apiKey', apiKeySchema);
+const ApiKey = createModel('apiKey', 'api_keys', {
+  fields: ['id', 'userId', 'name', 'hashedKey', 'prefix', 'lastUsedAt'],
+});
 
 export default ApiKey;

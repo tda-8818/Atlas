@@ -28,6 +28,7 @@ export default defineConfig(({ mode }) => {
       allowedHosts: [
         'atlas-gl63.onrender.com',
         '.onrender.com',
+        '.vercel.app',
         'localhost'
       ],
       proxy: {

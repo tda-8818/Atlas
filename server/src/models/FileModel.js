@@ -1,54 +1,19 @@
-// models/File.js
-import mongoose from 'mongoose';
+import { createModel } from '../db/pgModel.js';
 
-const fileSchema = new mongoose.Schema({
-  filename: {
-    type: String,
-    required: true
-  },
-  originalName: {
-    type: String,
-    required: true
-  },
-  url: {
-    type: String,
-    required: true
-  },
-  cloudinaryId: {
-    type: String,
-    required: true
-  },
-  fileType: {
-    type: String,
-    required: true
-  },
-  size: {
-    type: Number,
-    required: true
-  },
-  uploadedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
-    required: true
-  },
-  project: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'project',
-    required: true // Files must be associated with a project
-  },
-  description: {
-    type: String,
-    default: ''
-  },
-  isPublic: {
-    type: Boolean,
-    default: false
-  }
-}, { timestamps: true });
-
-// Add text index for search functionality
-fileSchema.index({ filename: 'text', originalName: 'text', description: 'text' });
-
-const File = mongoose.model('file', fileSchema);
+const File = createModel('file', 'files', {
+  fields: [
+    'id',
+    'filename',
+    'originalName',
+    'url',
+    'cloudinaryId',
+    'fileType',
+    'size',
+    'uploadedBy',
+    'project',
+    'description',
+    'isPublic',
+  ],
+});
 
 export default File;
